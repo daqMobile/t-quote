@@ -24,7 +24,7 @@
 :root{
   --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F3F5F8; --ink:#121A22; --muted:#56646F; --line:#D3DAE1;
   --accent:#C2006A; --accent-ink:#FFFFFF; --accent-soft:#FBE7F1;
-  --band:#C2006A; --band-ink:#FFFFFF; --build:#2E333A; --build-ink:#FFFFFF; --review:#F6DF8A; --review-ink:#2B2408; --badge:#E8A13A; --badge-ink:#121A22;
+  --band:#C2006A; --band-ink:#FFFFFF; --build:#2E333A; --build-ink:#FFFFFF; --review:#9B1C31; --review-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
   --paper:#FCFCF7; --paper-line:#BFC5BC;
   --good:#0E7A54; --warn:#9A4A0A; --bad:#BF2A1F;
   --scrim:rgba(13,18,23,.45);
@@ -36,7 +36,7 @@
   :root:not([data-theme="light"]){
     --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
     --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
-    --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --review:#DCC36A; --review-ink:#1E1904; --badge:#F0B357; --badge-ink:#121A22;
+    --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --review:#A82639; --review-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
     --paper:#1A2027; --paper-line:#3A444D;
     --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
     --scrim:rgba(0,0,0,.6);
@@ -46,7 +46,7 @@
 :root[data-theme="dark"]{
   --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
   --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
-  --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --review:#DCC36A; --review-ink:#1E1904; --badge:#F0B357; --badge-ink:#121A22;
+  --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --review:#A82639; --review-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
   --paper:#1A2027; --paper-line:#3A444D;
   --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
   --scrim:rgba(0,0,0,.6);
@@ -188,7 +188,7 @@ button:disabled{cursor:not-allowed}
 .tile svg.dev{width:46px;height:52px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tile .plus{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
 .tile .plus .ico{width:16px;height:16px;stroke-width:2.6}
-.tile .badge{top:6px;right:6px;background:var(--accent-soft);color:var(--accent)}
+.tile .badge{top:6px;right:6px}
 .tile:disabled{opacity:.45}
 
 /* ---------- Home internet ---------- */
