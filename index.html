@@ -172,10 +172,10 @@ button:disabled{cursor:not-allowed}
 .cost .tot{border-top:1px solid var(--line);margin-top:4px;padding-top:4px;font-weight:700}
 .cwarn{font-size:12.5px;color:var(--warn);font-weight:600}
 /* A new line zooms in from small; a removed one zooms back out. */
-@keyframes popIn{from{transform:scale(.55);opacity:0}70%{transform:scale(1.02);opacity:1}to{transform:none;opacity:1}}
+@keyframes popIn{from{transform:scale(.55);opacity:0}to{transform:none;opacity:1}}
 @keyframes popOut{from{transform:none;opacity:1}to{transform:scale(.55);opacity:0}}
-.popin{animation:popIn .19s cubic-bezier(.2,.8,.3,1) both}
-.popout{animation:popOut .13s ease-in both;pointer-events:none}
+.popin{animation:popIn .25s cubic-bezier(.2,.8,.3,1) both}
+.popout{animation:popOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
 .lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
@@ -1937,7 +1937,7 @@ document.addEventListener("click", function(e){
       if (gone && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
         if (gone.classList.contains("popout")) return;
         gone.classList.add("popout");
-        setTimeout(function(){ dropGroup(); state.example = false; renderAll(); }, 130);
+        setTimeout(function(){ dropGroup(); state.example = false; renderAll(); }, 105);
         return;
       }
       dropGroup(); break;
