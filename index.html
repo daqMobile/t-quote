@@ -178,13 +178,14 @@ button:disabled{cursor:not-allowed}
 .popout{animation:popOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
-.lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.lrow{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 44px 10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
 .lrow .devico{width:44px;height:46px}
 .lrow .devico svg{width:28px;height:28px}
 .lrow .lt{min-width:0}
 .lrow .lt b{display:block;font-size:14.5px}
 .lrow .lt span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lrow .lm{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.lrow .lx{position:absolute;top:4px;right:4px;border:0;background:none;color:var(--accent);padding:6px;display:grid;place-items:center}
 .lrow .lm button{display:block;margin-top:4px;border:0;background:none;color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:0}
 .empty{border:2px dashed var(--line);border-radius:6px;padding:28px 18px;text-align:center;color:var(--muted)}
 
@@ -1002,7 +1003,8 @@ function listRow(g, i, q){
   var T0 = TYPES[g.type], o = q.groups[g.id], d = devMath(g, q.c);
   return '<div class="lrow' + (ui.popIn === g.id ? ' popin' : '') + '" data-gid="' + g.id + '"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
     '<div class="lt"><b>' + esc(g.name || T0.label) + (g.qty > 1 ? ' ×' + g.qty : '') + '</b><span>' + esc(d.name) + (d.offer ? ' · ' + esc(d.offer.label) : '') + '</span></div>' +
-    '<div class="lm">' + fmt(o.unit * g.qty) + '<button data-act="edit" data-v="' + g.id + '">Edit options</button></div></div>';
+    '<div class="lm">' + fmt(o.unit * g.qty) + '<button data-act="edit" data-v="' + g.id + '">Edit options</button></div>' +
+    '<button class="lx" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>';
 }
 
 function renderInternet(q){
