@@ -641,7 +641,7 @@ function exampleState(){
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
     autopay:true, planDiscount:"none", discountsOpen:true, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
-    set:{salesTax:9, regVoice:5.49, regData:2.60, connect:35, taxOn:false, taxPerLine:3.5}};
+    set:{connect:35}};
 }
 function blankState(){
   var s = exampleState();
@@ -836,9 +836,8 @@ function compute(s){
   });
 
   var conn = sum(s.groups.filter(function(g){ return g.pay.connect; }).map(function(g){ return g.qty; }));
-  var fee = c.newVoice * num(s.set.regVoice) + cNew * num(s.set.regData);
-  if (fee) W.push({l:"Regulatory & telco recovery fee", a:fee, sub:[c.newVoice ? c.newVoice + " × " + fmt(num(s.set.regVoice)) : "", cNew ? cNew + " × " + fmt(num(s.set.regData)) : ""].filter(Boolean).join(" + ")});
-  if (s.set.taxOn && (c.newVoice + cNew)) W.push({l:"Est. taxes & surcharges", a:(c.newVoice + cNew) * num(s.set.taxPerLine), sub:(c.newVoice + cNew) + " × " + fmt(num(s.set.taxPerLine)), c:"est"});
+  /* Taxes and fees (sales tax, the regulatory & telco recovery fee, government surcharges) change, so quotes leave them out.
+     Connection charges stay in Due today. */
 
   var H = [];
   if (s.hint.on) {
@@ -851,7 +850,6 @@ function compute(s){
   }
 
   if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
-  if (retailBuy && num(s.set.salesTax)) T.push({l:"Est. sales tax on devices", a:retailBuy * num(s.set.salesTax) / 100, sub:num(s.set.salesTax) + "% of " + fmt(retailBuy), c:"est"});
 
   var perkRows = c.fam === "tmix" ? s.perks.map(function(id){ return PERKS.filter(function(p){ return p.id === id; })[0]; }).filter(Boolean)
     .map(function(p){ return {name:p.name, eff:(p.loadedFree && c.pid === "loaded") ? 0 : p.cost}; }) : [];
@@ -1033,7 +1031,7 @@ function renderSheet(q){
   else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
   else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
   else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
-  else if (s === "settings") html = drawer("Settings", "Saved quotes, fees and taxes", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
+  else if (s === "settings") html = drawer("Settings", "Saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "edit") {
     var g = grp(ui.edit);
     if (!g) { ui.sheet = null; root.innerHTML = ""; return; }
@@ -1052,11 +1050,11 @@ function reviewBody(q){
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
-    (s.set.taxOn ? '' : '<div class="rr off"><span class="l">Taxes &amp; gov\'t surcharges</span><span class="a">not incl.</span></div>') +
+    '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>' +
     '<div class="rtotal"><span class="lbl">' + (c.fam === "exp" ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
-    '<div class="rsub">' + (s.set.taxOn ? "includes tax estimate" : "plus taxes &amp; surcharges") + '</div>' +
+    '<div class="rsub">plus taxes &amp; fees</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
-    '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div>' +
+    '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
     (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '');
   if (c.fam === "tmix") {
     h += '<div class="rule"></div><div class="rsec">Picks · ' + q.used + ' of ' + q.budget + '</div>';
@@ -1108,7 +1106,7 @@ function menuBody(){
     '<button data-act="sheet" data-v="email">Email quote<small>Opens Outlook with the quote written</small></button>' +
     '<button data-act="sheet" data-v="open">Open a saved quote<small>Type a Quote ID or pick a recent one</small></button>' +
     '<button data-act="sheet" data-v="jobaid">Job Aid<small>Step-by-step for building a quote</small></button>' +
-    '<button data-act="sheet" data-v="settings">Settings<small>Saved quotes, sales tax, fees</small></button>' +
+    '<button data-act="sheet" data-v="settings">Settings<small>Saved quotes, connection charge</small></button>' +
     '<button data-act="example">Load the example quote<small>Replaces what\'s on screen</small></button></div>' +
     '<div class="srcs"><span>Independent tool, not made by or affiliated with T-Mobile. Prices as of ' + ASOF + '. Confirm in the store system before you quote.</span>' +
     '<span>Sources: <a href="https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" target="_blank" rel="noopener">T-Mobile holiday offers</a> · <a href="https://www.t-mobile.com/customers/device-add-a-line" target="_blank" rel="noopener">T-Mobile add-a-line pricing</a> · <a href="https://www.droid-life.com/2026/10/26/t-mobile-t-mix-plans-explained-are-they-any-good/" target="_blank" rel="noopener">Droid Life T-Mix breakdown</a> · <a href="https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" target="_blank" rel="noopener">Android Central deals</a> · <a href="https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/" target="_blank" rel="noopener">MacRumors iPhone prices</a> · <a href="https://magentapulse.t-mobile.com/us/en/customer-support/plans/consumer/wearables-iot/t-mobile-watch-plans" target="_blank" rel="noopener">Watch plans</a> · <a href="https://mytmoclaim.com/media/fseb1a2a/ms98691-ny-1125-p23pdf_v24.pdf" target="_blank" rel="noopener">Protection 360 rates</a></span></div>';
@@ -1127,19 +1125,14 @@ function ghSettingsHtml(){
     '<p class="fhint">The key stays on this device. Use a key that can only read and write your quotes repository.</p>';
 }
 function settingsBody(){
-  return ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Fees, taxes &amp; rates</h3>' + feesBody();
+  return ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
 }
 function feesBody(){
   var st = state.set;
   function mf(id, label, k, v){ return '<div class="f"><label for="' + id + '">' + label + '</label><span class="money"><input class="tin" id="' + id + '" type="number" inputmode="decimal" min="0" step="0.01" data-k="' + k + '" data-t="num" value="' + v + '"></span></div>'; }
   return '<div class="fields">' +
-    '<div class="f"><label for="sTax">Sales tax on devices (%)</label><input class="tin" id="sTax" type="number" inputmode="decimal" min="0" step="0.01" data-k="set.salesTax" data-t="num" value="' + st.salesTax + '"></div>' +
-    mf("sConn", "Connection charge per line", "set.connect", st.connect) +
-    mf("sRegV", "Regulatory fee, phone line", "set.regVoice", st.regVoice) +
-    mf("sRegD", "Regulatory fee, watch/tablet", "set.regData", st.regData) +
-    mf("sTpl", "Est. taxes & surcharges per line", "set.taxPerLine", st.taxPerLine) +
-    '<label class="check full" for="sTaxOn"><input id="sTaxOn" type="checkbox" data-k="set.taxOn" data-t="bool"' + (st.taxOn ? " checked" : "") + '><span>Add the monthly tax estimate to quotes</span></label></div>' +
-    '<p class="fhint">The regulatory &amp; telco recovery fee rose to $5.49 per phone line and $2.60 per data line on Oct 12, 2026. Sales tax and government surcharges depend on where the store is.</p>';
+    mf("sConn", "Connection charge per line", "set.connect", st.connect) + '</div>' +
+    '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>';
 }
 
 /* ----- Edit options: numbered boxes ----- */
@@ -1569,17 +1562,17 @@ function mailBits(q, m){
     id: currentId(q),
     head: quoteHead(q),
     monthLabel: c.fam === "exp" ? "Added to your monthly bill" : "Estimated monthly",
-    taxNote: state.set.taxOn ? "Includes estimated taxes" : "Plus taxes and surcharges",
+    taxNote: "Plus taxes and fees",
     W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
-    fine: "This is an estimate using pricing as of " + dateStr() + ". Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed."
+    fine: "This is an estimate using pricing as of " + dateStr() + ". Taxes and fees aren't included because they can change. Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed."
   };
 }
 function emailText(q, m){
   var b = mailBits(q, m), out = [b.hi, ""];
   if (b.intro) out.push(b.intro, "");
   out.push(b.monthLabel.toUpperCase() + ": " + fmt(q.monthly) + "/mo (" + b.taxNote.toLowerCase() + ")");
-  out.push("DUE TODAY: " + fmt(q.today));
+  out.push("DUE TODAY: " + fmt(q.today) + " (plus tax)");
   out.push(b.head);
   if (b.id) out.push("Quote ID: " + b.id + " (mention it if you come back in)");
   function sec(title, rows){
@@ -1621,7 +1614,7 @@ function emailHtml(q, m){
       '<div style="font-size:13px;color:' + MUT + '">' + esc(b.taxNote) + '</div>' +
       '<div style="font-size:14px;margin-top:12px;font-weight:600">' + esc(b.head) + '</div>' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:14px;border-top:1px solid ' + LINE + '"><tr>' +
-        '<td style="padding-top:12px;' + CAP + '">DUE TODAY</td>' +
+        '<td style="padding-top:12px;' + CAP + '">DUE TODAY <span style="font-weight:400;letter-spacing:0">· plus tax</span></td>' +
         '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
       (b.id ? '<div style="font-size:12px;color:' + MUT + ';margin-top:10px">Quote ID <b style="color:' + INK + ';letter-spacing:1px">' + esc(b.id) + '</b> · mention it if you come back in</div>' : '') +
     '</td></tr></table>' +
@@ -1706,10 +1699,10 @@ function quoteText(){
   out.push(dateStr() + " · " + (state.autopay ? "AutoPay" : "No AutoPay") + (state.loaded ? " · Quote ID " + state.loaded.id : ""));
   out.push(""); out.push("MONTHLY");
   q.W.concat(q.H).forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
-  out.push(pad(c.fam === "exp" ? "Added monthly" : "Total monthly", fmt(q.monthly)) + (state.set.taxOn ? "" : "  + taxes"));
+  out.push(pad(c.fam === "exp" ? "Added monthly" : "Total monthly", fmt(q.monthly)) + "  + taxes & fees");
   out.push(""); out.push("DUE TODAY");
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
-  out.push(pad("Total due today", fmt(q.today)));
+  out.push(pad("Total due today", fmt(q.today)) + "  + tax");
   if (q.ONE.length) { out.push(""); out.push("ONE-TIME BILL CREDITS"); q.ONE.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); }
   if (c.fam === "tmix" && q.budget) out.push("", "PICKS " + q.used + " of " + q.budget + (q.perkRows.length ? ": " + q.perkRows.map(function(p){ return p.name; }).join(", ") : ""));
   out.push(""); out.push("Estimate only. Pricing as of " + ASOF + "; final price set at purchase.");
