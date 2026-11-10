@@ -232,6 +232,8 @@ button:disabled{cursor:not-allowed}
 
 /* ---------- Drawers ---------- */
 .scrim{position:fixed;inset:0;z-index:50;background:var(--scrim)}
+html.locked,html.locked body{overflow:hidden}
+.scrim,.drawer{overscroll-behavior:contain}
 .drawer{position:fixed;top:0;right:0;bottom:0;z-index:51;width:min(460px,100%);background:var(--bg);display:flex;flex-direction:column;box-shadow:-12px 0 32px -16px rgba(0,0,0,.4);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 .drawer.wide{width:min(760px,100%)}
 .drawer.left{right:auto;left:0;box-shadow:12px 0 32px -16px rgba(0,0,0,.4)}
@@ -239,7 +241,9 @@ button:disabled{cursor:not-allowed}
 .dhead h2{margin:0;font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1}
 .dhead p{margin:4px 0 0;font-size:13px;color:var(--muted)}
 .close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
-.dbody{flex:1;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
+.dbody{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:16px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
+/* Sections in a panel keep their full height; the panel scrolls instead of squeezing them. */
+.dbody>*{flex-shrink:0}
 .dfoot{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-top:1px solid var(--line)}
 .linkbtn{border:0;background:none;padding:0;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;font-size:14px}
 .linkbtn.danger{color:var(--bad)}
@@ -1071,6 +1075,8 @@ function drawer(title, sub, body, foot, cls){
 }
 function renderSheet(q){
   var root = $("#sheetRoot"), s = ui.sheet;
+  /* While a panel is open, the page behind it doesn't scroll; only the panel does. */
+  document.documentElement.classList.toggle("locked", !!s);
   if (!s) { root.innerHTML = ""; return; }
   var prev = $("#dbody"), st = prev ? prev.scrollTop : 0;
   var html = "";
@@ -1091,7 +1097,7 @@ function renderSheet(q){
   else if (s === "settings") html = drawer("Settings", "Appearance, saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "edit") {
     var g = grp(ui.edit);
-    if (!g) { ui.sheet = null; root.innerHTML = ""; return; }
+    if (!g) { ui.sheet = null; root.innerHTML = ""; document.documentElement.classList.remove("locked"); return; }
     var idx = state.groups.indexOf(g);
     html = drawer("Edit options", esc(g.name || TYPES[g.type].label) + " · group " + (idx+1) + (g.qty > 1 ? " · " + g.qty + " lines" : ""), editBody(g, q),
       '<button class="linkbtn danger" data-act="remove" data-v="' + g.id + '">Remove group</button><button class="pbtn" data-act="close">Done</button>', "wide");
@@ -1218,7 +1224,7 @@ function editBody(g, q){
         var P = (c.fam === "tmix" ? TMIX : EXP)[id];
         var pk = c.fam === "tmix" ? picksFor(id, n) : null;
         return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· ' + (c.fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
-          P.specs + (pk != null ? " · " + (pk ? pk + " Pick" + (pk > 1 ? "s" : "") : "no Picks") : ""), !pc, "__plan");
+          P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
       radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "New line · number transfer", "Customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
@@ -1856,6 +1862,12 @@ function afterPlanChange(){
   var c = ctxOf(state);
   if (c.fam === "tmix" && state.planNew === "saver") state.groups.forEach(function(g){ if (g.dev.offer === "custom") g.dev.customPicks = 0; });
 }
+document.addEventListener("touchmove", function(e){
+  if (!ui.sheet) return;
+  var t = e.target;
+  if (t.closest && t.closest(".dbody, textarea, .mailhtml")) return;
+  if (e.cancelable) e.preventDefault();
+}, {passive:false});
 document.addEventListener("click", function(e){
   var b = e.target.closest ? e.target.closest("[data-act]") : null; if (!b || b.disabled) return;
   var act = b.dataset.act, v = b.dataset.v, g = b.dataset.g ? grp(b.dataset.g) : null;
