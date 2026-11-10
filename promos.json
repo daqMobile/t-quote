@@ -1,0 +1,1945 @@
+{
+ "meta": {
+  "changes": [
+   "Confirmed all 37 running offers on T-Mobile's Nov 5 terms (verified Nov 10)",
+   "Added T-Mix 'any phone with Picks' offers with no new line or trade-in: 2 Picks up to $310, 3 Picks $700, 4 Picks $1,100, 6 Picks $1,900, 7 Picks $2,100",
+   "Added T-Mix any phone new line with 5 Picks, up to $1,400",
+   "Added T-Mix 1-Pick iPhone offers: trade-in + new line $830, number transfer $700, trade-in $300",
+   "Added T-Mix 1-Pick trade-in offers: Motorola $500, Galaxy $300",
+   "Added Pixel Watch 5 on Us ($500, new watch line) and Galaxy Watch9 on Us ($430; Watch Ultra2 $430 off)",
+   "Widened iPhone new line 1 Pick ($350) from iPhone 17e to all iPhones, per T-Mobile's terms",
+   "Widened Galaxy new line 1 Pick ($600) from S26 FE to all Galaxy phones, per T-Mobile's terms",
+   "Added iPhone Air to iPhone trade-in 3 Picks",
+   "Added devices: Pixel Watch 5 41mm ($499.99), Galaxy Watch9 40mm ($429.99), Galaxy Watch Ultra2 47mm ($699.99)",
+   "Confirmed 22 device prices on T-Mobile's deal pages; no price changes"
+  ],
+  "checkedAt": "2026-11-10T06:50:01-06:00",
+  "sources": [
+   "https://www.t-mobile.com/offers/promotional-offer-details",
+   "https://www.t-mobile.com/offers",
+   "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "https://www.t-mobile.com/offers/google-phone-deals",
+   "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "https://www.t-mobile.com/cell-phone-plans",
+   "https://www.droid-life.com/2026/10/26/t-mobile-t-mix-plans-explained-are-they-any-good/",
+   "https://tmo.report/2026/10/t-mobiles-new-t-mix-plans-assign-picks-as-credits-towards-promos-exclusive/"
+  ],
+  "summary": "50 offers active and none ended: all 37 running offers were confirmed and 13 Nov 5 offers T-Mobile is running were added, mostly T-Mix Picks deals plus Pixel Watch 5 and Galaxy Watch9 on Us."
+ },
+ "offers": [
+  {
+   "dated": false,
+   "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
+   "ends": null,
+   "fam": "any",
+   "id": "awse3",
+   "label": "Apple Watch SE 3 on Us",
+   "models": [
+    "awse3"
+   ],
+   "need": "watch15",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 300,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on Experience Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "ex1200p",
+   "label": "iPhone new line offer",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax"
+   ],
+   "need": "port",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "newline",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone in any condition on Experience Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "ex1200t",
+   "label": "iPhone trade-in offer",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "trade",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "ex930p",
+   "label": "iPhone new line offer",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "17"
+   ],
+   "need": "port",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "newline",
+   "upTo": 930,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "ex930t",
+   "label": "iPhone trade-in offer",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "17"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "trade",
+   "upTo": 930,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exgal1000n",
+   "label": "Galaxy S26 on Us · new line",
+   "models": [
+    "s26"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 1000,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exgal1000t",
+   "label": "Galaxy S26 on Us · trade-in",
+   "models": [
+    "s26"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 1000,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exgal1200n",
+   "label": "Galaxy new line offer",
+   "models": [
+    "s26p",
+    "s26u",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "newline",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exgal1200t",
+   "label": "Galaxy trade-in offer",
+   "models": [
+    "s26p",
+    "s26u",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "trade",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "expx1100t",
+   "label": "Pixel 11 Pro trade-in offer",
+   "models": [
+    "px11p",
+    "px11xl"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "trade",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "expx900t",
+   "label": "Pixel 11 on Us · trade-in",
+   "models": [
+    "px11"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 900,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "expxxln",
+   "label": "Pixel 11 Pro XL new line offer",
+   "models": [
+    "px11xl"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "newline",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exrazpn",
+   "label": "razr+ (2026) on Us",
+   "models": [
+    "razrp26"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade-in and a new line on Experience More or Beyond. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "flip8",
+   "label": "Galaxy Z Flip 8 offer",
+   "models": [
+    "flip8"
+   ],
+   "need": "trade+newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "trade",
+   "upTo": 1100,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "Trade-in and a new line on Experience Beyond. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "fold8",
+   "label": "Galaxy Z Fold 8 on Us",
+   "models": [
+    "fold8"
+   ],
+   "need": "trade+newline",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New watch line on a $15+/mo watch plan with AutoPay; the same $430 credit takes Galaxy Watch Ultra2 to $269.99.",
+   "ends": null,
+   "fam": "any",
+   "id": "gw9",
+   "label": "Galaxy Watch9 on Us",
+   "models": [
+    "gw9",
+    "gwu2"
+   ],
+   "need": "watch15",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "starts": "2026-07-22",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 430,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New tablet line on a $25+/mo tablet plan with AutoPay.",
+   "ends": null,
+   "fam": "any",
+   "id": "ipad400",
+   "label": "iPad (A16) for $199",
+   "models": [
+    "ipada16"
+   ],
+   "need": "tab25",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "newline",
+   "upTo": 400,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "On most Experience plans. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "px11",
+   "label": "Pixel 11 on Us",
+   "models": [
+    "px11"
+   ],
+   "need": "none",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "px11p",
+   "label": "Pixel 11 Pro on Us",
+   "models": [
+    "px11p"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade-in and a new line on Experience Beyond. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "px11xl",
+   "label": "Pixel 11 Pro XL on Us",
+   "models": [
+    "px11xl"
+   ],
+   "need": "trade+newline",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "Trade-in and a new line on Experience More. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "px11xlm",
+   "label": "Pixel 11 Pro XL offer",
+   "models": [
+    "px11xl"
+   ],
+   "need": "trade+newline",
+   "picks": 0,
+   "plans": [
+    "more"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "trade",
+   "upTo": 1100,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
+   "ends": null,
+   "fam": "any",
+   "id": "pxw5",
+   "label": "Pixel Watch 5 on Us",
+   "models": [
+    "pxw5"
+   ],
+   "need": "watch15",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 500,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "On an eligible Experience plan. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "razr26",
+   "label": "razr (2026) on Us",
+   "models": [
+    "razr26"
+   ],
+   "need": "none",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience Beyond. No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "razrfold",
+   "label": "razr fold offer",
+   "models": [
+    "razrfold"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": null,
+   "status": "active",
+   "tag": "newline",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "No trade-in on most Experience plans. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "s26",
+   "label": "Galaxy S26 on Us",
+   "models": [
+    "s26"
+   ],
+   "need": "none",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "s26p",
+   "label": "Galaxy S26+ on Us",
+   "models": [
+    "s26p"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New line on Experience More or Beyond. September 2026 offer.",
+   "ends": "2026-11-09",
+   "fam": "exp",
+   "id": "s26u",
+   "label": "Galaxy S26 Ultra offer",
+   "models": [
+    "s26u"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month",
+   "starts": null,
+   "status": "expired",
+   "tag": "newline",
+   "upTo": 1100,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm17e",
+   "label": "iPhone 17e on Us · 4 lines",
+   "models": [
+    "17e"
+   ],
+   "need": "port4",
+   "picks": 1,
+   "plans": [
+    "standard"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm17e1",
+   "label": "iPhone new line · 1 Pick",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e"
+   ],
+   "need": "newline",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 350,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm1p",
+   "label": "iPhone switcher offer · 1 Pick",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e"
+   ],
+   "need": "port",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 700,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm1t",
+   "label": "iPhone trade-in · 1 Pick",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e"
+   ],
+   "need": "trade",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 300,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone and add a new voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm1tn",
+   "label": "iPhone trade-in + new line · 1 Pick",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e"
+   ],
+   "need": "trade+newline",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 830,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on T-Mix More or Loaded. Holds 2 Picks per phone for 36 months.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm2",
+   "label": "iPhone offer · 2 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "17"
+   ],
+   "need": "port",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "picks",
+   "upTo": 930,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm2t",
+   "label": "iPhone trade-in · 2 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "17"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 930,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm3",
+   "label": "iPhone offer · 3 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax"
+   ],
+   "need": "port",
+   "picks": 3,
+   "plans": [
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "starts": null,
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone in any condition on T-Mix Loaded. Holds 3 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tm3t",
+   "label": "iPhone trade-in · 3 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air"
+   ],
+   "need": "trade",
+   "picks": 3,
+   "plans": [
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal1n",
+   "label": "Galaxy new line · 1 Pick",
+   "models": [
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "newline",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 600,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal1t",
+   "label": "Galaxy trade-in · 1 Pick",
+   "models": [
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "trade",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 300,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on T-Mix More or Loaded. No trade-in needed. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal2n",
+   "label": "Galaxy S26 on Us · 2 Picks",
+   "models": [
+    "s26"
+   ],
+   "need": "newline",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1000,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal2t",
+   "label": "Galaxy S26 trade-in · 2 Picks",
+   "models": [
+    "s26"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1000,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on T-Mix Loaded. No trade-in needed. Holds 3 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal3n",
+   "label": "Galaxy offer · 3 Picks",
+   "models": [
+    "s26p",
+    "s26u",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "newline",
+   "picks": 3,
+   "plans": [
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix Loaded. Holds 3 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal3t",
+   "label": "Galaxy trade-in · 3 Picks",
+   "models": [
+    "s26p",
+    "s26u",
+    "flip8",
+    "fold8",
+    "fold8u"
+   ],
+   "need": "trade",
+   "picks": 3,
+   "plans": [
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1200,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmmot1t",
+   "label": "Motorola trade-in · 1 Pick",
+   "models": [
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "trade",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 500,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Use 2 Picks on a $75+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk2",
+   "label": "Any phone · 2 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "none",
+   "picks": 2,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 310,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Use 3 Picks on a $95+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk3",
+   "label": "Any phone · 3 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "none",
+   "picks": 3,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 700,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Use 4 Picks on a $115+/mo T-Mix account (e.g. Standard with 4 lines or More with 2); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk4",
+   "label": "Any phone · 4 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "none",
+   "picks": 4,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on a $155+/mo T-Mix account using 5 Picks; no trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk5n",
+   "label": "Any phone new line · 5 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "newline",
+   "picks": 5,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1400,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Use 6 Picks on a $155+/mo T-Mix account (e.g. More with 3 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk6",
+   "label": "Any phone · 6 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "none",
+   "picks": 6,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1900,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Use 7 Picks on a $180+/mo T-Mix account (e.g. More with 4 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpk7",
+   "label": "Any phone · 7 Picks",
+   "models": [
+    "duo",
+    "18pro",
+    "18promax",
+    "air",
+    "17",
+    "17e",
+    "s26",
+    "s26p",
+    "s26u",
+    "s26fe",
+    "flip8",
+    "fold8",
+    "fold8u",
+    "px11",
+    "px11p",
+    "px11xl",
+    "px11fold",
+    "razr26",
+    "razrp26",
+    "razrfold"
+   ],
+   "need": "none",
+   "picks": 7,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 2100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpx1n",
+   "label": "Pixel 11 offer · 1 Pick",
+   "models": [
+    "px11",
+    "px11fold"
+   ],
+   "need": "newline",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 900,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpx1t",
+   "label": "Pixel 11 trade-in · 1 Pick",
+   "models": [
+    "px11",
+    "px11fold"
+   ],
+   "need": "trade",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 900,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpx2n",
+   "label": "Pixel 11 Pro offer · 2 Picks",
+   "models": [
+    "px11p",
+    "px11xl"
+   ],
+   "need": "newline",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmpx2t",
+   "label": "Pixel 11 Pro trade-in · 2 Picks",
+   "models": [
+    "px11p",
+    "px11xl"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmraz1n",
+   "label": "razr (2026) on Us · 1 Pick",
+   "models": [
+    "razr26"
+   ],
+   "need": "newline",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 900,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmraz26t",
+   "label": "razr (2026) trade-in · 2 Picks",
+   "models": [
+    "razr26"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 770,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmraz2n",
+   "label": "razr+ (2026) on Us · 2 Picks",
+   "models": [
+    "razrp26"
+   ],
+   "need": "newline",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1000,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmraz2t",
+   "label": "razr+ (2026) trade-in · 2 Picks",
+   "models": [
+    "razrp26"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmrazf2n",
+   "label": "razr fold offer · 2 Picks",
+   "models": [
+    "razrfold"
+   ],
+   "need": "newline",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmrazf2t",
+   "label": "razr fold trade-in · 2 Picks",
+   "models": [
+    "razrfold"
+   ],
+   "need": "trade",
+   "picks": 2,
+   "plans": [
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1100,
+   "verified": "2026-11-10"
+  }
+ ],
+ "devices": [
+  {
+   "fam": "17",
+   "id": "17-256",
+   "mfr": "Apple",
+   "name": "iPhone 17 256GB",
+   "price": 929.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "17",
+   "id": "17-512",
+   "mfr": "Apple",
+   "name": "iPhone 17 512GB",
+   "price": 1129.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "17e",
+   "id": "17e-256",
+   "mfr": "Apple",
+   "name": "iPhone 17e 256GB",
+   "price": 699.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "17e",
+   "id": "17e-512",
+   "mfr": "Apple",
+   "name": "iPhone 17e 512GB",
+   "price": 899.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "18pro",
+   "id": "18p-1tb",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro 1TB",
+   "price": 1799.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "18pro",
+   "id": "18p-256",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro 256GB",
+   "price": 1199.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "18pro",
+   "id": "18p-512",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro 512GB",
+   "price": 1399.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "18promax",
+   "id": "18pm-1tb",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro Max 1TB",
+   "price": 1899.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "18promax",
+   "id": "18pm-256",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro Max 256GB",
+   "price": 1299.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "18promax",
+   "id": "18pm-512",
+   "mfr": "Apple",
+   "name": "iPhone 18 Pro Max 512GB",
+   "price": 1499.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "air",
+   "id": "air-256",
+   "mfr": "Apple",
+   "name": "iPhone Air 256GB",
+   "price": 1099.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "air",
+   "id": "air-512",
+   "mfr": "Apple",
+   "name": "iPhone Air 512GB",
+   "price": 1299.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "awse3",
+   "id": "awse3",
+   "mfr": "Apple",
+   "name": "Apple Watch SE 3 40mm",
+   "price": 299.99,
+   "source": "https://www.t-mobile.com/offers",
+   "status": "active",
+   "type": "watch",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "duo",
+   "id": "duo-1tb",
+   "mfr": "Apple",
+   "name": "iPhone Duo 1TB",
+   "price": 2599.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "duo",
+   "id": "duo-256",
+   "mfr": "Apple",
+   "name": "iPhone Duo 256GB",
+   "price": 1999.99,
+   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "duo",
+   "id": "duo-512",
+   "mfr": "Apple",
+   "name": "iPhone Duo 512GB",
+   "price": 2199.99,
+   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-09"
+  },
+  {
+   "fam": "flip8",
+   "id": "flip8",
+   "mfr": "Samsung",
+   "name": "Galaxy Z Flip 8 256GB",
+   "price": 1199.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "fold8",
+   "id": "fold8",
+   "mfr": "Samsung",
+   "name": "Galaxy Z Fold 8 256GB",
+   "price": 1899.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "fold8u",
+   "id": "fold8u",
+   "mfr": "Samsung",
+   "name": "Galaxy Z Fold 8 Ultra 256GB",
+   "price": 2099.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "gw9",
+   "id": "gw9",
+   "mfr": "Samsung",
+   "name": "Galaxy Watch9 40mm",
+   "price": 429.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "watch",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "gwu2",
+   "id": "gwu2",
+   "mfr": "Samsung",
+   "name": "Galaxy Watch Ultra2 47mm",
+   "price": 699.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "watch",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "ipada16",
+   "id": "ipada16",
+   "mfr": "Apple",
+   "name": "iPad (A16) 128GB",
+   "price": 599.99,
+   "source": "https://www.t-mobile.com/offers",
+   "status": "active",
+   "type": "tablet",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "px11",
+   "id": "px11",
+   "mfr": "Google",
+   "name": "Pixel 11 256GB",
+   "price": 899.99,
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "px11fold",
+   "id": "px11fold",
+   "mfr": "Google",
+   "name": "Pixel 11 Pro Fold 256GB",
+   "price": 1899.99,
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "px11p",
+   "id": "px11p",
+   "mfr": "Google",
+   "name": "Pixel 11 Pro 256GB",
+   "price": 1099.99,
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "px11xl",
+   "id": "px11xl",
+   "mfr": "Google",
+   "name": "Pixel 11 Pro XL 256GB",
+   "price": 1299.99,
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "pxw5",
+   "id": "pxw5",
+   "mfr": "Google",
+   "name": "Pixel Watch 5 41mm",
+   "price": 499.99,
+   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "status": "active",
+   "type": "watch",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "razr26",
+   "id": "razr26",
+   "mfr": "Motorola",
+   "name": "razr (2026) 256GB",
+   "price": 769.99,
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "razrfold",
+   "id": "razrfold",
+   "mfr": "Motorola",
+   "name": "razr fold 512GB",
+   "price": 1699.99,
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "razrp26",
+   "id": "razrp26",
+   "mfr": "Motorola",
+   "name": "razr+ (2026) 256GB",
+   "price": 999.99,
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "s26",
+   "id": "s26",
+   "mfr": "Samsung",
+   "name": "Galaxy S26 256GB",
+   "price": 999.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "s26fe",
+   "id": "s26fe",
+   "mfr": "Samsung",
+   "name": "Galaxy S26 FE 128GB",
+   "price": 699.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "s26p",
+   "id": "s26p",
+   "mfr": "Samsung",
+   "name": "Galaxy S26+ 256GB",
+   "price": 1199.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  },
+  {
+   "fam": "s26u",
+   "id": "s26u",
+   "mfr": "Samsung",
+   "name": "Galaxy S26 Ultra 256GB",
+   "price": 1399.99,
+   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-10"
+  }
+ ]
+}

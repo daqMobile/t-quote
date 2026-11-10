@@ -1,0 +1,1873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quick Quote</title>
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Quick Quote">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a store quoting console. Sticky top bar with the running quote price; a Build rail and a Review rail
+   frame the work area on wide screens (bottom Build/Review bar on phones). Work area = tabs, discount band,
+   plan tier strip, device-group cards, Add Devices tray. Edit Options and Review open as side drawers. */
+:root{
+  --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F3F5F8; --ink:#121A22; --muted:#56646F; --line:#D3DAE1;
+  --accent:#2742D1; --accent-ink:#FFFFFF; --accent-soft:#E3E8FC;
+  --band:#2742D1; --band-ink:#FFFFFF; --build:#B4412E; --build-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
+  --paper:#FCFCF7; --paper-line:#BFC5BC;
+  --good:#0E7A54; --warn:#9A4A0A; --bad:#BF2A1F;
+  --scrim:rgba(13,18,23,.45);
+  --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
+    --accent:#8FA0FF; --accent-ink:#0D1217; --accent-soft:#1E2747;
+    --band:#3A52D9; --band-ink:#FFFFFF; --build:#C4553F; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
+    --paper:#1A2027; --paper-line:#3A444D;
+    --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
+    --scrim:rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
+  --accent:#8FA0FF; --accent-ink:#0D1217; --accent-soft:#1E2747;
+  --band:#3A52D9; --band-ink:#FFFFFF; --build:#C4553F; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
+  --paper:#1A2027; --paper-line:#3A444D;
+  --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
+  --scrim:rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:41;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.muted{color:var(--muted)}
+.ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Top bar ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line);padding-block:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.topin{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"brand pill acts";align-items:center;gap:8px 14px}
+.brand{grid-area:brand;display:flex;align-items:center;gap:8px;border:0;background:none;padding:4px 2px;font-weight:600;font-size:16px}
+.mark{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.02em}
+.pill{grid-area:pill;justify-self:center;display:flex;align-items:center;gap:10px;background:var(--sunk);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 14px;min-width:0}
+.pill .cq{display:flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;font-size:13.5px;border:0;background:none;padding:4px 0;white-space:nowrap}
+.pill .sep{width:1px;height:20px;background:var(--line)}
+.pill .amt{display:flex;align-items:baseline;gap:4px;border:0;background:none;padding:2px 0;color:var(--accent);white-space:nowrap}
+.pill .amt b{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.pill .amt small{font-size:12.5px}
+.pill .go{width:34px;height:34px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.acts{grid-area:acts;display:flex;align-items:center;gap:8px}
+.ja{border:0;background:none;font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px;padding:6px 4px}
+.startnew{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:10px 18px;white-space:nowrap}
+.startnew.confirm{background:var(--bad);color:#fff}
+.exchip{display:inline-flex;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+@media (max-width:899px){
+  .topin{grid-template-columns:1fr auto;grid-template-areas:"brand acts" "pill pill"}
+  .pill{justify-self:stretch;justify-content:space-between}
+}
+@media (max-width:599px){
+  .ja{display:none}
+  .startnew{padding:8px 14px}
+}
+
+/* ---------- Shell with rails ---------- */
+.shell{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr)}
+.rail{display:none}
+@media (min-width:900px){
+  .shell{grid-template-columns:34px minmax(0,1fr) 34px;min-height:calc(100vh - 60px)}
+  .rail{display:block;border:0;padding:0;color:#fff;position:relative}
+  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px);display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:13px;letter-spacing:.12em;padding:18px 0;width:100%}
+  .rail.build{background:var(--build);color:var(--build-ink)}
+  .rail.review{background:var(--band);color:var(--band-ink)}
+  .rail.review span{transform:none}
+  .rail b{font-size:18px;line-height:1}
+}
+.stage{min-width:0;padding-block:14px 150px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+@media (min-width:900px){.stage{padding:16px 20px 60px}}
+
+/* ---------- Tabs & discount band ---------- */
+.tabs{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
+.tab{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+.tab[aria-selected="true"]{background:var(--band);border-color:var(--band);color:var(--band-ink)}
+.band{background:var(--band);color:var(--band-ink);display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border-radius:0 6px 0 0}
+.bandbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--band-ink);border-radius:4px;background:transparent;color:var(--band-ink);font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px}
+.bandbtn .ico{width:14px;height:14px;transition:transform .15s}
+.bandbtn[aria-expanded="false"] .ico{transform:rotate(180deg)}
+.band select{border:0;border-radius:4px;background:var(--surface);color:var(--ink);padding:7px 10px;font-size:14px;max-width:100%;min-width:0}
+.bchip{font-size:12.5px;padding:4px 9px;border-radius:4px;background:rgba(255,255,255,.18);color:var(--band-ink);font-weight:500}
+.bchip.on{background:var(--badge);color:var(--badge-ink);font-weight:700}
+.dpanel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:14px;display:grid;gap:14px}
+@media (min-width:720px){.dpanel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
+.flabel{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
+.fhint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.selwrap{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
+.selwrap select{flex:1;min-width:0;border:0;background:transparent;padding:9px 10px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1.5px solid var(--accent);border-radius:6px;overflow:hidden;max-width:100%}
+.seg button{border:0;background:var(--surface);color:var(--accent);font-weight:600;font-size:14px;padding:9px 14px;flex:1 1 auto}
+.seg button + button{border-left:1.5px solid var(--accent)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg button:disabled{opacity:.45}
+.stepper{display:inline-flex;align-items:center;gap:6px}
+.stepper button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);display:grid;place-items:center;padding:0}
+.stepper button:disabled{border-color:var(--line);color:var(--muted);opacity:.6}
+.stepper output{min-width:40px;height:30px;line-height:28px;text-align:center;border:1px solid var(--line);border-radius:3px;background:var(--surface);font-variant-numeric:tabular-nums}
+
+/* ---------- Tier strip ---------- */
+.tierbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 0 12px}
+.tiers{display:flex;align-items:stretch;background:var(--sunk);border:1px solid var(--line);border-radius:4px;overflow-x:auto;max-width:100%;font-size:13px}
+.tiers .lead{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--accent-soft);color:var(--accent);font-weight:700;white-space:nowrap}
+.tiers .lead small{font-weight:500;font-size:11px}
+.tiers button{border:0;background:transparent;padding:8px 10px;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums}
+.tiers button[aria-pressed="true"]{font-weight:700;color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+.tiers button:disabled{color:var(--muted)}
+.tbtns{display:flex;align-items:center;gap:10px}
+.obtn{border:1.5px solid var(--accent);border-radius:999px;background:var(--surface);color:var(--accent);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;padding:9px 18px}
+.vtog{display:inline-flex;border:1.5px solid var(--accent);border-radius:4px;overflow:hidden}
+.vtog button{border:0;background:var(--surface);color:var(--accent);padding:6px 9px;display:grid;place-items:center}
+.vtog button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- Device cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.05);min-width:0}
+.chead{background:var(--sunk);padding:12px 14px;border-bottom:1px solid var(--line)}
+.ctitle{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600;font-size:15px}
+.ctitle .x{border:0;background:none;color:var(--accent);padding:4px;display:grid;place-items:center}
+.cdev{display:flex;align-items:center;gap:14px;margin-top:10px}
+.devico{position:relative;width:54px;height:58px;border-radius:6px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--accent);flex:none}
+.devico svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:-8px;right:-8px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--badge);color:var(--badge-ink);font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.cbody{padding:14px;display:flex;flex-direction:column;gap:12px}
+.editbtn{align-self:flex-start;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;padding:10px 20px}
+.cost{border-left:3px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.cost .h{font-weight:600;font-size:14.5px;margin-bottom:2px}
+.cost .r{display:flex;justify-content:space-between;gap:10px}
+.cost .r span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.cost small{color:var(--muted);font-size:12.5px}
+.cost .cr span:last-child{color:var(--good)}
+.cost .tot{border-top:1px solid var(--line);margin-top:4px;padding-top:4px;font-weight:700}
+.cwarn{font-size:12.5px;color:var(--warn);font-weight:600}
+.cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
+.lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
+.lrow .devico{width:44px;height:46px}
+.lrow .devico svg{width:28px;height:28px}
+.lrow .lt{min-width:0}
+.lrow .lt b{display:block;font-size:14.5px}
+.lrow .lt span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .lm{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.lrow .lm button{display:block;margin-top:4px;border:0;background:none;color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:0}
+.empty{border:2px dashed var(--line);border-radius:6px;padding:28px 18px;text-align:center;color:var(--muted)}
+
+/* ---------- Add devices tray ---------- */
+.tray{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;position:relative}
+.handle{position:absolute;left:50%;top:-1px;transform:translate(-50%,-100%);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:center;gap:0}
+.handle .ico{width:16px;height:12px;transition:transform .15s}
+.handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
+.trayin{padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.traycount{font-size:13px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,118px));justify-content:center;gap:12px;width:100%}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--accent);font-size:13.5px}
+.tile svg.dev{width:46px;height:52px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tile .plus{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.tile .plus .ico{width:16px;height:16px;stroke-width:2.6}
+.tile .badge{top:6px;right:6px;background:var(--accent-soft);color:var(--accent)}
+.tile:disabled{opacity:.45}
+
+/* ---------- Home internet ---------- */
+.hint-plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px}
+.hplan{display:flex;flex-direction:column;gap:4px;text-align:left;padding:14px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.hplan[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);background:var(--accent-soft)}
+.hplan .n{font-family:var(--display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.hplan .p{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.hplan .p small{font-family:var(--body);font-size:12.5px;font-weight:500;color:var(--muted)}
+.hplan .d{font-size:13px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:16px}
+.check{display:flex;align-items:flex-start;gap:10px;font-size:14.5px}
+.check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.switch{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;font-weight:600}
+.switch .knob{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.switch .knob::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.switch[aria-checked="true"] .knob{background:var(--accent)}
+.switch[aria-checked="true"] .knob::after{transform:translateX(16px)}
+
+/* ---------- Phone bottom bar ---------- */
+.pnav{position:fixed;left:0;right:0;bottom:0;z-index:35;display:grid;grid-template-columns:1fr 1.6fr;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.pnav button{border:0;padding:12px 10px;font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px}
+.pnav .b{background:var(--build);color:var(--build-ink)}
+.pnav .r{background:var(--band);color:var(--band-ink)}
+.pnav .r b{font-family:var(--display);font-size:20px;letter-spacing:0;font-variant-numeric:tabular-nums}
+@media (min-width:900px){.pnav{display:none}}
+
+/* ---------- Drawers ---------- */
+.scrim{position:fixed;inset:0;z-index:50;background:var(--scrim)}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:51;width:min(460px,100%);background:var(--bg);display:flex;flex-direction:column;box-shadow:-12px 0 32px -16px rgba(0,0,0,.4);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.wide{width:min(760px,100%)}
+.drawer.left{right:auto;left:0;box-shadow:12px 0 32px -16px rgba(0,0,0,.4)}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+.dhead h2{margin:0;font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:1}
+.dhead p{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none}
+.dbody{flex:1;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px;overscroll-behavior:contain}
+.dfoot{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-top:1px solid var(--line)}
+.linkbtn{border:0;background:none;padding:0;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;font-size:14px}
+.linkbtn.danger{color:var(--bad)}
+.pbtn{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:11px 24px}
+
+/* Numbered option boxes */
+.box{background:var(--surface);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.boxh{background:var(--band);color:var(--band-ink);display:flex;align-items:center;gap:12px;padding:11px 16px;font-size:17px;font-weight:500}
+.num{width:26px;height:26px;border-radius:50%;background:var(--band-ink);color:var(--band);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.boxb{padding:16px;display:flex;flex-direction:column;gap:16px}
+.boxb h4{margin:0 0 6px;font-size:14.5px;font-weight:600}
+.info{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;color:var(--muted);margin:-2px 0 4px}
+.info.warn{color:var(--warn)}
+.radios{display:flex;flex-direction:column;gap:2px}
+.radio{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14.5px}
+.radio input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.radio b{font-weight:700}
+.radio small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.radio .why{color:var(--warn);font-weight:600}
+.radio.dis{opacity:.7}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--accent);border-radius:4px;background:var(--surface);color:var(--accent);padding:7px 12px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--accent-soft);font-weight:700}
+.chip:disabled{opacity:.45;border-color:var(--line);color:var(--muted)}
+.pchip{border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:6px 11px;font-size:13.5px;display:inline-flex;gap:6px;align-items:center}
+.pchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pchip.locked{border-style:dashed;background:var(--sunk);cursor:default}
+.pchip .pc{font-family:var(--mono);font-size:11px;opacity:.8}
+.pchip:disabled{opacity:.45}
+.meter{display:flex;flex-wrap:wrap;gap:4px}
+.cell{width:18px;height:10px;border-radius:2px;background:var(--line)}
+.cell.on{background:var(--accent)}
+.cell.over{background:var(--bad)}
+.picksrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.picksrow b{font-family:var(--display);font-size:22px}
+.tin{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--muted);border-radius:3px;background:var(--surface)}
+.tin.sm{max-width:180px}
+.money{position:relative;display:block}
+.money::before{content:"$";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.money .tin{padding-left:23px}
+.inl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mlist{max-height:250px;overflow:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+.mlist .grp{position:sticky;top:0;padding:6px 12px;background:var(--sunk);font-weight:700;font-size:13px;border-bottom:1px solid var(--line)}
+.mlist button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:7px 12px 7px 22px;font-size:14px}
+.mlist button span:last-child{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.mlist button.offer span:last-child{color:var(--good);font-weight:600}
+.mlist button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.mlist button[aria-selected="true"] span:last-child{color:var(--accent-ink)}
+.devsel{border:1px solid var(--line);border-radius:3px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.dsname{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--muted);border-radius:3px;padding:9px 12px;font-weight:600}
+.prices{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
+.prices s{color:var(--muted)}
+.brk{border-left:3px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:3px;font-size:14px}
+.brk .r{display:flex;justify-content:space-between;gap:12px}
+.brk .r span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
+.brk .cr span:last-child{color:var(--good);font-style:italic}
+.brk .tot{border-top:1.5px solid var(--ink);margin-top:4px;padding-top:4px;font-weight:700}
+.preview{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:12px 14px;display:flex;justify-content:space-between;gap:12px;font-size:14.5px}
+.preview i{color:var(--muted);font-size:13px;display:block;text-align:right}
+.subpanel{background:var(--sunk);border-radius:3px;padding:14px;display:flex;flex-direction:column;gap:14px;margin-left:30px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fields .full{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f label{font-size:13px;font-weight:600}
+.f select{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--muted);border-radius:3px;background:var(--surface)}
+
+/* Compare bars */
+.cmp{display:flex;flex-direction:column;gap:12px}
+.cmprow{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;align-items:center;gap:10px;font-size:14px}
+.cmprow .cl{font-weight:600}
+.track{height:24px;background:var(--surface);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.fillbar{height:100%;background:var(--muted);opacity:.45}
+.cmprow.cur .fillbar{background:var(--accent);opacity:1}
+.cmprow.na .track{background:repeating-linear-gradient(135deg,var(--sunk) 0 6px,var(--surface) 6px 12px)}
+.cmpval{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.15}
+.cmpval small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+
+/* Job aid */
+.aid{display:flex;flex-direction:column;gap:12px}
+.step{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px}
+.step .num{background:var(--accent);color:var(--accent-ink)}
+.step h3{margin:0 0 4px;font-size:15.5px}
+.step p{margin:0;font-size:14px;color:var(--muted);max-width:60ch}
+.menu{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.menu button{border:0;border-bottom:1px solid var(--line);background:none;text-align:left;padding:14px 16px;font-weight:600;font-size:15px}
+.menu button:last-child{border-bottom:0}
+.menu small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.srcs{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.srcs a{color:var(--accent)}
+
+/* Receipt */
+.receipt{position:relative;margin:8px 0;background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:12.5px;line-height:1.5;padding:18px 16px 16px;box-shadow:0 14px 28px -20px rgba(0,0,0,.45)}
+.receipt::before,.receipt::after{content:"";position:absolute;left:0;right:0;height:8px;background:radial-gradient(circle at 6px 0,transparent 5px,var(--paper) 5.5px) repeat-x;background-size:12px 8px}
+.receipt::before{top:-8px}
+.receipt::after{bottom:-8px;transform:scaleY(-1)}
+.rhead{text-align:center}
+.rtitle{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.12em;text-transform:uppercase;line-height:1}
+.rhead .rp{margin-top:6px;font-weight:600}
+.rule{border-top:1px dashed var(--paper-line);margin:12px 0}
+.rsec{font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:11px;color:var(--muted);margin-bottom:4px}
+.rr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:2px 0}
+.rr .l{min-width:0}
+.rr .l small{display:block;color:var(--muted);font-size:11px}
+.rr .a{white-space:nowrap;font-variant-numeric:tabular-nums}
+.rr.credit .a{color:var(--good)}
+.rr.est .l{font-style:italic}
+.rr.off{color:var(--muted)}
+.rtotal{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:6px}
+.rtotal .lbl{font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:11.5px}
+.rtotal .big{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.rtotal .mid{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.rsub{text-align:right;font-size:11px;color:var(--muted)}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-family:var(--body);font-size:12.5px;line-height:1.35}
+.notes li{padding-left:12px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.5em;width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.notes li.bad{color:var(--bad);font-weight:600}
+.notes li.bad::before{background:var(--bad)}
+.notes li.warn{color:var(--warn)}
+.notes li.warn::before{background:var(--warn)}
+#copyFallback{width:100%;min-height:200px;font-family:var(--mono);font-size:12px;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+a.pbtn,a.obtn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.obtn[aria-disabled="true"]{opacity:.55}
+.pbtn[aria-disabled="true"]{opacity:.55}
+textarea.tin{resize:vertical;font:inherit;line-height:1.4}
+.err{color:var(--bad);font-size:12.5px;font-weight:600}
+.err:empty{display:none}
+.seg.sm button{padding:6px 10px;font-size:13px}
+.mailhtml{background:#FFFFFF;color:#16202A;border:1px solid var(--line);border-radius:3px;padding:18px;max-height:460px;overflow:auto}
+.mailprev{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--body);font-size:13.5px;line-height:1.5;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:12px 14px;max-height:320px;overflow:auto}
+.live{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.dot.on{background:var(--good)}
+.dot.wait{background:var(--badge)}
+.dot.off{background:var(--warn)}
+.livesum{margin:-4px 0 12px;font-size:12.5px;color:var(--muted);max-width:75ch}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:4px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.banner p{margin:0;max-width:75ch}
+.bwarn{color:var(--warn);font-weight:600}
+.qid{font-family:var(--mono);font-size:46px;font-weight:600;letter-spacing:.18em;color:var(--accent);line-height:1.1}
+.qidin{font-family:var(--mono);font-size:22px;letter-spacing:.22em;text-transform:uppercase;max-width:190px}
+.qrow{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.mono{font-family:var(--mono);letter-spacing:.1em}
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 8px 24px -8px rgba(0,0,0,.5);max-width:calc(100% - 32px);text-align:center}
+@media (min-width:900px){.toast{bottom:24px}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topin">
+    <button class="brand" data-act="sheet" data-v="menu" aria-haspopup="dialog"><span class="mark" aria-hidden="true">Q</span>Quick Quote <svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="pill">
+      <button class="cq" data-act="sheet" data-v="review"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>Current Quote <span class="exchip" id="exChip">Example</span></button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="amt" data-act="sheet" data-v="review" aria-label="Open the quote"><b id="pillAmt">$0.00</b><small>mo</small><svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="go" data-act="sheet" data-v="review" aria-label="Review the quote"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+    </div>
+    <div class="acts">
+      <button class="ja" data-act="sheet" data-v="open">Open quote</button>
+      <button class="ja" data-act="sheet" data-v="email"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>Email quote</button>
+      <button class="startnew" id="startNew" data-act="startnew">Start new</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <button class="rail build" data-act="build" aria-label="Build"><span>BUILD <b>−</b></span></button>
+  <main class="stage" id="stage"></main>
+  <button class="rail review" data-act="sheet" data-v="review" aria-label="Review the quote"><span>REVIEW <b>+</b></span></button>
+</div>
+
+<nav class="pnav" aria-label="Build or review">
+  <button class="b" data-act="build">Build</button>
+  <button class="r" data-act="sheet" data-v="review">Review <b id="navAmt">$0.00</b></button>
+</nav>
+
+<div id="sheetRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var KEY = "tmix-quick-quote.v2";
+var ASOF = "Nov 9, 2026";
+
+/* ================= Pricing data ================= */
+/* T-Mix (new customers). AutoPay prices; +$10 per phone line without AutoPay. */
+var TMIX = {
+  loaded:   {name:"Loaded",   full:"T-Mix Loaded",   max:12, ap:[95,160,200,240,280],     addl:40, port:{},            specs:"Unlimited premium data · 250GB hotspot · 15GB international"},
+  more:     {name:"More",     full:"T-Mix More",     max:12, ap:[75,130,155,180,205],     addl:25, port:{},            specs:"Unlimited premium data · 60GB hotspot · 4K video"},
+  standard: {name:"Standard", full:"T-Mix Standard", max:6,  ap:[55,85,100,115,130,145], addl:15, port:{4:100,5:125}, specs:"50GB premium data · 480p video · 3G hotspot"},
+  saver:    {name:"Saver",    full:"T-Mix Saver",    max:2,  ap:[45,80],                  addl:0,  port:{1:30,2:65},   specs:"50GB premium data · 480p video · no Picks"}
+};
+var TMIX_ORDER = ["loaded","more","standard","saver"];
+/* Experience (existing accounts adding lines). AutoPay prices from T-Mobile's add-a-line page (lines 1–5);
+   lines 6+ are estimates. +$5 per line without AutoPay (up to 8 lines). */
+var EXP = {
+  beyond: {name:"Beyond", full:"Experience Beyond", max:12, ap:[100,170,170,215,260], addl:[45,45,45,55,55,55,55], specs:"Unlimited premium data · 250GB hotspot · Netflix and Hulu"},
+  more:   {name:"More",   full:"Experience More",   max:12, ap:[85,140,140,160,180],  addl:[30,30,30,40,40,40,40], specs:"Unlimited premium data · 60GB hotspot · Netflix with ads"}
+};
+var EXP_ORDER = ["beyond","more"];
+
+function planCalc(fam, id, n, autopay, portOn){
+  if (!(n >= 1)) return null;
+  var p = fam === "tmix" ? TMIX[id] : EXP[id];
+  if (!p || n > p.max) return null;
+  var base;
+  if (fam === "tmix") base = n <= p.ap.length ? p.ap[n-1] : p.ap[p.ap.length-1] + (n - p.ap.length) * p.addl;
+  else base = n <= 5 ? p.ap[n-1] : p.ap[4] + p.addl.slice(0, n-5).reduce(function(a,b){ return a+b; }, 0);
+  var promo = fam === "tmix" ? p.port[n] : undefined;
+  var usePort = !!portOn && promo != null && promo < base;
+  var price = usePort ? promo : base;
+  var noAp = autopay ? 0 : (fam === "tmix" ? 10 * Math.min(n,12) : 5 * Math.min(n,8));
+  return {base:base, price:price, portSave: usePort ? base - promo : 0, noAp:noAp, total: price + noAp,
+          est: fam === "tmix" ? (id !== "saver" && n >= 6) : n >= 6};
+}
+function picksFor(id, n){
+  if (!(n >= 1)) return 0;
+  if (id === "saver") return 0;
+  if (id === "standard") return Math.min(n, 4);
+  if (id === "more") return n <= 3 ? 2*n : Math.min(12, 6 + (n-3));
+  var base = [3,6,9,11];
+  if (n <= 4) return base[n-1];
+  if (n <= 6) return 11 + 2*(n-4);
+  return Math.min(20, 15 + (n-6));
+}
+
+var PERKS = [
+  {id:"appletv",name:"Apple TV",cost:1},{id:"dashpass",name:"DashPass",cost:1},{id:"delta",name:"Delta SkyMiles 500/mo",cost:1},
+  {id:"gaiplus",name:"Google AI Plus",cost:1},{id:"hulu",name:"Hulu (With Ads)",cost:1},{id:"netflixAds",name:"Netflix Standard w/ ads",cost:1},
+  {id:"pandoraPlus",name:"Pandora Plus",cost:1},{id:"paramount",name:"Paramount+ Essential",cost:1},{id:"sirius",name:"SiriusXM All Access (app)",cost:1},
+  {id:"ytLite",name:"YouTube Premium Lite",cost:1},
+  {id:"appleMusic",name:"Apple Music Individual",cost:2},{id:"gaipro",name:"Google AI Pro",cost:2},{id:"pandoraPrem",name:"Pandora Premium",cost:2},
+  {id:"xboxPrem",name:"Xbox Game Pass Premium",cost:2},{id:"yt",name:"YouTube Premium",cost:2},
+  {id:"netflixStd",name:"Netflix Standard",cost:3},{id:"xboxUlt",name:"Xbox Game Pass Ultimate",cost:3},
+  {id:"espn",name:"ESPN Unlimited",cost:4},{id:"netflixPrem",name:"Netflix Premium",cost:4},
+  {id:"tsat",name:"T-Satellite",cost:1,tm:true},{id:"ovc",name:"Optimized Video Calling",cost:1,tm:true,loadedFree:true}
+];
+var P360 = [
+  {v:"0",label:"No protection",p:0},{v:"1",label:"Tier 1 · $7/mo",p:7},{v:"2",label:"Tier 2 · $9/mo",p:9},{v:"3",label:"Tier 3 · $13/mo",p:13},
+  {v:"4",label:"Tier 4 · $16/mo",p:16},{v:"5",label:"Tier 5 · $19/mo",p:19},{v:"byod",label:"BYOD · $19/mo",p:19},{v:"6",label:"Tier 6 · $26/mo",p:26}
+];
+/* Connected-device plans. ap = AutoPay price; +$5 without AutoPay. */
+var CPLANS = {
+  watch: [
+    {id:"watch",name:"Watch Plan",ap:10},
+    {id:"watchPlus",name:"Watch Plan Plus",ap:15},
+    {id:"watchByod",name:"BYOD watch line",ap:5,byod:true,plans:["loaded","beyond"]}
+  ],
+  tablet: [
+    {id:"tabEss",name:"Tablet Essentials",ap:15},
+    {id:"tabUnl",name:"Tablet Unlimited",ap:20},
+    {id:"tabPlus",name:"Tablet Unlimited Plus",ap:25},
+    {id:"tabByod",name:"BYOD tablet line",ap:5,byod:true,plans:["loaded"]}
+  ]
+};
+var MODELS = [
+  {id:"duo-256",fam:"duo",mfr:"Apple",type:"phone",name:"iPhone Duo 256GB",price:1999.99},
+  {id:"duo-512",fam:"duo",mfr:"Apple",type:"phone",name:"iPhone Duo 512GB",price:2199.99},
+  {id:"duo-1tb",fam:"duo",mfr:"Apple",type:"phone",name:"iPhone Duo 1TB",price:2599.99},
+  {id:"18pm-256",fam:"18promax",mfr:"Apple",type:"phone",name:"iPhone 18 Pro Max 256GB",price:1299.99},
+  {id:"18pm-512",fam:"18promax",mfr:"Apple",type:"phone",name:"iPhone 18 Pro Max 512GB",price:1499.99},
+  {id:"18pm-1tb",fam:"18promax",mfr:"Apple",type:"phone",name:"iPhone 18 Pro Max 1TB",price:1899.99},
+  {id:"18p-256",fam:"18pro",mfr:"Apple",type:"phone",name:"iPhone 18 Pro 256GB",price:1199.99},
+  {id:"18p-512",fam:"18pro",mfr:"Apple",type:"phone",name:"iPhone 18 Pro 512GB",price:1399.99},
+  {id:"18p-1tb",fam:"18pro",mfr:"Apple",type:"phone",name:"iPhone 18 Pro 1TB",price:1799.99},
+  {id:"air-256",fam:"air",mfr:"Apple",type:"phone",name:"iPhone Air 256GB",price:1099.99},
+  {id:"air-512",fam:"air",mfr:"Apple",type:"phone",name:"iPhone Air 512GB",price:1299.99},
+  {id:"17-256",fam:"17",mfr:"Apple",type:"phone",name:"iPhone 17 256GB",price:929.99},
+  {id:"17-512",fam:"17",mfr:"Apple",type:"phone",name:"iPhone 17 512GB",price:1129.99},
+  {id:"17e-256",fam:"17e",mfr:"Apple",type:"phone",name:"iPhone 17e 256GB",price:699.99},
+  {id:"17e-512",fam:"17e",mfr:"Apple",type:"phone",name:"iPhone 17e 512GB",price:899.99},
+  {id:"fold8",fam:"fold8",mfr:"Samsung",type:"phone",name:"Galaxy Z Fold 8 256GB",price:1899.99},
+  {id:"flip8",fam:"flip8",mfr:"Samsung",type:"phone",name:"Galaxy Z Flip 8 256GB",price:1199.99},
+  {id:"s26u",fam:"s26u",mfr:"Samsung",type:"phone",name:"Galaxy S26 Ultra 256GB",price:1299.99},
+  {id:"s26p",fam:"s26p",mfr:"Samsung",type:"phone",name:"Galaxy S26+ 256GB",price:1099.99},
+  {id:"s26",fam:"s26",mfr:"Samsung",type:"phone",name:"Galaxy S26 256GB",price:899.99},
+  {id:"px11xl",fam:"px11xl",mfr:"Google",type:"phone",name:"Pixel 11 Pro XL 256GB",price:1299.99},
+  {id:"px11p",fam:"px11p",mfr:"Google",type:"phone",name:"Pixel 11 Pro 256GB",price:1099.99},
+  {id:"px11",fam:"px11",mfr:"Google",type:"phone",name:"Pixel 11 256GB",price:899.99},
+  {id:"razrfold",fam:"razrfold",mfr:"Motorola",type:"phone",name:"razr fold 512GB",price:1699.99},
+  {id:"razr26",fam:"razr26",mfr:"Motorola",type:"phone",name:"razr (2026) 256GB",price:769.99},
+  {id:"ipada16",fam:"ipada16",mfr:"Apple",type:"tablet",name:"iPad (A16) 128GB",price:599.99},
+  {id:"awse3",fam:"awse3",mfr:"Apple",type:"watch",name:"Apple Watch SE 3 40mm",price:299.99}
+];
+var MFRS = ["Apple","Samsung","Google","Motorola"];
+var IPH_PRO = ["duo","18pro","18promax"], IPH_ALL = ["duo","18pro","18promax","17"];
+/* need: port | newline | trade | trade+newline | port4 | watch15 | tab25 | none.  upTo 0 = full retail. */
+var OFFERS = [
+  {id:"tm3",fam:"tmix",label:"iPhone offer · 3 Picks",upTo:1200,picks:3,plans:["loaded"],need:"port",models:IPH_PRO,tag:"picks",
+   detail:"New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months."},
+  {id:"tm2",fam:"tmix",label:"iPhone offer · 2 Picks",upTo:930,picks:2,plans:["more","loaded"],need:"port",models:IPH_ALL,tag:"picks",
+   detail:"New line with a number transfer on T-Mix More or Loaded. Holds 2 Picks per phone for 36 months."},
+  {id:"tm17e",fam:"tmix",label:"iPhone 17e on Us · 4 lines",upTo:0,picks:1,plans:["standard"],need:"port4",models:["17e"],tag:"onus",
+   detail:"Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone."},
+  {id:"ex1200t",fam:"exp",label:"iPhone trade-in offer",upTo:1200,picks:0,plans:["beyond"],need:"trade",models:IPH_PRO,tag:"trade",
+   detail:"Trade in an eligible phone in any condition on Experience Beyond."},
+  {id:"ex1200p",fam:"exp",label:"iPhone new line offer",upTo:1200,picks:0,plans:["beyond"],need:"port",models:IPH_PRO,tag:"newline",
+   detail:"New line with a number transfer on Experience Beyond. No trade-in needed."},
+  {id:"ex930t",fam:"exp",label:"iPhone trade-in offer",upTo:930,picks:0,plans:["more","beyond"],need:"trade",models:IPH_ALL,tag:"trade",
+   detail:"Trade in an eligible phone on Experience More or Beyond."},
+  {id:"ex930p",fam:"exp",label:"iPhone new line offer",upTo:930,picks:0,plans:["more","beyond"],need:"port",models:IPH_ALL,tag:"newline",
+   detail:"New line with a number transfer on Experience More or Beyond."},
+  {id:"px11",fam:"exp",label:"Pixel 11 on Us",upTo:0,picks:0,plans:["more","beyond"],need:"none",models:["px11"],tag:"onus",dated:true,
+   detail:"On most Experience plans. September 2026 offer."},
+  {id:"px11p",fam:"exp",label:"Pixel 11 Pro on Us",upTo:0,picks:0,plans:["more","beyond"],need:"newline",models:["px11p"],tag:"onus",dated:true,
+   detail:"New line on Experience More or Beyond. September 2026 offer."},
+  {id:"px11xl",fam:"exp",label:"Pixel 11 Pro XL on Us",upTo:0,picks:0,plans:["beyond"],need:"trade+newline",models:["px11xl"],tag:"onus",dated:true,
+   detail:"Trade-in and a new line on Experience Beyond. September 2026 offer."},
+  {id:"px11xlm",fam:"exp",label:"Pixel 11 Pro XL offer",upTo:1100,picks:0,plans:["more"],need:"trade+newline",models:["px11xl"],tag:"trade",dated:true,
+   detail:"Trade-in and a new line on Experience More. September 2026 offer."},
+  {id:"s26",fam:"exp",label:"Galaxy S26 on Us",upTo:0,picks:0,plans:["more","beyond"],need:"none",models:["s26"],tag:"onus",dated:true,
+   detail:"No trade-in on most Experience plans. September 2026 offer."},
+  {id:"s26p",fam:"exp",label:"Galaxy S26+ on Us",upTo:0,picks:0,plans:["more","beyond"],need:"newline",models:["s26p"],tag:"onus",dated:true,
+   detail:"New line on Experience More or Beyond. September 2026 offer."},
+  {id:"s26u",fam:"exp",label:"Galaxy S26 Ultra offer",upTo:1100,picks:0,plans:["more","beyond"],need:"newline",models:["s26u"],tag:"newline",dated:true,
+   detail:"New line on Experience More or Beyond. September 2026 offer."},
+  {id:"fold8",fam:"exp",label:"Galaxy Z Fold 8 on Us",upTo:0,picks:0,plans:["beyond"],need:"trade+newline",models:["fold8"],tag:"onus",dated:true,
+   detail:"Trade-in and a new line on Experience Beyond. September 2026 offer."},
+  {id:"flip8",fam:"exp",label:"Galaxy Z Flip 8 offer",upTo:1100,picks:0,plans:["more","beyond"],need:"trade+newline",models:["flip8"],tag:"trade",dated:true,
+   detail:"Trade-in and a new line on Experience More or Beyond. September 2026 offer."},
+  {id:"razr26",fam:"exp",label:"razr (2026) on Us",upTo:0,picks:0,plans:["more","beyond"],need:"none",models:["razr26"],tag:"onus",dated:true,
+   detail:"On an eligible Experience plan. September 2026 offer."},
+  {id:"razrfold",fam:"exp",label:"razr fold offer",upTo:1100,picks:0,plans:["beyond"],need:"newline",models:["razrfold"],tag:"newline",dated:true,
+   detail:"New line on Experience Beyond. September 2026 offer."},
+  {id:"awse3",fam:"any",label:"Apple Watch SE 3 on Us",upTo:300,picks:0,plans:"any",need:"watch15",models:["awse3"],tag:"onus",
+   detail:"New watch line on a $15+/mo watch plan with AutoPay."},
+  {id:"ipad400",fam:"any",label:"iPad (A16) for $199",upTo:400,picks:0,plans:"any",need:"tab25",models:["ipada16"],tag:"newline",
+   detail:"New tablet line on a $25+/mo tablet plan with AutoPay."}
+];
+/* Built-in copy of the offers and devices, used until the live data loads (or when it can't). */
+OFFERS.forEach(function(o){ o.status = "active"; o.starts = null; o.ends = null; o.verified = o.dated ? null : "2026-11-09";
+  o.source = o.dated ? "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" : (o.fam === "tmix" || o.fam === "any" || o.id.indexOf("ex") === 0 ? "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" : ""); });
+MODELS.forEach(function(m){ m.status = "active"; });
+var TRIGGER_ID = "trig_016HvyXxhoRMmKjMn8rTjGET";
+var live = {db:null, mcp:null, offers:null, devices:null, meta:null, state:"loading", checking:false, checkStarted:"", recent:null, recentErr:"", saving:false, saved:null, openErr:"", opening:false};
+function todayStr(){ var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function isActive(o){ return o.status !== "expired" && (!o.ends || o.ends >= todayStr()); }
+function offerPool(){
+  var map = {};
+  (live.offers || OFFERS).forEach(function(o){ map[o.id] = Object.assign({}, o, {expired: !isActive(o)}); });
+  var L = state.loaded;
+  if (L && L.offers) Object.keys(L.offers).forEach(function(id){
+    var cur = map[id], snap = L.offers[id];
+    map[id] = Object.assign({}, snap, {expired: cur ? cur.expired : true, ends: cur ? cur.ends : snap.ends, verified: cur ? cur.verified : snap.verified, dated: cur ? cur.dated : snap.dated, fromQuote:true});
+  });
+  return Object.keys(map).map(function(k){ return map[k]; });
+}
+function activeOffers(){ return offerPool().filter(function(o){ return !o.expired; }); }
+function modelPool(){ return (live.devices || MODELS).filter(function(m){ return m.status !== "retired"; }); }
+function shortDate(s){ try { var p = String(s).slice(0,10).split("-"); return new Date(+p[0], +p[1]-1, +p[2]).toLocaleDateString("en-US",{month:"short",day:"numeric"}); } catch (e) { return s; } }
+function whenStr(iso){
+  try { var d = new Date(iso), now = new Date();
+    var t = d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    if (d.toDateString() === now.toDateString()) return "today " + t;
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year: d.getFullYear() === now.getFullYear() ? undefined : "numeric"}) + ", " + t;
+  } catch (e) { return iso; }
+}
+var TAGS = {picks:"Picks offers", onus:"On Us", trade:"Trade-in offers", newline:"New line offers"};
+var HINT = {
+  rely:{name:"Rely",ap:50,d:"Everyday streaming and browsing"},
+  amplified:{name:"Amplified",ap:60,d:"Faster speeds, mesh access point"},
+  allin:{name:"All-In",ap:70,d:"Top speeds, mesh, streaming perks"}
+};
+var HINT_ORDER = ["rely","amplified","allin"];
+var HINT_VOICE = 20;
+var TYPES = {
+  phone:{label:"Smartphone",voice:true},
+  basic:{label:"Basic Phone",voice:true},
+  tablet:{label:"Tablet",voice:false},
+  watch:{label:"Wearable",voice:false}
+};
+var ICONS = {
+  phone:'<rect x="12" y="4" width="16" height="32" rx="3"/><path d="M18 31h4"/>',
+  basic:'<rect x="13" y="4" width="14" height="32" rx="3"/><rect x="16" y="8" width="8" height="7" rx="1"/><path d="M16.5 20h1M22.5 20h1M16.5 24h1M22.5 24h1M16.5 28h1M22.5 28h1"/>',
+  tablet:'<rect x="5" y="7" width="30" height="26" rx="3"/><path d="M19 29h2"/>',
+  watch:'<rect x="12" y="12" width="16" height="16" rx="4"/><path d="M15 12V5h10v7M15 28v7h10v-7"/>',
+  home:'<path d="M6 19 20 8l14 11"/><path d="M10 16v17h20V16"/><path d="M16 25a6 6 0 0 1 8 0M18.5 28.5a2.2 2.2 0 0 1 3 0"/>'
+};
+function svgIcon(t, cls){ return '<svg class="' + (cls||"") + '" viewBox="0 0 40 40" aria-hidden="true">' + ICONS[t] + '</svg>'; }
+var I = {
+  x:'<svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  plus:'<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  minus:'<svg class="ico" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  up:'<svg class="ico" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>',
+  down:'<svg class="ico" viewBox="0 0 24 24" style="width:16px;height:12px"><path d="m4 8 8 7 8-7"/></svg>',
+  grid:'<svg class="ico" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>',
+  list:'<svg class="ico" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h1M4 12h1M4 18h1"/></svg>',
+  info:'<svg class="ico" viewBox="0 0 24 24" style="width:15px;height:15px;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+};
+
+/* ================= State ================= */
+var gid = 1;
+function newGroup(type, cust){
+  var t = type;
+  return {
+    id:"g" + (gid++), type:t, qty:1, name:"",
+    lineType: TYPES[t].voice ? "port" : "new",
+    dev:{kind: t === "basic" ? "custom" : "new", model: t === "tablet" ? "ipada16" : (t === "watch" ? "awse3" : null),
+         customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"best", customCredit:0, customPicks:0},
+    p360:"0",
+    pay:{method:"eip", term:36, connect:true, down:0},
+    credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
+    cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watchPlus" : null)
+  };
+}
+function exampleState(){
+  gid = 1;
+  var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
+  var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
+  var c = newGroup("watch");
+  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
+    autopay:true, planDiscount:"none", discountsOpen:true, groups:[a,b,c], perks:["netflixAds"],
+    hint:{on:false, plan:"amplified", voice:true, connect:true},
+    set:{salesTax:9, regVoice:5.49, regData:2.60, connect:35, taxOn:false, taxPerLine:3.5}};
+}
+function blankState(){
+  var s = exampleState();
+  gid = 1;
+  s.example = false; s.groups = [newGroup("phone")]; s.perks = []; s.planDiscount = "none"; s.cust = "new";
+  s.hint = {on:false, plan:"amplified", voice:true, connect:true};
+  return s;
+}
+var state = exampleState();
+var ui = {sheet:null, edit:null, mfr:"Apple", tagFilter:null, trayOpen:true, trayTab:"top", confirm:false,
+          mail:{to:"", name:"", sig:"", subj:null, intro:null, err:"", style:"designed"}};
+try { ui.mail.sig = localStorage.getItem(KEY + ".sig") || ""; if (localStorage.getItem(KEY + ".mstyle") === "plain") ui.mail.style = "plain"; } catch (e) {}
+try {
+  var raw = localStorage.getItem(KEY);
+  if (raw) {
+    var o = JSON.parse(raw);
+    if (o && o.v === 2 && Array.isArray(o.groups)) {
+      var d = exampleState();
+      state = Object.assign(d, o);
+      state.set = Object.assign(exampleState().set, o.set || {});
+      state.hint = Object.assign(exampleState().hint, o.hint || {});
+      var mx = 0;
+      state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; });
+      gid = mx + 1;
+    }
+  }
+} catch (e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+/* ================= Helpers ================= */
+function $(s){ return document.querySelector(s); }
+function num(v){ var x = parseFloat(v); return isFinite(x) && x > 0 ? x : 0; }
+function fmt(n){ var neg = n < -0.004; n = Math.abs(n); return (neg ? "−$" : "$") + n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmt0(n){ return "$" + (Math.round(n*100)/100).toLocaleString("en-US",{maximumFractionDigits:2}); }
+function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+function sum(a){ return a.reduce(function(t,x){ return t + x; }, 0); }
+function model(id){
+  if (!id) return null;
+  if (state.loaded && state.loaded.devices && state.loaded.devices[id]) return state.loaded.devices[id];
+  var m = (live.devices || MODELS).filter(function(x){ return x.id === id; })[0];
+  return m || MODELS.filter(function(x){ return x.id === id; })[0] || null;
+}
+function grp(id){ return state.groups.filter(function(g){ return g.id === id; })[0] || null; }
+function planName(fam, id){ return (fam === "tmix" ? TMIX[id] : EXP[id]).full; }
+function cplanOf(g){ var list = CPLANS[g.type]; return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
+
+function ctxOf(s){
+  var fam = s.cust === "new" ? "tmix" : "exp";
+  var pid = fam === "tmix" ? s.planNew : s.planExp;
+  var voice = s.groups.filter(function(g){ return TYPES[g.type].voice; });
+  var newVoice = sum(voice.filter(function(g){ return g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
+  var portVoice = sum(voice.filter(function(g){ return g.lineType === "port"; }).map(function(g){ return g.qty; }));
+  var E = fam === "exp" ? s.existingLines : 0;
+  return {fam:fam, pid:pid, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, E:E, n:E + newVoice,
+          max: (fam === "tmix" ? TMIX[pid] : EXP[pid]).max};
+}
+
+/* Offers that apply to a group's chosen phone, with eligibility */
+function offersFor(g, c){
+  if (g.dev.kind !== "new") return [];
+  var m = model(g.dev.model); if (!m) return [];
+  return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.models || []).indexOf(m.fam) > -1 && (!o.expired || g.dev.offer === o.id); }).map(function(o){
+    var why = "";
+    if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
+    else if (!c.autopay) why = "Needs AutoPay";
+    else if (o.need === "port" && g.lineType !== "port") why = "Needs a number transfer (Box 1)";
+    else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
+    else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
+    else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
+    else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 new lines with number transfers";
+    else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
+    else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
+    var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
+    return {o:o, ok:!why, why:why, credit:credit, expired:!!o.expired};
+  });
+}
+function bestOffer(list){
+  var ok = list.filter(function(x){ return x.ok && !x.expired; });
+  ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
+  return ok[0] || null;
+}
+/* Per-unit device math for a group */
+function devMath(g, c){
+  var r = {retail:0, down:0, fin:0, term:36, eip:0, credit:0, cr:0, due:0, offer:null, name:"", warn:""};
+  if (g.dev.kind === "existing") { r.name = "Customer's own device"; return r; }
+  var m = g.dev.kind === "new" ? model(g.dev.model) : null;
+  r.retail = g.dev.kind === "new" ? (m ? m.price : 0) : num(g.dev.customPrice);
+  r.name = g.dev.kind === "new" ? (m ? m.name : "No device chosen") : (g.dev.customName || "Custom device");
+  if (!r.retail) return r;
+  if (g.pay.method === "full") {
+    r.due = r.retail;
+    if (g.dev.offer !== "full" && g.dev.offer !== "best") r.warn = "Promotions need the installment plan.";
+    return r;
+  }
+  r.down = Math.min(num(g.pay.down), r.retail);
+  r.fin = r.retail - r.down;
+  var off = null;
+  if (g.dev.offer === "custom") {
+    var cc = Math.min(num(g.dev.customCredit), r.fin);
+    if (cc > 0) off = {label:"Custom promo", credit:cc, picks: c.fam === "tmix" ? (+g.dev.customPicks || 0) : 0, custom:true};
+  } else if (g.dev.offer !== "full" && g.dev.kind === "new") {
+    var list = offersFor(g, c), pick = null;
+    if (g.dev.offer === "best") pick = bestOffer(list);
+    else {
+      pick = list.filter(function(x){ return x.o.id === g.dev.offer; })[0] || null;
+      if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.toLowerCase() + "."; pick = null; }
+    }
+    if (pick) off = {label:pick.o.label + (pick.expired ? " (expired)" : ""), credit:Math.min(pick.credit, r.fin), picks:pick.o.picks, id:pick.o.id,
+                     dated:pick.o.dated, expired:pick.expired, verified:pick.o.verified, ends:pick.o.ends, base:pick.o.label};
+  }
+  r.term = off ? 36 : (+g.pay.term || 36);
+  r.eip = r.fin / r.term;
+  if (off) { r.offer = off; r.credit = off.credit; r.cr = off.credit / 36; }
+  return r;
+}
+
+/* ================= Quote math ================= */
+function compute(s){
+  var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid];
+  var W = [], T = [], ONE = [], notes = [], groupsOut = {};
+  var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
+  var portOn = c.fam === "tmix" && s.planDiscount === "port" && allPort;
+  if (c.fam === "tmix" && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
+
+  var pc = null, plan = 0, share = 0;
+  if (c.fam === "tmix") {
+    pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn);
+    if (c.n === 0) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."});
+    else if (!pc) notes.push({t:"bad", m:P.full + " allows up to " + P.max + " phone lines. Remove lines or pick another plan."});
+    else {
+      plan = pc.total; share = pc.total / c.n;
+      W.push({l:P.full + " · " + c.n + " line" + (c.n > 1 ? "s" : ""), a:pc.base, sub: s.autopay ? "AutoPay price" : ""});
+      if (pc.portSave) W.push({l:"Number transfer price", a:-pc.portSave, c:"credit"});
+      if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
+      if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
+    }
+  } else {
+    var before = planCalc("exp", c.pid, c.E, s.autopay, false), after = planCalc("exp", c.pid, c.n, s.autopay, false);
+    if (!after) notes.push({t:"bad", m:P.full + " allows up to " + P.max + " lines."});
+    else if (c.newVoice > 0) {
+      plan = after.total - (before ? before.total : 0); share = plan / c.newVoice;
+      W.push({l:P.full + " · adding " + c.newVoice + " line" + (c.newVoice > 1 ? "s" : ""), a:plan,
+              sub: fmt(before ? before.total : 0) + " for " + c.E + " → " + fmt(after.total) + " for " + c.n + (s.autopay ? "" : " (no AutoPay)")});
+      if (after.est) notes.push({t:"warn", m:"Experience prices for 6+ lines are estimates. Confirm in the account."});
+    }
+  }
+
+  var budget = c.fam === "tmix" && pc ? picksFor(c.pid, c.n) : 0;
+  var promoPicks = 0, retailBuy = 0, cNew = 0, upg = 0;
+  s.groups.forEach(function(g, gi){
+    var q = g.qty, T0 = TYPES[g.type], label = (g.name || T0.label) + (q > 1 ? " ×" + q : "");
+    var out = {lines:[], unit:0, warn:""};
+    if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share, sub:(c.fam === "exp" ? "added " : "") + c.n + " phone line price tier"});
+    if (!T0.voice) {
+      var cp = cplanOf(g), price = cp.ap + (s.autopay ? 0 : 5), okByod = true;
+      if (cp.byod && (cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
+      if (cp.byod && g.dev.kind !== "existing") out.warn = (out.warn ? out.warn + " " : "") + "BYOD pricing needs the customer's own device.";
+      if (g.lineType !== "upgrade") {
+        out.lines.push({l:cp.name, a:price});
+        W.push({l:label + " · " + cp.name, a:price * q, sub: q > 1 ? q + " × " + fmt(price) : ""});
+      }
+      if (!okByod) notes.push({t:"warn", m:out.warn});
+    }
+    var d = devMath(g, c);
+    if (d.warn) { out.warn = (out.warn ? out.warn + " " : "") + d.warn; notes.push({t:"warn", m:label + ": " + d.warn}); }
+    if (d.retail) retailBuy += d.retail * q;
+    if (d.eip) {
+      out.lines.push({l:d.name, a:d.eip, sub:fmt(d.fin) + " over " + d.term + " months"});
+      W.push({l:label + " · " + d.name, a:d.eip * q, sub:(q > 1 ? q + " × " : "") + fmt(d.eip) + " for " + d.term + " mo"});
+    }
+    if (d.cr) {
+      out.lines.push({l:d.offer.label, a:-d.cr, c:"cr"});
+      W.push({l:label + " · " + d.offer.label, a:-d.cr * q, c:"credit", sub:fmt(d.credit) + " over 36 mo" + (d.offer.picks ? " · " + d.offer.picks * q + " Pick" + (d.offer.picks * q > 1 ? "s" : "") : "")});
+      promoPicks += (d.offer.picks || 0) * q;
+      if (d.offer.expired) notes.push({t:"warn", m:d.offer.base + " has ended" + (d.offer.ends ? " (" + shortDate(d.offer.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
+      else if (d.offer.dated) notes.push({t:"info", m:d.offer.base + " wasn't confirmed in the latest promo check" + (d.offer.verified ? " (last confirmed " + shortDate(d.offer.verified) + ")" : "") + ". Check that it's still running."});
+    }
+    if (d.down) T.push({l:label + " down payment", a:d.down * q});
+    if (d.due) T.push({l:label + " · " + d.name + " paid in full", a:d.due * q});
+    var pr = P360.filter(function(x){ return x.v === g.p360; })[0];
+    if (pr && pr.p) { out.lines.push({l:"Protection 360", a:pr.p}); W.push({l:label + " · Protection 360", a:pr.p * q}); }
+    if (g.credit.monthlyOn && num(g.credit.amt)) {
+      var ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[g.credit.type] || "Line";
+      out.lines.push({l:ct + " credit", a:-num(g.credit.amt), c:"cr", sub:"for " + (+g.credit.months || 1) + " months"});
+      W.push({l:label + " · " + ct + " credit", a:-num(g.credit.amt) * q, c:"credit", sub:"for " + (+g.credit.months || 1) + " months"});
+    }
+    if (g.credit.oneOn && num(g.credit.oneAmt)) ONE.push({l:label + " · one-time credit", a:-num(g.credit.oneAmt) * q, c:"credit"});
+    if (g.lineType === "upgrade") upg += q; else if (!T0.voice) cNew += q;
+    if (g.pay.connect) out.connect = true;
+    out.unit = sum(out.lines.map(function(x){ return x.a; }));
+    groupsOut[g.id] = out;
+  });
+
+  var conn = sum(s.groups.filter(function(g){ return g.pay.connect; }).map(function(g){ return g.qty; }));
+  var fee = c.newVoice * num(s.set.regVoice) + cNew * num(s.set.regData);
+  if (fee) W.push({l:"Regulatory & telco recovery fee", a:fee, sub:[c.newVoice ? c.newVoice + " × " + fmt(num(s.set.regVoice)) : "", cNew ? cNew + " × " + fmt(num(s.set.regData)) : ""].filter(Boolean).join(" + ")});
+  if (s.set.taxOn && (c.newVoice + cNew)) W.push({l:"Est. taxes & surcharges", a:(c.newVoice + cNew) * num(s.set.taxPerLine), sub:(c.newVoice + cNew) + " × " + fmt(num(s.set.taxPerLine)), c:"est"});
+
+  var H = [];
+  if (s.hint.on) {
+    var hp = HINT[s.hint.plan], voiceOk = c.fam === "exp" || c.newVoice > 0;
+    H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
+    if (!s.autopay) H.push({l:"No AutoPay", a:5});
+    if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
+    if (s.hint.voice && !voiceOk) notes.push({t:"warn", m:"The Home Internet voice line discount needs a phone line on the account."});
+    if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
+  }
+
+  if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
+  if (retailBuy && num(s.set.salesTax)) T.push({l:"Est. sales tax on devices", a:retailBuy * num(s.set.salesTax) / 100, sub:num(s.set.salesTax) + "% of " + fmt(retailBuy), c:"est"});
+
+  var perkRows = c.fam === "tmix" ? s.perks.map(function(id){ return PERKS.filter(function(p){ return p.id === id; })[0]; }).filter(Boolean)
+    .map(function(p){ return {name:p.name, eff:(p.loadedFree && c.pid === "loaded") ? 0 : p.cost}; }) : [];
+  var used = sum(perkRows.map(function(p){ return p.eff; })) + promoPicks;
+  if (c.fam === "tmix" && used > budget) notes.unshift({t:"bad", m: budget === 0 ? "This plan has no Picks, so perks and Pick-based phone offers can't apply." : "Picks over by " + (used - budget) + ". Drop a perk or offer, or move up a plan."});
+  if (c.fam === "tmix" && c.pid === "loaded" && picksFor("loaded", c.n) && c.n >= 5) notes.push({t:"info", m:"Loaded Pick counts above 4 lines are an estimate."});
+  if (portOn && c.pid === "saver") notes.push({t:"info", m:"Saver's transfer price is paid as bill credits over 36 months."});
+  if (s.hint.on) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
+
+  var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
+  return {c:c, P:P, pc:pc, plan:plan, share:share, W:W, H:H, T:T, ONE:ONE, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
+          budget:budget, used:used, perkRows:perkRows, promoPicks:promoPicks, notes:notes, groups:groupsOut, devices:sum(s.groups.map(function(g){ return g.qty; }))};
+}
+
+/* ================= Rendering: stage ================= */
+function liveLine(){
+  var m = live.meta, txt, cls, btn = "";
+  if (live.offers) {
+    var n = activeOffers().filter(function(o){ return !o.fromQuote || !o.expired; }).length;
+    txt = "Promotions live · " + n + " active · " + (m && m.checkedAt ? "checked " + whenStr(m.checkedAt) : "not checked yet");
+    cls = "on";
+  } else if (live.state === "loading") { txt = "Loading live promotions…"; cls = "wait"; }
+  else if (live.state === "offline") { txt = "Showing promotions as of " + ASOF + ". Live updates work when the page is open in claude.ai."; cls = "off"; }
+  else if (live.state === "live") { txt = "No live promotion data yet. Showing the built-in list from " + ASOF + "."; cls = "wait"; }
+  else { txt = "Can't reach live promotions right now. Showing the built-in list from " + ASOF + "."; cls = "off"; }
+  return '<div class="live"><span class="dot ' + cls + '" aria-hidden="true"></span><span>' + esc(txt) + '</span>' + btn + '</div>' +
+    (live.offers && m && m.summary ? '<p class="livesum">' + esc(m.summary) + '</p>' : '');
+}
+function banner(q){
+  var L = state.loaded; if (!L) return "";
+  var pool = offerPool(), exp = [];
+  Object.keys(L.applied || {}).forEach(function(gid){
+    var o = pool.filter(function(x){ return x.id === L.applied[gid]; })[0];
+    if (o && o.expired) { var t = o.label + (o.ends ? " (ended " + shortDate(o.ends) + ")" : ""); if (exp.indexOf(t) < 0) exp.push(t); }
+  });
+  var differs = Math.abs(q.monthly - (L.monthly || 0)) > 0.009 || Math.abs(q.today - (L.today || 0)) > 0.009;
+  return '<div class="banner" role="status"><div><b class="mono">Quote ' + esc(L.id) + '</b> · saved ' + esc(whenStr(L.savedAt)) + (L.note ? ' · ' + esc(L.note) : '') + '</div>' +
+    (exp.length ? '<p class="bwarn">' + exp.length + ' promotion' + (exp.length > 1 ? 's have' : ' has') + ' ended since this quote was saved: ' + esc(exp.join(", ")) + '. The quote still shows ' + (exp.length > 1 ? 'them' : 'it') + ' as saved, marked expired.</p>'
+                : (Object.keys(L.applied || {}).length ? '<p>Every promotion on this quote is still active.</p>' : '<p>This quote has no promotions applied.</p>')) +
+    (differs ? '<p class="muted">Saved totals were ' + fmt(L.monthly || 0) + '/mo and ' + fmt(L.today || 0) + ' due today. The totals now differ because the quote or pricing changed.</p>' : '') +
+    '<div class="inl"><button class="obtn" data-act="reprice">Reprice with current offers</button><button class="linkbtn" data-act="unload">Close quote</button></div></div>';
+}
+function renderStage(q){
+  var s = state, c = q.c, h = liveLine() + banner(q);
+  h += '<div class="tabs" role="tablist">' +
+    '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
+    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + (s.hint.on ? 1 : 0) + ')</button></div>';
+  var discounts = [];
+  if (q.pc && q.pc.portSave) discounts.push("Number transfer price −" + fmt0(q.pc.portSave));
+  if (!s.autopay) discounts.push("No AutoPay");
+  h += '<div class="band">' +
+    '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
+    '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
+      '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card or bank</option>' +
+      '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
+    '<span class="bchip' + (discounts.length && q.pc && q.pc.portSave ? " on" : "") + '">' + (q.pc && q.pc.portSave ? esc(discounts[0]) : "No additional discounts applied") + '</span></div>';
+
+  if (s.tab === "internet") { h += renderInternet(q); $("#stage").innerHTML = h; return; }
+
+  if (s.discountsOpen) {
+    var portAvail = c.fam === "tmix" && TMIX[c.pid].port[c.n] != null;
+    h += '<div class="dpanel">' +
+      '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
+        '<button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile · T-Mix</button>' +
+        '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing account · Experience</button></div>' +
+        (s.cust === "existing" ? '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Lines already on the account</span><div class="stepper">' +
+          '<button data-act="exlines" data-v="-1" aria-label="Fewer existing lines"' + (s.existingLines <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + s.existingLines + '</output>' +
+          '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (s.existingLines >= 11 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
+          '<p class="fhint">The quote shows what the added lines and devices add to their current bill.</p>' : '<p class="fhint">T-Mix replaced Experience for new customers on Nov 5, 2026.</p>') +
+      '</div>' +
+      '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
+        '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
+        (c.fam === "tmix" ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
+      '</select></div>' +
+      '<p class="fhint">' + (c.fam === "tmix" ? "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number." : "Experience accounts keep their current plan pricing. Use Line Credits in Edit Options for any account-specific credit.") + '</p></div>' +
+    '</div>';
+  }
+
+  var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : "Experience") + ' <small>' + Math.max(c.n,1) + ' phone line tier</small></span>' +
+    order.map(function(id){
+      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, s.planDiscount === "port") : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
+      var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
+      return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : "max " + (c.fam === "tmix" ? TMIX[id].max : 12)) + '</button>';
+    }).join("") + '</div>' +
+    '<div class="tbtns"><button class="obtn" data-act="sheet" data-v="compare">Compare plans</button>' +
+      '<div class="vtog" role="group" aria-label="View"><button data-act="view" data-v="grid" aria-pressed="' + (s.view === "grid") + '" aria-label="Card view">' + I.grid + '</button><button data-act="view" data-v="list" aria-pressed="' + (s.view === "list") + '" aria-label="List view">' + I.list + '</button></div></div></div>';
+
+  if (!s.groups.length) h += '<div class="empty">Nothing on this quote yet. Add a smartphone, tablet or wearable from the tray below.</div>';
+  else h += '<div class="cards' + (s.view === "list" ? " list" : "") + '">' + s.groups.map(function(g, i){ return s.view === "list" ? listRow(g, i, q) : card(g, i, q); }).join("") + '</div>';
+
+  var counts = {phone:0, basic:0, tablet:0, watch:0};
+  s.groups.forEach(function(g){ counts[g.type] += g.qty; });
+  var full = q.devices >= 20, voiceFull = c.newVoice >= c.max - c.E;
+  var tiles = ui.trayTab === "top" ? ["phone","tablet","watch","basic"] : ["tablet","watch"];
+  h += '<section class="tray" aria-label="Add devices">' +
+    '<button class="handle" data-act="tray" aria-expanded="' + ui.trayOpen + '">' + I.down + 'Add devices</button>' +
+    (ui.trayOpen ? '<div class="trayin"><span class="traycount">' + q.devices + '/20 devices added</span>' +
+      '<div class="seg" role="group" aria-label="Device list"><button data-act="traytab" data-v="top" aria-pressed="' + (ui.trayTab === "top") + '">Top Devices</button><button data-act="traytab" data-v="conn" aria-pressed="' + (ui.trayTab === "conn") + '">Connected Devices</button></div>' +
+      '<div class="tiles">' + tiles.map(function(t){
+        var dis = full || (TYPES[t].voice && voiceFull);
+        return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span>' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span>' + TYPES[t].label + '</button>';
+      }).join("") + '</div>' +
+      (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
+    '</div>' : '') + '</section>';
+  $("#stage").innerHTML = h;
+}
+
+function card(g, i, q){
+  var T0 = TYPES[g.type], o = q.groups[g.id], c = q.c;
+  var d = devMath(g, c);
+  var planSel = "";
+  if (T0.voice) {
+    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
+    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="Plan for all phone lines">' + order.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + planName(c.fam, id) + '</option>'; }).join("") + '</select>';
+  } else {
+    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : "") + '>' + p.name + ' · $' + (p.ap + (state.autopay ? 0 : 5)) + '</option>'; }).join("") + '</select>';
+  }
+  var planLines = o.lines.filter(function(x){ return x.l === "Plan" || (!T0.voice && cplanOf(g).name === x.l); });
+  var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
+  var lt = g.lineType === "upgrade" ? "Upgrade" : (g.lineType === "port" ? "Number transfer" : "New line");
+  return '<article class="card"><div class="chead"><div class="ctitle"><span>' + esc(g.name || T0.label) + '</span><button class="x" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>' +
+    '<div class="cdev"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
+    '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
+    '<div class="cbody"><button class="editbtn" data-act="edit" data-v="' + g.id + '">Edit options</button>' + planSel +
+    '<div class="cost"><span class="h">Monthly cost</span>' +
+      (planLines.length ? planLines.map(costRow).join("") : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Existing line, no plan change" : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
+      '<small>' + lt + '</small></div>' +
+    '<div class="cost"><span class="h">' + esc(d.name) + '</span>' + (devLines.length ? devLines.map(costRow).join("") : '<div class="r"><span>Monthly cost</span><span>' + fmt(0) + '</span></div>') +
+      (d.due ? '<small>' + fmt(d.due) + ' due today (paid in full)</small>' : '') +
+      '<div class="r tot"><span>Per line</span><span>' + fmt(o.unit) + (g.qty > 1 ? ' · ×' + g.qty + ' = ' + fmt(o.unit * g.qty) : '') + '</span></div></div>' +
+    (o.warn ? '<span class="cwarn">' + esc(o.warn) + '</span>' : '') +
+    '</div></article>';
+}
+function costRow(x){ return '<div class="r' + (x.c === "cr" ? " cr" : "") + '"><span>' + esc(x.l) + (x.sub ? ' <small>· ' + esc(x.sub) + '</small>' : '') + '</span><span>' + fmt(x.a) + '</span></div>'; }
+function listRow(g, i, q){
+  var T0 = TYPES[g.type], o = q.groups[g.id], d = devMath(g, q.c);
+  return '<div class="lrow"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
+    '<div class="lt"><b>' + esc(g.name || T0.label) + (g.qty > 1 ? ' ×' + g.qty : '') + '</b><span>' + esc(d.name) + (d.offer ? ' · ' + esc(d.offer.label) : '') + '</span></div>' +
+    '<div class="lm">' + fmt(o.unit * g.qty) + '<button data-act="edit" data-v="' + g.id + '">Edit options</button></div></div>';
+}
+
+function renderInternet(q){
+  var s = state, hi = s.hint, voiceOk = q.c.fam === "exp" || q.c.newVoice > 0;
+  return '<div class="panel">' +
+    '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Home Internet to this quote</button>' +
+    '<div class="hint-plans">' + HINT_ORDER.map(function(id){
+      var p = HINT[id], price = p.ap + (s.autopay ? 0 : 5) - (hi.voice && voiceOk ? HINT_VOICE : 0);
+      return '<button class="hplan" data-act="hplan" data-v="' + id + '" aria-pressed="' + (hi.on && hi.plan === id) + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + p.d + '</span><span class="d">' + fmt0(p.ap) + ' with AutoPay' + (hi.voice && voiceOk ? ', ' + fmt0(HINT_VOICE) + ' off with a voice line' : '') + '</span></button>';
+    }).join("") + '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
+      '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Voice line discount ($' + HINT_VOICE + '/mo)<br><small class="muted">Needs a T-Mobile phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
+      '<label class="check" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect ? " checked" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')</span></label>' +
+    '</div><p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>';
+}
+
+/* ================= Rendering: drawers ================= */
+function drawer(title, sub, body, foot, cls){
+  return '<div class="scrim" data-act="close"></div><section class="drawer ' + (cls||"") + '" role="dialog" aria-modal="true" aria-labelledby="dTitle">' +
+    '<div class="dhead"><div><h2 id="dTitle" tabindex="-1">' + title + '</h2>' + (sub ? '<p>' + sub + '</p>' : '') + '</div><button class="close" data-act="close" aria-label="Close">' + I.x + '</button></div>' +
+    '<div class="dbody" id="dbody">' + body + '</div>' + (foot ? '<div class="dfoot">' + foot + '</div>' : '') + '</section>';
+}
+function renderSheet(q){
+  var root = $("#sheetRoot"), s = ui.sheet;
+  if (!s) { root.innerHTML = ""; return; }
+  var prev = $("#dbody"), st = prev ? prev.scrollTop : 0;
+  var html = "";
+  if (s === "review") html = drawer("Review", (state.loaded ? "Quote " + esc(state.loaded.id) + " · " : "") + "Estimate · " + dateStr(), reviewBody(q),
+    '<button class="linkbtn" data-act="sheet" data-v="save">Save quote</button><span class="inl"><button class="obtn" data-act="copy">Copy</button><button class="pbtn" data-act="sheet" data-v="email">Email quote</button></span>');
+  else if (s === "email") {
+    var mp = mailParts(q);
+    html = drawer("Email quote", "Opens Outlook with the quote written", emailBody(q),
+      '<a class="obtn" id="mWeb" href="' + esc(mp.webHref) + '" target="_blank" rel="noopener" data-act="openweb" aria-disabled="' + !mp.ok + '">Outlook.com</a><a class="pbtn" id="mApp" href="' + esc(mp.appHref) + '" data-act="openapp" aria-disabled="' + !mp.ok + '">Open Outlook app</a>');
+  }
+  else if (s === "save") html = drawer("Save quote", live.saved ? "Saved" : "Get a Quote ID to open it later on any device", saveBody(),
+    live.saved ? '<button class="linkbtn" data-act="sheet" data-v="review">Back to review</button><button class="pbtn" data-act="close">Done</button>'
+               : '<button class="linkbtn" data-act="sheet" data-v="review">Back</button><button class="pbtn" data-act="dosave"' + (live.saving ? " disabled" : "") + '>' + (live.saving ? "Saving…" : "Save quote") + '</button>');
+  else if (s === "open") html = drawer("Open quote", "Type a Quote ID or pick a recent quote", openBody(), "");
+  else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
+  else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
+  else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
+  else if (s === "settings") html = drawer("Settings", "Saved quotes, fees and taxes", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
+  else if (s === "edit") {
+    var g = grp(ui.edit);
+    if (!g) { ui.sheet = null; root.innerHTML = ""; return; }
+    var idx = state.groups.indexOf(g);
+    html = drawer("Edit options", esc(g.name || TYPES[g.type].label) + " · group " + (idx+1) + (g.qty > 1 ? " · " + g.qty + " lines" : ""), editBody(g, q),
+      '<button class="linkbtn danger" data-act="remove" data-v="' + g.id + '">Remove group</button><button class="pbtn" data-act="close">Done</button>', "wide");
+  }
+  root.innerHTML = html;
+  var nb = $("#dbody"); if (nb && prev) nb.scrollTop = st;
+}
+
+function reviewBody(q){
+  var s = state, c = q.c;
+  var head = c.fam === "tmix" ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new";
+  var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="mono" style="margin-top:4px">ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
+    '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
+    '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
+    (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
+    (s.set.taxOn ? '' : '<div class="rr off"><span class="l">Taxes &amp; gov\'t surcharges</span><span class="a">not incl.</span></div>') +
+    '<div class="rtotal"><span class="lbl">' + (c.fam === "exp" ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
+    '<div class="rsub">' + (s.set.taxOn ? "includes tax estimate" : "plus taxes &amp; surcharges") + '</div>' +
+    '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
+    '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div>' +
+    (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '');
+  if (c.fam === "tmix") {
+    h += '<div class="rule"></div><div class="rsec">Picks · ' + q.used + ' of ' + q.budget + '</div>';
+    state.groups.forEach(function(g, i){ var d = devMath(g, c); if (d.offer && d.offer.picks) h += '<div class="rr"><span class="l">' + esc((g.name || TYPES[g.type].label) + " " + (i+1)) + ' phone offer</span><span class="a">' + d.offer.picks * g.qty + '</span></div>'; });
+    h += q.perkRows.map(function(p){ return '<div class="rr"><span class="l">' + esc(p.name) + '</span><span class="a">' + (p.eff || "incl.") + '</span></div>'; }).join("");
+    if (!q.used) h += '<div class="rr off"><span class="l">None selected</span><span class="a"></span></div>';
+  }
+  if (q.notes.length) h += '<div class="rule"></div><ul class="notes">' + dedupe(q.notes).map(function(x){ return '<li class="' + x.t + '">' + esc(x.m) + '</li>'; }).join("") + '</ul>';
+  h += '</div><textarea id="copyFallback" readonly hidden aria-label="Quote text"></textarea>';
+  return h;
+}
+function dedupe(a){ var seen = {}; return a.filter(function(x){ if (seen[x.m]) return false; seen[x.m] = 1; return true; }); }
+function rrow(r){ return '<div class="rr' + (r.c ? " " + r.c : "") + '"><span class="l">' + esc(r.l) + (r.sub ? '<small>' + esc(r.sub) + '</small>' : '') + '</span><span class="a">' + fmt(r.a) + '</span></div>'; }
+
+function compareBody(q){
+  var s = state, c = q.c, n = Math.max(c.n, 1);
+  var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
+  var rows = order.map(function(id){
+    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, s.planDiscount === "port" && c.portVoice === c.newVoice) : planCalc("exp", id, n, s.autopay, false);
+    return {id:id, pc:pc, pk: c.fam === "tmix" ? picksFor(id, n) : null};
+  });
+  var max = Math.max.apply(null, rows.map(function(r){ return r.pc ? r.pc.total : 0; }));
+  var cur = rows.filter(function(r){ return r.id === c.pid; })[0];
+  var curT = cur && cur.pc ? cur.pc.total : 0;
+  return '<div class="cmp">' + rows.map(function(r){
+    var name = planName(c.fam, r.id), spec = (c.fam === "tmix" ? TMIX : EXP)[r.id].specs;
+    if (!r.pc) return '<div class="cmprow na"><span class="cl">' + name + '</span><div class="track"></div><span class="cmpval muted">—<small>max ' + (c.fam === "tmix" ? TMIX[r.id].max : 12) + ' lines</small></span></div>';
+    var diff = r.pc.total - curT;
+    return '<button class="cmprow' + (r.id === c.pid ? " cur" : "") + '" data-act="plan" data-v="' + r.id + '" style="width:100%;border:0;background:none;padding:0;text-align:left;color:inherit"><span class="cl">' + name + '<small class="muted" style="display:block;font-weight:400;font-size:12px">' + spec + '</small></span>' +
+      '<div class="track"><div class="fillbar" style="width:' + (max ? r.pc.total / max * 100 : 0).toFixed(1) + '%"></div></div>' +
+      '<span class="cmpval">' + (r.pc.est ? "≈" : "") + fmt0(r.pc.total) + '<small>' + (r.id === c.pid ? "current" : (diff === 0 ? "same" : (diff > 0 ? "+" : "−") + fmt0(Math.abs(diff)))) + (r.pk != null ? " · " + (r.pk ? r.pk + " Pick" + (r.pk > 1 ? "s" : "") : "no Picks") : "") + '</small></span></button>';
+  }).join("") + '</div><p class="fhint">Plan charge for the whole account' + (c.fam === "exp" ? " at " + n + " lines" : "") + '. Devices, protection, connected lines and fees stay the same on every plan. Tap a plan to switch.</p>';
+}
+
+function jobAid(){
+  var steps = [
+    ["Add the devices", "Use the Add Devices tray. Each card is a group of lines with the same setup. Use − and + on a card for more of the same phone."],
+    ["Box 1 · Plan", "Pick the plan and the line type. We assume the customer keeps their number, so number transfer is the default. Picks are set here for T-Mix accounts."],
+    ["Box 2 · Device", "Choose New, Existing (bring their own) or Custom. Pick the promotion first if you like, then the manufacturer and model. Leave the promotion on Best available offer so the quote shows the best price. We assume they have a phone to trade in."],
+    ["Box 3 · Protection", "Add Protection 360 at the device's tier."],
+    ["Box 4 · Payment type", "Keep the installment plan unless they're paying in full. Uncheck the connection charge only when it's waived. Add any down payment."],
+    ["Box 5 · Line credits", "Add a custom monthly credit (port-in, add-a-line or upgrade) and how many months it runs, or a one-time credit."],
+    ["Review and send", "Open Review and check that Picks aren't over. Save the quote, then email it or copy it into a text."]
+  ];
+  return '<div class="aid">' + steps.map(function(s, i){ return '<div class="step"><span class="num">' + (i+1) + '</span><div><h3>' + s[0] + '</h3><p>' + s[1] + '</p></div></div>'; }).join("") + '</div>';
+}
+function menuBody(){
+  return '<div class="menu">' +
+    '<button data-act="sheet" data-v="email">Email quote<small>Opens Outlook with the quote written</small></button>' +
+    '<button data-act="sheet" data-v="open">Open a saved quote<small>Type a Quote ID or pick a recent one</small></button>' +
+    '<button data-act="sheet" data-v="jobaid">Job Aid<small>Step-by-step for building a quote</small></button>' +
+    '<button data-act="sheet" data-v="settings">Settings<small>Saved quotes, sales tax, fees</small></button>' +
+    '<button data-act="example">Load the example quote<small>Replaces what\'s on screen</small></button></div>' +
+    '<div class="srcs"><span>Independent tool, not made by or affiliated with T-Mobile. Prices as of ' + ASOF + '. Confirm in the store system before you quote.</span>' +
+    '<span>Sources: <a href="https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" target="_blank" rel="noopener">T-Mobile holiday offers</a> · <a href="https://www.t-mobile.com/customers/device-add-a-line" target="_blank" rel="noopener">T-Mobile add-a-line pricing</a> · <a href="https://www.droid-life.com/2026/10/26/t-mobile-t-mix-plans-explained-are-they-any-good/" target="_blank" rel="noopener">Droid Life T-Mix breakdown</a> · <a href="https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" target="_blank" rel="noopener">Android Central deals</a> · <a href="https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/" target="_blank" rel="noopener">MacRumors iPhone prices</a> · <a href="https://magentapulse.t-mobile.com/us/en/customer-support/plans/consumer/wearables-iot/t-mobile-watch-plans" target="_blank" rel="noopener">Watch plans</a> · <a href="https://mytmoclaim.com/media/fseb1a2a/ms98691-ny-1125-p23pdf_v24.pdf" target="_blank" rel="noopener">Protection 360 rates</a></span></div>';
+}
+function ghSettingsHtml(){
+  var c = ghCfg(), raw = ghRaw() || {};
+  var dr = ui.ghDraft || {}, owner = dr.owner != null ? dr.owner : (raw.owner || defaultOwner()), repo = dr.repo != null ? dr.repo : (raw.repo || "quick-quote-data");
+  return '<h3 class="eyebrow" style="margin:0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Saved quotes</h3>' +
+    (c ? '<p class="info">' + I.info + '<span>Quotes save to your private repository <b>' + esc(c.owner + "/" + c.repo) + '</b>.</span></p>'
+       : '<p class="info warn">' + I.info + '<span>Quotes save on this device only until you add a GitHub key.</span></p>') +
+    '<div class="fields"><div class="f"><label for="ghOwner">GitHub username</label><input class="tin" id="ghOwner" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="' + esc(owner) + '"></div>' +
+    '<div class="f"><label for="ghRepo">Quotes repository</label><input class="tin" id="ghRepo" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="' + esc(repo) + '"></div>' +
+    '<div class="f full"><label for="ghToken">GitHub key</label><input class="tin" id="ghToken" type="password" autocomplete="off" placeholder="' + (c ? "Saved. Paste a new key to replace it." : "github_pat_…") + '"></div></div>' +
+    '<div class="inl"><button class="obtn" data-act="ghsave">Save and test</button>' + (c ? '<button class="linkbtn danger" data-act="ghclear">Remove key</button>' : '') + '</div>' +
+    (ui.ghStatus ? '<p class="fhint" aria-live="polite">' + esc(ui.ghStatus) + '</p>' : '') +
+    '<p class="fhint">The key stays on this device. Use a key that can only read and write your quotes repository.</p>';
+}
+function settingsBody(){
+  return ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Fees, taxes &amp; rates</h3>' + feesBody();
+}
+function feesBody(){
+  var st = state.set;
+  function mf(id, label, k, v){ return '<div class="f"><label for="' + id + '">' + label + '</label><span class="money"><input class="tin" id="' + id + '" type="number" inputmode="decimal" min="0" step="0.01" data-k="' + k + '" data-t="num" value="' + v + '"></span></div>'; }
+  return '<div class="fields">' +
+    '<div class="f"><label for="sTax">Sales tax on devices (%)</label><input class="tin" id="sTax" type="number" inputmode="decimal" min="0" step="0.01" data-k="set.salesTax" data-t="num" value="' + st.salesTax + '"></div>' +
+    mf("sConn", "Connection charge per line", "set.connect", st.connect) +
+    mf("sRegV", "Regulatory fee, phone line", "set.regVoice", st.regVoice) +
+    mf("sRegD", "Regulatory fee, watch/tablet", "set.regData", st.regData) +
+    mf("sTpl", "Est. taxes & surcharges per line", "set.taxPerLine", st.taxPerLine) +
+    '<label class="check full" for="sTaxOn"><input id="sTaxOn" type="checkbox" data-k="set.taxOn" data-t="bool"' + (st.taxOn ? " checked" : "") + '><span>Add the monthly tax estimate to quotes</span></label></div>' +
+    '<p class="fhint">The regulatory &amp; telco recovery fee rose to $5.49 per phone line and $2.60 per data line on Oct 12, 2026. Sales tax and government surcharges depend on where the store is.</p>';
+}
+
+/* ----- Edit options: numbered boxes ----- */
+function box(n, title, body){ return '<section class="box"><div class="boxh"><span class="num">' + n + '</span>' + title + '</div><div class="boxb">' + body + '</div></section>'; }
+function radio(name, id, val, cur, label, sub, dis, k){
+  return '<label class="radio' + (dis ? " dis" : "") + '" for="' + id + '"><input type="radio" id="' + id + '" name="' + name + '" value="' + val + '" data-k="' + k + '" data-t="str"' + (String(cur) === String(val) ? " checked" : "") + (dis ? " disabled" : "") + '><span>' + label + (sub ? '<small>' + sub + '</small>' : '') + '</span></label>';
+}
+function editBody(g, q){
+  var c = q.c, T0 = TYPES[g.type], b = "";
+  /* Box 1: Plan */
+  var b1 = "";
+  if (T0.voice) {
+    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER, n = Math.max(c.n, 1);
+    b1 += '<div><h4>Choose plan</h4><p class="info">' + I.info + 'Prices below reflect discounts applied and the total number of phone lines on the quote.</p><div class="radios">' +
+      order.map(function(id){
+        var pc = c.fam === "tmix" ? planCalc("tmix", id, n, state.autopay, state.planDiscount === "port" && c.portVoice === c.newVoice) : planCalc("exp", id, n, state.autopay, false);
+        var P = (c.fam === "tmix" ? TMIX : EXP)[id];
+        var pk = c.fam === "tmix" ? picksFor(id, n) : null;
+        return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· up to ' + P.max + ' lines</span>',
+          P.specs + (pk != null ? " · " + (pk ? pk + " Pick" + (pk > 1 ? "s" : "") : "no Picks") : ""), !pc, "__plan");
+      }).join("") + '</div></div>';
+    b1 += '<div><h4>Line type</h4><div class="radios">' +
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "New line · number transfer", "Customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line · new number", "", false, "g." + g.id + ".lineType") +
+      (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "No added plan charge", false, "g." + g.id + ".lineType") : "") +
+      '</div></div>';
+    if (c.fam === "tmix") b1 += picksBlock(q);
+  } else {
+    b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + CPLANS[g.type].map(function(p){
+      var dis = p.byod && p.plans.indexOf(c.pid) < 0;
+      return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + (p.ap + (state.autopay ? 0 : 5)) + '/mo</b> - ' + p.name, p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
+    }).join("") + '</div></div>';
+    b1 += '<div><h4>Line type</h4><div class="radios">' +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "", false, "g." + g.id + ".lineType") +
+      (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "", false, "g." + g.id + ".lineType") : "") + '</div></div>';
+  }
+  b += box(1, "Plan", b1);
+
+  /* Box 2: Device */
+  var b2 = '<div class="f"><label for="gn-' + g.id + '">Device group name <span class="muted" style="font-weight:400">(optional) Max. 100 characters</span></label><input class="tin" id="gn-' + g.id + '" maxlength="100" data-k="g.' + g.id + '.name" data-t="str" value="' + esc(g.name) + '"></div>';
+  b2 += '<div><h4>What type of device?</h4><div class="seg" role="group" aria-label="Device type">' +
+    ["new","existing","custom"].map(function(k){ return '<button data-act="kind" data-g="' + g.id + '" data-v="' + k + '" aria-pressed="' + (g.dev.kind === k) + '"' + (k === "new" && g.type === "basic" ? " disabled" : "") + '>' + {new:"New Device",existing:"Existing Device",custom:"Custom Device"}[k] + '</button>'; }).join("") + '</div></div>';
+  if (g.dev.kind === "existing") b2 += '<p class="info">' + I.info + 'The customer keeps the phone they have. No device charges on this line.</p>';
+  if (g.dev.kind === "custom") {
+    b2 += '<div class="fields"><div class="f"><label for="cn-' + g.id + '">Device name</label><input class="tin" id="cn-' + g.id + '" data-k="g.' + g.id + '.dev.customName" data-t="str" value="' + esc(g.dev.customName) + '"></div>' +
+      '<div class="f"><label for="cpz-' + g.id + '">Full retail price</label><span class="money"><input class="tin" id="cpz-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.dev.customPrice" data-t="num" value="' + (g.dev.customPrice || "") + '"></span></div></div>';
+  }
+  if (g.dev.kind === "new") {
+    var AO = activeOffers();
+    var pool = modelPool().filter(function(m){ return m.type === (g.type === "basic" ? "phone" : g.type); });
+    var tagsHere = {};
+    pool.forEach(function(m){ AO.forEach(function(o){ if ((o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1) tagsHere[o.tag] = 1; }); });
+    var mfrsHere = MFRS.filter(function(f){ return pool.some(function(m){ return m.mfr === f; }); });
+    var mf = mfrsHere.indexOf(ui.mfr) > -1 ? ui.mfr : mfrsHere[0];
+    b2 += '<div><h4 class="muted" style="font-weight:500">Filter by promotion (optional):</h4><div class="chips">' + Object.keys(TAGS).filter(function(t){ return tagsHere[t]; }).map(function(t){ return '<button class="chip" data-act="tagf" data-v="' + t + '" aria-pressed="' + (ui.tagFilter === t) + '">' + TAGS[t] + '</button>'; }).join("") + '</div></div>';
+    if (mfrsHere.length > 1) b2 += '<div><h4 class="muted" style="font-weight:500">Filter by popular manufacturer (optional):</h4><div class="chips">' + mfrsHere.map(function(f){ return '<button class="chip" data-act="mfr" data-v="' + f + '" aria-pressed="' + (mf === f) + '">' + f + '</button>'; }).join("") + '</div></div>';
+    var shown = pool.filter(function(m){ return m.mfr === mf || mfrsHere.length < 2; }).filter(function(m){
+      if (!ui.tagFilter) return true;
+      return AO.some(function(o){ return o.tag === ui.tagFilter && (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
+    });
+    b2 += '<div><h4>Choose model</h4><div class="mlist" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf) + '</div>' +
+      (shown.length ? shown.map(function(m){
+        var has = AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
+        return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
+      }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div></div>';
+    if (c.fam === "exp") b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small></span></label>';
+  }
+  if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
+  b += box(2, "Device", b2);
+
+  /* Box 3: Protection */
+  b += box(3, "Protection", '<div class="f"><label for="p3-' + g.id + '">Protection 360</label><select id="p3-' + g.id + '" data-k="g.' + g.id + '.p360" data-t="str">' + P360.map(function(o){ return '<option value="' + o.v + '"' + (g.p360 === o.v ? " selected" : "") + '>' + o.label + '</option>'; }).join("") + '</select></div><p class="info">' + I.info + 'Monthly price depends on the device tier. Check the tier in the store system.</p>');
+
+  /* Box 4: Payment type */
+  var d = devMath(g, c), hasPromo = !!d.offer;
+  var b4 = '<div class="seg" role="group" aria-label="Payment type"><button data-act="pay" data-g="' + g.id + '" data-v="eip" aria-pressed="' + (g.pay.method === "eip") + '">T-Mobile Installment Plan</button><button data-act="pay" data-g="' + g.id + '" data-v="full" aria-pressed="' + (g.pay.method === "full") + '"' + (hasPromo ? " disabled" : "") + '>Pay in Full</button></div>';
+  if (hasPromo) b4 += '<p class="info">* The applied promotion needs an installment plan. To pay in full, remove the promotion in Box 2.</p>';
+  if (g.pay.method === "eip" && g.dev.kind !== "existing") b4 += '<div class="fields"><div class="f"><label for="tm-' + g.id + '">Installment term</label><select id="tm-' + g.id + '" data-k="g.' + g.id + '.pay.term" data-t="num"' + (hasPromo ? " disabled" : "") + '><option value="36"' + (+g.pay.term === 36 || hasPromo ? " selected" : "") + '>36 months</option><option value="24"' + (+g.pay.term === 24 && !hasPromo ? " selected" : "") + '>24 months</option></select></div>' +
+    '<div class="f"><label for="dp-' + g.id + '">Down payment amount <span class="muted" style="font-weight:400">(optional)</span></label><span class="money"><input class="tin" id="dp-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.pay.down" data-t="num" value="' + (g.pay.down || "") + '"></span></div></div>';
+  b4 += '<label class="check" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect ? " checked" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">Applies to new lines and upgrades. Uncheck only where it\'s waived.</small></span></label>';
+  b += box(4, "Payment Type", b4);
+
+  /* Box 5: Line credits */
+  var cr = g.credit;
+  var b5 = '<p class="info warn">' + I.info + 'This credit applies to the line charges. Credits may take up to 2 bill cycles to appear.</p><h4>Apply a line credit?</h4>' +
+    '<label class="check" for="cm-' + g.id + '"><input id="cm-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.credit.monthlyOn" data-t="bool"' + (cr.monthlyOn ? " checked" : "") + '><span><b>Custom Monthly Credit</b></span></label>';
+  if (cr.monthlyOn) b5 += '<div class="subpanel"><div><h4>What type of credit is this?</h4><div class="radios">' +
+      radio("ct-" + g.id, "ct-" + g.id + "-port", "port", cr.type, "Port-In", "", false, "g." + g.id + ".credit.type") +
+      radio("ct-" + g.id, "ct-" + g.id + "-aal", "aal", cr.type, "Add a Line", "", false, "g." + g.id + ".credit.type") +
+      radio("ct-" + g.id, "ct-" + g.id + "-up", "upgrade", cr.type, "Upgrade", "", false, "g." + g.id + ".credit.type") + '</div></div>' +
+    '<div><label class="flabel" for="ca-' + g.id + '">How much is the credit?</label><div class="inl"><span class="money"><input class="tin sm" id="ca-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.credit.amt" data-t="num" value="' + (cr.amt || "") + '"></span>per month</div></div>' +
+    '<div><label class="flabel" for="cmo-' + g.id + '">How long should this credit apply?</label><div class="inl"><input class="tin sm" id="cmo-' + g.id + '" type="number" inputmode="numeric" min="1" max="36" step="1" data-k="g.' + g.id + '.credit.months" data-t="num" value="' + (cr.months || 36) + '" style="max-width:100px">month(s)</div></div>' +
+    '<div><h4>Quote preview</h4><p class="info" style="margin:0 0 8px">This is how the credit will look in the quote.</p><div id="crprev">' + creditPreview(g) + '</div></div></div>';
+  b5 += '<label class="check" for="co-' + g.id + '"><input id="co-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.credit.oneOn" data-t="bool"' + (cr.oneOn ? " checked" : "") + '><span><b>Custom One-Time Credit</b></span></label>';
+  if (cr.oneOn) b5 += '<div class="subpanel"><div><label class="flabel" for="coa-' + g.id + '">How much is the credit?</label><span class="money"><input class="tin sm" id="coa-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.credit.oneAmt" data-t="num" value="' + (cr.oneAmt || "") + '"></span></div></div>';
+  b += box(5, "Line Credits", b5);
+  return b;
+}
+function creditPreview(g){
+  var cr = g.credit, ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[cr.type], mo = +cr.months || 1;
+  return '<div class="preview"><span>' + ct + ' Credit (' + mo + ' month' + (mo > 1 ? "s" : "") + ')</span><span>' + fmt(-num(cr.amt)) + '<i>for ' + mo + ' month' + (mo > 1 ? "s" : "") + (g.qty > 1 ? ' · ×' + g.qty + ' lines' : '') + '</i></span></div>';
+}
+function devCalc(g, q){
+  var c = q.c, d = devMath(g, c);
+  if (g.dev.kind === "new" && !g.dev.model) return '<p class="info">' + I.info + 'Choose a model to see pricing and promotions.</p>';
+  if (!d.retail) return g.dev.kind === "custom" ? '<p class="info">' + I.info + 'Enter the full retail price.</p>' : '';
+  var h = '<div class="devsel">';
+  if (g.dev.kind === "new") h += '<div class="dsname"><span>' + esc(d.name) + (offersFor(g, c).length ? ' - Offer Available' : '') + '</span><button class="linkbtn" data-act="model" data-g="' + g.id + '" data-v="">Remove</button></div>';
+  var promoPrice = Math.max(0, d.retail - d.credit);
+  h += '<div class="prices"><span>Full Retail Price: ' + (d.credit ? '<s>' + fmt(d.retail) + '</s>' : fmt(d.retail)) + '</span>' + (d.credit ? '<span>Promo Price: <b>' + fmt(promoPrice) + '</b></span>' : '') + '</div>';
+  if (g.pay.method === "full") h += '<div class="brk"><div class="r tot"><span>Due today (paid in full)</span><span>' + fmt(d.retail) + '</span></div></div>';
+  else {
+    h += '<div class="brk"><div class="r"><span>Full retail monthly installments</span><span>' + fmt(d.eip) + '</span></div>' +
+      (d.cr ? '<div class="r cr"><span>' + esc(d.offer.label) + '</span><span>' + fmt(-d.cr) + '</span></div>' : '') +
+      '<div class="r tot"><span>Monthly device installment</span><span>' + fmt(d.eip - d.cr) + '</span></div></div>' +
+      '<p class="info">' + I.info + 'Device costs only. Excludes down payment and line credits.' + (d.offer && d.offer.picks ? ' Uses ' + d.offer.picks + ' Pick' + (d.offer.picks > 1 ? 's' : '') + ' per line.' : '') + '</p>';
+  }
+  if (d.warn) h += '<p class="info warn">' + esc(d.warn) + '</p>';
+  var list = g.dev.kind === "new" ? offersFor(g, c) : [];
+  var best = bestOffer(list);
+  var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
+  h += '<div><h4>Apply a promotion?</h4><div class="radios">';
+  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / 36) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
+  list.forEach(function(x){
+    var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
+      : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
+    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, esc(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / 36) + "/mo credit)",
+      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k);
+  });
+  h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
+  h += radio(nm, nm + "-full", "full", g.dev.offer, "Full Retail Price", "", false, k);
+  h += '</div>';
+  if (g.dev.offer === "custom") h += '<div class="subpanel" style="margin-top:8px"><div class="fields"><div class="f"><label for="cc2-' + g.id + '">Total promo credit</label><span class="money"><input class="tin" id="cc2-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.dev.customCredit" data-t="num" value="' + (g.dev.customCredit || "") + '"></span></div>' +
+    (c.fam === "tmix" ? '<div class="f"><label for="cpk-' + g.id + '">Picks it holds per line</label><select id="cpk-' + g.id + '" data-k="g.' + g.id + '.dev.customPicks" data-t="num">' + [0,1,2,3].map(function(v){ return '<option value="' + v + '"' + ((+g.dev.customPicks||0) === v ? " selected" : "") + '>' + v + '</option>'; }).join("") + '</select></div>' : '') +
+    '</div><p class="info" style="margin:0">Spread as monthly bill credits over 36 months.</p></div>';
+  h += '</div></div>';
+  return h;
+}
+function picksBlock(q){
+  var s = state, budget = q.budget, used = q.used, total = Math.max(budget, used), cells = "";
+  for (var k = 0; k < total; k++) cells += '<span class="cell ' + (k < Math.min(used, budget) ? "on" : (k >= budget ? "over" : "")) + '"></span>';
+  var dis = budget === 0;
+  function chip(p){
+    if (p.loadedFree && q.c.pid === "loaded") return '<span class="pchip locked">' + p.name + ' <span class="pc">incl.</span></span>';
+    return '<button class="pchip" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (s.perks.indexOf(p.id) > -1) + '"' + (dis ? " disabled" : "") + '>' + p.name + ' <span class="pc">' + p.cost + '</span></button>';
+  }
+  return '<div><div class="picksrow"><h4 style="margin:0">Account Picks</h4><span><b>' + used + '</b> of ' + budget + ' used</span></div>' +
+    (cells ? '<div class="meter" style="margin:8px 0 10px">' + cells + '</div>' : '<p class="info">This plan has no Picks.</p>') +
+    '<div class="chips">' + PERKS.map(chip).join("") + '</div>' +
+    '<p class="info" style="margin-top:8px">Picks belong to the whole account. Phone offers hold their Picks for the promo period. Partner Picks can be swapped in the quarterly Remix windows.</p></div>';
+}
+
+/* ================= Saved quotes ================= */
+/* Quotes save to a private GitHub repository when a key is set in Settings, otherwise on this device. */
+var GH_KEY = KEY + ".gh", LOCAL_Q = KEY + ".quotes";
+function ghRaw(){ try { return JSON.parse(localStorage.getItem(GH_KEY) || "null"); } catch (e) { return null; } }
+function ghCfg(){ var c = ghRaw(); return c && c.token && c.owner && c.repo ? c : null; }
+function defaultOwner(){ var h = location.hostname || ""; return /\.github\.io$/i.test(h) ? h.replace(/\.github\.io$/i, "") : ""; }
+function b64enc(s){ var u = new TextEncoder().encode(s), b = ""; for (var i = 0; i < u.length; i += 0x8000) b += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(b); }
+function b64dec(s){ var b = atob(String(s).replace(/\s/g, "")), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new TextDecoder().decode(u); }
+function ghFetch(c, path, opts){
+  opts = opts || {};
+  return fetch("https://api.github.com/repos/" + encodeURIComponent(c.owner) + "/" + encodeURIComponent(c.repo) + path, {
+    method: opts.method || "GET", cache: "no-store",
+    headers: {"Authorization": "Bearer " + c.token, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  }).then(function(r){
+    if (r.status === 404 && opts.allow404) return null;
+    if (!r.ok) { var e = new Error("github_" + r.status); e.status = r.status; throw e; }
+    return r.json();
+  });
+}
+function ghGet(c, file){ return ghFetch(c, "/contents/" + file, {allow404:true}).then(function(f){ return f ? {sha:f.sha, data:JSON.parse(b64dec(f.content))} : null; }); }
+function ghPut(c, file, data, sha, msg){ return ghFetch(c, "/contents/" + file, {method:"PUT", body:{message:msg, content:b64enc(JSON.stringify(data)), sha:sha || undefined}}); }
+function ghError(e){
+  var s = e && e.status;
+  if (s === 401) return "The GitHub key isn't working. Check it in Settings.";
+  if (s === 403) return "The GitHub key can't save to that repository. Check its permissions in Settings.";
+  if (s === 404) return "Can't find that repository. Check the username and repository name in Settings.";
+  return "Couldn't reach GitHub. Check your connection and try again.";
+}
+function byDate(a, b){ return String(b.savedAt || "").localeCompare(String(a.savedAt || "")); }
+function localQuotes(){ try { return JSON.parse(localStorage.getItem(LOCAL_Q) || "{}") || {}; } catch (e) { return {}; } }
+function localPut(doc){
+  var all = localQuotes(); all[doc.id] = doc;
+  Object.keys(all).map(function(k){ return all[k]; }).sort(byDate).slice(200).forEach(function(x){ delete all[x.id]; });
+  try { localStorage.setItem(LOCAL_Q, JSON.stringify(all)); return true; } catch (e) { return false; }
+}
+function indexEntry(d){ return {id:d.id, savedAt:d.savedAt, headline:d.headline, note:d.note, monthly:d.monthly}; }
+var Quotes = {
+  exists: function(id){
+    var c = ghCfg();
+    if (!c) return Promise.resolve(!!localQuotes()[id]);
+    return ghFetch(c, "/contents/quotes/" + id + ".json", {allow404:true}).then(function(f){ return !!f; });
+  },
+  get: function(id){
+    var c = ghCfg(), loc = localQuotes()[id] || null;
+    if (!c) return Promise.resolve(loc);
+    return ghGet(c, "quotes/" + id + ".json").then(function(r){ return r ? r.data : loc; });
+  },
+  save: function(doc){
+    var c = ghCfg();
+    if (!c) return localPut(doc) ? Promise.resolve(doc) : Promise.reject({code:"local_full"});
+    return ghPut(c, "quotes/" + doc.id + ".json", doc, null, "Save quote " + doc.id).then(function(){
+      localPut(doc);
+      function addToIndex(tries){
+        return ghGet(c, "quotes/index.json").then(function(r){
+          var list = r && Array.isArray(r.data) ? r.data : [];
+          list = [indexEntry(doc)].concat(list.filter(function(x){ return x.id !== doc.id; })).slice(0, 2000);
+          return ghPut(c, "quotes/index.json", list, r ? r.sha : null, "List quote " + doc.id);
+        }).catch(function(e){ if (tries > 0 && (e.status === 409 || e.status === 422)) return addToIndex(tries - 1); throw e; });
+      }
+      return addToIndex(2).then(function(){ return doc; }, function(){ return doc; });
+    });
+  },
+  recent: function(){
+    var c = ghCfg();
+    if (!c) { var all = localQuotes(); return Promise.resolve(Object.keys(all).map(function(k){ return indexEntry(all[k]); }).sort(byDate).slice(0, 25)); }
+    return ghGet(c, "quotes/index.json").then(function(r){ return (r && Array.isArray(r.data) ? r.data : []).slice(0, 25); });
+  }
+};
+function saveWhere(){
+  var c = ghCfg();
+  return c ? '<p class="info">' + I.info + '<span>Saves to your private repository <b>' + esc(c.owner + "/" + c.repo) + '</b>, so the Quote ID opens on any device.</span></p>'
+           : '<p class="info warn">' + I.info + '<span>Saves on this device only. To open Quote IDs on any device, add your GitHub key in Settings.</span></p>';
+}
+function saveBody(){
+  if (live.saved) return '<div><span class="flabel">Quote ID</span><div class="qid" id="savedId">' + esc(live.saved.id) + '</div>' +
+    '<p class="fhint">Saved ' + esc(whenStr(live.saved.savedAt)) + '. Tap Open quote and type this ID to pull up this exact quote.</p></div>' +
+    '<div class="inl"><button class="obtn" data-act="copyid">Copy ID</button><button class="pbtn" data-act="sheet" data-v="email">Email quote</button></div>';
+  var q = compute(state);
+  return '<div class="f"><label for="qNote">Note <span class="muted" style="font-weight:400">(optional)</span></label><input class="tin" id="qNote" maxlength="80" autocomplete="off" placeholder="e.g. Smith family, 3 lines"></div>' +
+    '<div class="preview"><span>' + esc(q.P.full) + ' · ' + q.devices + ' device' + (q.devices === 1 ? "" : "s") + '</span><span>' + fmt(q.monthly) + '<i>' + fmt(q.today) + ' due today</i></span></div>' +
+    saveWhere() +
+    '<p class="fhint">The quote is saved with its prices and promotions exactly as they are now. If a promotion ends later, the saved quote still shows it, marked expired.</p>';
+}
+function openBody(){
+  var h = '<form id="openForm" class="inl" autocomplete="off"><label class="sr" for="qId">Quote ID</label><input class="tin qidin" id="qId" maxlength="5" autocapitalize="characters" spellcheck="false" placeholder="E6BGH"><button class="pbtn" type="submit"' + (live.opening ? " disabled" : "") + '>' + (live.opening ? "Opening…" : "Open") + '</button></form>' +
+    (live.openErr ? '<p class="info warn">' + esc(live.openErr) + '</p>' : '') +
+    (state.groups.length && !state.example ? '<p class="fhint">Opening a quote replaces what\'s on screen. Save it first if you need it.</p>' : '');
+  h += '<h3 class="eyebrow" style="margin:6px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Recent quotes</h3>';
+  if (!live.recent) h += '<p class="fhint">' + esc(live.recentErr || "Loading recent quotes…") + '</p>';
+  else if (!live.recent.length) h += '<p class="fhint">No saved quotes yet. Save one from Review.</p>';
+  else h += '<div class="menu">' + live.recent.map(function(r){
+    return '<button data-act="openid" data-v="' + esc(r.id) + '"><span class="qrow"><b class="mono">' + esc(r.id) + '</b><span>' + fmt(r.monthly || 0) + '/mo</span></span><small>' + esc(whenStr(r.savedAt)) + ' · ' + esc(r.headline || "") + (r.note ? ' · ' + esc(r.note) : '') + '</small></button>';
+  }).join("") + '</div>';
+  return h;
+}
+function loadRecent(){
+  live.recent = null; live.recentErr = "";
+  Quotes.recent().then(function(list){ live.recent = list; renderSoon(); },
+    function(e){ live.recentErr = ghError(e) + " You can still open a quote by ID."; renderSoon(); });
+}
+function genId(){
+  var A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", s = "", r = new Uint32Array(5);
+  try { crypto.getRandomValues(r); } catch (e) { for (var j = 0; j < 5; j++) r[j] = Math.floor(Math.random() * 4294967295); }
+  for (var i = 0; i < 5; i++) s += A[r[i] % A.length];
+  return s;
+}
+function round2(n){ return Math.round(n * 100) / 100; }
+function doSave(note){
+  if (live.saving) return;
+  live.saving = true; renderAll();
+  var q = compute(state), applied = {}, offers = {}, devices = {}, pool = offerPool();
+  state.groups.forEach(function(g){
+    var d = devMath(g, q.c);
+    if (d.offer && d.offer.id) {
+      applied[g.id] = d.offer.id;
+      var o = pool.filter(function(x){ return x.id === d.offer.id; })[0];
+      if (o) offers[o.id] = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models, tag:o.tag || "",
+                             status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
+    }
+    var m = g.dev.kind === "new" ? model(g.dev.model) : null;
+    if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price};
+  });
+  var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
+  var headline = q.c.fam === "tmix" ? q.P.full + ", " + q.c.n + " line" + (q.c.n === 1 ? "" : "s") : q.P.full + ", adding " + q.c.newVoice + " to " + q.c.E;
+  var tries = 0;
+  function attempt(){
+    var id = genId();
+    return Quotes.exists(id).then(function(ex){
+      if (ex && ++tries < 6) return attempt();
+      return Quotes.save({id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
+                          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE}});
+    });
+  }
+  attempt().then(function(doc){
+    live.saving = false; live.saved = {id:doc.id, savedAt:doc.savedAt};
+    applyQuote(doc);
+    renderAll();
+  }, function(e){
+    live.saving = false;
+    toast(e && e.code === "local_full" ? "This device's quote storage is full. Add your GitHub key in Settings to keep saving." : ghError(e));
+    renderAll();
+  });
+}
+function applyQuote(d){
+  var src = d.state || {}, s = Object.assign(exampleState(), JSON.parse(JSON.stringify(src)));
+  s.set = Object.assign(exampleState().set, src.set || {});
+  s.hint = Object.assign(exampleState().hint, src.hint || {});
+  s.example = false;
+  s.loaded = {id:d.id, savedAt:d.savedAt, note:d.note || "", offers:d.offers || {}, devices:d.devices || {}, applied:d.applied || {}, monthly:d.monthly, today:d.today};
+  s.groups.forEach(function(g){
+    if (s.loaded.applied[g.id]) g.dev.offer = s.loaded.applied[g.id];
+    else if (g.dev.offer === "best") g.dev.offer = "full";
+  });
+  state = s;
+  var mx = 0; state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; }); gid = mx + 1;
+}
+function doOpen(raw){
+  if (live.opening) return;
+  var id = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (id.length !== 5) { live.openErr = "Quote IDs are 5 letters and numbers, like E6BGH."; renderAll(); return; }
+  live.opening = true; live.openErr = ""; renderAll();
+  Quotes.get(id).then(function(d){
+    live.opening = false;
+    if (!d) { live.openErr = "No saved quote has the ID " + id + (ghCfg() ? "" : " on this device") + ". Check the letters and try again."; renderAll(); return; }
+    applyQuote(d); ui.sheet = null; ui.edit = null; state.tab = "wireless"; resetMail();
+    toast("Opened quote " + id + ".");
+    renderAll(); window.scrollTo(0, 0);
+  }, function(e){ live.opening = false; live.openErr = ghError(e); renderAll(); });
+}
+
+/* ================= Live data ================= */
+var _rs = 0;
+function renderSoon(){
+  if (_rs) return;
+  _rs = setTimeout(function(){
+    _rs = 0;
+    var a = document.activeElement;
+    if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA") && a.type !== "checkbox" && a.type !== "radio") renderLive();
+    else renderAll();
+  }, 30);
+}
+/* promos.json sits next to this page. The daily promo check updates it. */
+function startLive(){
+  startLive._t = Date.now();
+  fetch("promos.json?t=" + Date.now(), {cache:"no-store"}).then(function(r){
+    if (!r.ok) throw new Error("promos_" + r.status);
+    return r.json();
+  }).then(function(d){
+    var offers = (d.offers || []).filter(function(o){ return o && o.label && Array.isArray(o.models); });
+    var devices = (d.devices || []).filter(function(m){ return m && m.name && typeof m.price === "number"; });
+    live.offers = offers.length ? offers : null;
+    live.devices = devices.length ? devices : null;
+    live.meta = d.meta || null;
+    live.state = "live";
+    renderSoon();
+  }, function(){ live.state = "error"; renderSoon(); });
+}
+document.addEventListener("visibilitychange", function(){
+  if (document.visibilityState === "visible" && Date.now() - (startLive._t || 0) > 10 * 60 * 1000) startLive();
+});
+
+/* ================= Email ================= */
+var EMAIL_RE = /^[A-Za-z0-9._+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
+var FROM = "lincknik@outlook.com";
+var DEFAULT_INTRO = "Thanks for talking with me today. Here's the quote we went over.";
+var BAD_EMAIL = "Check the email address. It should look like name@example.com.";
+function resetMail(){ ui.mail.to = ""; ui.mail.name = ""; ui.mail.subj = null; ui.mail.intro = null; ui.mail.err = ""; }
+function currentId(q){
+  var L = state.loaded; if (!L) return null;
+  return (Math.abs(q.monthly - (L.monthly || 0)) < 0.01 && Math.abs(q.today - (L.today || 0)) < 0.01) ? L.id : null;
+}
+function defaultSubject(id){ return "Your T-Mobile quote" + (id ? " (Quote " + id + ")" : ""); }
+function quoteHead(q){
+  var c = q.c;
+  var extra = sum(state.groups.filter(function(g){ return !TYPES[g.type].voice && g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
+  var head = c.fam === "tmix" ? q.P.full + ", " + c.n + " phone line" + (c.n === 1 ? "" : "s")
+                              : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s");
+  if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
+  if (state.hint.on) head += " + 5G Home Internet";
+  return head;
+}
+/* Customer-facing row labels: drop the rep's group name ("Smartphone ×2 · ") and show the count at the end. */
+function emailRows(rows){
+  var pre = state.groups.map(function(g){ return {p:(g.name || TYPES[g.type].label) + (g.qty > 1 ? " ×" + g.qty : ""), n:g.qty}; });
+  return rows.map(function(r){
+    var l = r.l;
+    for (var i = 0; i < pre.length; i++) {
+      var p = pre[i].p, x = pre[i].n > 1 ? " ×" + pre[i].n : "";
+      if (l.indexOf(p + " · ") === 0) { l = l.slice(p.length + 3) + x; break; }
+      if (l === p + " down payment") { l = "Down payment" + x; break; }
+    }
+    return {l:l, a:r.a, sub:r.sub || "", c:r.c};
+  });
+}
+function mailBits(q, m){
+  var c = q.c, nm = (m.name || "").trim();
+  return {
+    hi: nm ? "Hi " + nm + "," : "Hi,",
+    intro: (m.intro != null ? m.intro : DEFAULT_INTRO).trim(),
+    sig: (m.sig || "").trim(),
+    id: currentId(q),
+    head: quoteHead(q),
+    monthLabel: c.fam === "exp" ? "Added to your monthly bill" : "Estimated monthly",
+    taxNote: state.set.taxOn ? "Includes estimated taxes" : "Plus taxes and surcharges",
+    W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
+    perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
+    fine: "This is an estimate using pricing as of " + dateStr() + ". Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed."
+  };
+}
+function emailText(q, m){
+  var b = mailBits(q, m), out = [b.hi, ""];
+  if (b.intro) out.push(b.intro, "");
+  out.push(b.monthLabel.toUpperCase() + ": " + fmt(q.monthly) + "/mo (" + b.taxNote.toLowerCase() + ")");
+  out.push("DUE TODAY: " + fmt(q.today));
+  out.push(b.head);
+  if (b.id) out.push("Quote ID: " + b.id + " (mention it if you come back in)");
+  function sec(title, rows){
+    if (!rows.length) return;
+    out.push("", title);
+    rows.forEach(function(r){ out.push("- " + r.l + ": " + fmt(r.a) + (r.sub ? " (" + r.sub + ")" : "")); });
+  }
+  sec("MONTHLY BREAKDOWN", b.W);
+  sec("HOME INTERNET", b.H);
+  sec("DUE TODAY", b.T);
+  sec("ONE-TIME BILL CREDITS", b.ONE);
+  if (b.perks.length) out.push("", "INCLUDED WITH YOUR PICKS", b.perks.join(", "));
+  out.push("", b.fine);
+  if (b.sig) out.push("", b.sig);
+  return out.join("\n");
+}
+/* Designed version for the Outlook app: inline styles and tables only, so mail apps keep the layout. */
+function emailHtml(q, m){
+  var b = mailBits(q, m);
+  var MUT = "#5B6670", INK = "#16202A", ACC = "#2742D1", GOOD = "#0E7A54", LINE = "#E3E7EC", SOFT = "#F1F3F9";
+  var CAP = "font-size:11px;letter-spacing:1px;color:" + MUT + ";font-weight:700;";
+  function para(t){ return '<p style="margin:0 0 14px">' + esc(t).replace(/\n/g, "<br>") + '</p>'; }
+  function sec(title, rows){
+    if (!rows.length) return "";
+    var h = '<tr><td colspan="2" style="' + CAP + 'padding:22px 0 6px;border-bottom:2px solid ' + LINE + '">' + esc(title.toUpperCase()) + '</td></tr>';
+    rows.forEach(function(r){
+      h += '<tr><td style="padding:9px 12px 9px 0;border-bottom:1px solid ' + LINE + ';vertical-align:top">' + esc(r.l) +
+        (r.sub ? '<br><span style="font-size:12px;color:' + MUT + '">' + esc(r.sub) + '</span>' : '') + '</td>' +
+        '<td align="right" style="padding:9px 0;border-bottom:1px solid ' + LINE + ';vertical-align:top;white-space:nowrap;font-weight:700;color:' + (r.a < 0 ? GOOD : INK) + '">' + fmt(r.a) + '</td></tr>';
+    });
+    return h;
+  }
+  return '<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:' + INK + ';max-width:560px">' +
+    para(b.hi) + (b.intro ? para(b.intro) : '') +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;background:' + SOFT + ';border-radius:12px"><tr><td style="padding:20px 22px">' +
+      '<div style="' + CAP + '">' + esc(b.monthLabel.toUpperCase()) + '</div>' +
+      '<div style="font-size:40px;line-height:1.1;font-weight:800;color:' + ACC + ';margin-top:2px">' + fmt(q.monthly) +
+        '<span style="font-size:16px;font-weight:600;color:' + MUT + '"> /mo</span></div>' +
+      '<div style="font-size:13px;color:' + MUT + '">' + esc(b.taxNote) + '</div>' +
+      '<div style="font-size:14px;margin-top:12px;font-weight:600">' + esc(b.head) + '</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:14px;border-top:1px solid ' + LINE + '"><tr>' +
+        '<td style="padding-top:12px;' + CAP + '">DUE TODAY</td>' +
+        '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
+      (b.id ? '<div style="font-size:12px;color:' + MUT + ';margin-top:10px">Quote ID <b style="color:' + INK + ';letter-spacing:1px">' + esc(b.id) + '</b> · mention it if you come back in</div>' : '') +
+    '</td></tr></table>' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">' +
+      sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) +
+    '</table>' +
+    (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
+    '<p style="margin:22px 0 0;font-size:12px;line-height:1.45;color:' + MUT + '">' + esc(b.fine) + '</p>' +
+    (b.sig ? '<p style="margin:20px 0 0">' + esc(b.sig).replace(/\n/g, "<br>") + '</p>' : '') +
+  '</div>';
+}
+function mailParts(q){
+  var m = ui.mail, id = currentId(q), to = (m.to || "").trim(), ok = EMAIL_RE.test(to);
+  var subj = m.subj != null ? m.subj : defaultSubject(id), body = emailText(q, m), html = emailHtml(q, m);
+  var crlf = body.replace(/\r?\n/g, "\r\n");
+  var enc = function(x){ return encodeURIComponent(x).replace(/[!'()*]/g, function(c){ return "%" + c.charCodeAt(0).toString(16).toUpperCase(); }); };
+  var href = "mailto:" + (ok ? to : "") + "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(crlf);
+  var webHref = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(ok ? to : "") + "&subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(crlf);
+  var appHref = "ms-outlook://compose?to=" + enc(ok ? to : "") + "&subject=" + enc(subj) + "&body=" + enc(m.style === "plain" ? body : html);
+  return {id:id, to:to, ok:ok, subj:subj, body:body, html:html, href:href, webHref:webHref, appHref:appHref};
+}
+function updateMail(){
+  var p = mailParts(compute(state));
+  var prev = document.getElementById("mPrev");
+  if (prev) { if (ui.mail.style === "plain") prev.textContent = p.body; else prev.innerHTML = p.html; }
+  var a = document.getElementById("mOpen"); if (a) a.setAttribute("href", p.href);
+  var wl = document.getElementById("mWeb"); if (wl) { wl.setAttribute("href", p.webHref); wl.setAttribute("aria-disabled", String(!p.ok)); }
+  var al = document.getElementById("mApp"); if (al) { al.setAttribute("href", p.appHref); al.setAttribute("aria-disabled", String(!p.ok)); }
+  var er = document.getElementById("mErr"); if (er) er.textContent = ui.mail.err || "";
+  var ln = document.getElementById("mLong"); if (ln) ln.hidden = p.appHref.length <= 30000;
+}
+function emailBody(q){
+  var m = ui.mail, p = mailParts(q), L = state.loaded;
+  var checks = dedupe(q.notes.filter(function(x){ return x.t === "bad" || x.t === "warn"; }));
+  if (state.example) checks.unshift({t:"warn", m:"This is the example quote. Build the customer's quote before you send it."});
+  var h = '<div class="f"><span style="font-size:13px;font-weight:600">From</span><div class="tin" style="border-style:dashed;color:var(--muted)">' + FROM + '</div></div>' +
+    '<div class="f"><div class="qrow"><label for="mTo">Send to</label><button class="linkbtn" data-act="copyfield" data-v="to" style="font-size:13px">Copy</button></div><input class="tin" id="mTo" type="email" inputmode="email" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="customer@example.com" data-m="to" value="' + esc(m.to) + '"><span class="err" id="mErr" aria-live="polite">' + esc(m.err || "") + '</span></div>' +
+    '<div class="fields"><div class="f"><label for="mName">Customer\'s name <span class="muted" style="font-weight:400">(optional)</span></label><input class="tin" id="mName" autocomplete="off" data-m="name" value="' + esc(m.name) + '"></div>' +
+    '<div class="f"><label for="mSig">Your name</label><input class="tin" id="mSig" autocomplete="off" data-m="sig" placeholder="Signs the email" value="' + esc(m.sig) + '"></div></div>' +
+    '<div class="f"><div class="qrow"><label for="mSubj">Subject</label><button class="linkbtn" data-act="copyfield" data-v="subj" style="font-size:13px">Copy</button></div><input class="tin" id="mSubj" autocomplete="off" data-m="subj" value="' + esc(p.subj) + '"></div>' +
+    '<div class="f"><label for="mIntro">Opening line</label><textarea class="tin" id="mIntro" rows="2" data-m="intro">' + esc(m.intro != null ? m.intro : DEFAULT_INTRO) + '</textarea></div>';
+  if (p.id) h += '<p class="info">' + I.info + '<span>Quote ID <b class="mono">' + esc(p.id) + '</b> is in the email, so the customer can bring it back in.</span></p>';
+  else h += '<div class="inl"><p class="info" style="margin:0">' + I.info + '<span>' + (L ? "This quote changed after it was saved as " + esc(L.id) + ". Save it again to put a Quote ID in the email." : "Save the quote to put a Quote ID in the email.") + '</span></p>' +
+    '<button class="obtn" data-act="sheet" data-v="save">Save quote</button>' + '</div>';
+  if (checks.length) h += '<div><h4>Check before sending</h4><ul class="notes">' + checks.map(function(x){ return '<li class="' + x.t + '">' + esc(x.m) + '</li>'; }).join("") + '</ul></div>';
+  var plain = m.style === "plain";
+  h += '<div><div class="qrow" style="align-items:center;margin-bottom:6px"><h4 style="margin:0">Preview</h4><div class="seg sm" role="group" aria-label="Email style">' +
+      '<button data-act="mstyle" data-v="designed" aria-pressed="' + !plain + '">Designed</button><button data-act="mstyle" data-v="plain" aria-pressed="' + plain + '">Plain text</button></div></div>' +
+    (plain ? '<pre class="mailprev" id="mPrev">' + esc(p.body) + '</pre>' : '<div class="mailhtml" id="mPrev">' + p.html + '</div>') +
+    '<div class="inl" style="margin-top:8px"><button class="linkbtn" data-act="copymail" style="font-size:13px">Copy message (plain text)</button></div></div>' +
+    '<p class="info warn" id="mLong"' + (p.href.length > 4000 ? '' : ' hidden') + '>' + I.info + '<span>This is a long email. If it arrives cut off, use Copy message and paste it into a new email.</span></p>' +
+    '<p class="fhint">Open Outlook app starts a new email in the Outlook app, addressed and written. Outlook.com opens a plain-text version in your browser. Check that the From line says ' + FROM + ', then tap Send. Nothing is sent from this page, and the customer\'s email address isn\'t saved.</p>' +
+    '<p class="fhint">If Outlook doesn\'t open, tap <button class="linkbtn" data-act="copyapp">Copy for Outlook</button> and run your Outlook Quote shortcut.</p>' +
+    '<textarea id="mailFallback" class="tin" readonly hidden aria-label="Email text" style="min-height:180px"></textarea>';
+  return h;
+}
+
+/* ================= Copy text ================= */
+function dateStr(){ try { return new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); } catch (e) { return ASOF; } }
+function quoteText(){
+  var q = compute(state), c = q.c, Wd = 50, out = [];
+  function pad(l, a){ var dots = Wd - l.length - a.length - 2; return "  " + l + " " + (dots > 1 ? new Array(dots).join(".") : "") + " " + a; }
+  out.push("QUICK QUOTE · " + (c.fam === "tmix" ? q.P.full + ", " + c.n + " line" + (c.n === 1 ? "" : "s") : q.P.full + ", adding " + c.newVoice + " to " + c.E + " existing"));
+  out.push(dateStr() + " · " + (state.autopay ? "AutoPay" : "No AutoPay") + (state.loaded ? " · Quote ID " + state.loaded.id : ""));
+  out.push(""); out.push("MONTHLY");
+  q.W.concat(q.H).forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
+  out.push(pad(c.fam === "exp" ? "Added monthly" : "Total monthly", fmt(q.monthly)) + (state.set.taxOn ? "" : "  + taxes"));
+  out.push(""); out.push("DUE TODAY");
+  q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
+  out.push(pad("Total due today", fmt(q.today)));
+  if (q.ONE.length) { out.push(""); out.push("ONE-TIME BILL CREDITS"); q.ONE.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); }
+  if (c.fam === "tmix" && q.budget) out.push("", "PICKS " + q.used + " of " + q.budget + (q.perkRows.length ? ": " + q.perkRows.map(function(p){ return p.name; }).join(", ") : ""));
+  out.push(""); out.push("Estimate only. Pricing as of " + ASOF + "; final price set at purchase.");
+  return out.join("\n");
+}
+function toast(m){ var r = $("#toastRoot"); r.innerHTML = '<div class="toast">' + esc(m) + '</div>'; clearTimeout(toast._t); toast._t = setTimeout(function(){ r.innerHTML = ""; }, 2600); }
+
+/* ================= Render all ================= */
+function renderAll(){
+  var q = compute(state);
+  $("#pillAmt").textContent = fmt(q.monthly);
+  $("#navAmt").textContent = fmt(q.monthly);
+  $("#exChip").hidden = !state.example;
+  var sn = $("#startNew"); sn.textContent = ui.confirm ? "Tap to clear" : "Start new"; sn.className = "startnew" + (ui.confirm ? " confirm" : "");
+  renderStage(q);
+  renderSheet(q);
+  save();
+  return q;
+}
+function renderLive(){
+  var q = compute(state);
+  $("#pillAmt").textContent = fmt(q.monthly);
+  $("#navAmt").textContent = fmt(q.monthly);
+  $("#exChip").hidden = !state.example;
+  renderStage(q);
+  if (ui.sheet === "edit") {
+    var g = grp(ui.edit), dc = $("#devcalc"), cp = $("#crprev");
+    if (g && dc && !dc.contains(document.activeElement)) dc.innerHTML = devCalc(g, q);
+    else if (g && dc) { var nodes = dc.querySelectorAll(".brk, .prices"); var tmp = document.createElement("div"); tmp.innerHTML = devCalc(g, q); var nn = tmp.querySelectorAll(".brk, .prices"); for (var i = 0; i < nodes.length && i < nn.length; i++) nodes[i].innerHTML = nn[i].innerHTML; }
+    if (g && cp) cp.innerHTML = creditPreview(g);
+  }
+  save();
+}
+
+/* ================= Events ================= */
+function setPath(path, val){
+  var parts = path.split("."), o;
+  if (parts[0] === "__plan") { if (state.cust === "new") state.planNew = val; else state.planExp = val; return; }
+  if (parts[0] === "g") { o = grp(parts[1]); parts = parts.slice(2); if (!o) return; }
+  else o = state;
+  for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts[parts.length-1]] = val;
+}
+function afterPlanChange(){
+  var c = ctxOf(state);
+  if (c.fam === "tmix" && state.planNew === "saver") state.groups.forEach(function(g){ if (g.dev.offer === "custom") g.dev.customPicks = 0; });
+}
+document.addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("[data-act]") : null; if (!b || b.disabled) return;
+  var act = b.dataset.act, v = b.dataset.v, g = b.dataset.g ? grp(b.dataset.g) : null;
+  if (act !== "startnew" && ui.confirm) { ui.confirm = false; }
+  switch (act) {
+    case "copy": {
+      var txt = quoteText(), fb = $("#copyFallback");
+      var fail = function(){ if (fb) { fb.value = txt; fb.hidden = false; fb.focus(); fb.select(); } toast("Select the text and copy it."); };
+      try { navigator.clipboard.writeText(txt).then(function(){ toast("Quote copied. Paste it into a text or email."); }, fail); } catch (err) { fail(); }
+      return;
+    }
+    case "copyfield": {
+      var ft = v === "to" ? (ui.mail.to || "").trim() : mailParts(compute(state)).subj;
+      if (!ft) { toast("Nothing to copy yet."); return; }
+      try { navigator.clipboard.writeText(ft).then(function(){ toast("Copied."); }, function(){ toast(ft); }); } catch (err) { toast(ft); }
+      return;
+    }
+    case "ghsave": {
+      var go = ((document.getElementById("ghOwner") || {}).value || "").trim(), gr = ((document.getElementById("ghRepo") || {}).value || "").trim(), gt = ((document.getElementById("ghToken") || {}).value || "").trim();
+      ui.ghDraft = {owner:go, repo:gr};
+      var prevC = ghCfg(); if (!gt && prevC) gt = prevC.token;
+      if (!go || !gr || !gt) { ui.ghStatus = "Fill in your username, the repository name and the key."; renderAll(); return; }
+      ui.ghStatus = "Testing the key…"; renderAll();
+      ghFetch({owner:go, repo:gr, token:gt}, "").then(function(info){
+        try { localStorage.setItem(GH_KEY, JSON.stringify({owner:go, repo:gr, token:gt})); } catch (err) {}
+        ui.ghDraft = null;
+        ui.ghStatus = "Connected. Quotes now save to " + go + "/" + gr + (info && info.private === false ? ". This repository is public, so make it private on GitHub." : ".");
+        renderAll();
+      }, function(err){ ui.ghStatus = ghError(err); renderAll(); });
+      return;
+    }
+    case "ghclear":
+      try { localStorage.removeItem(GH_KEY); } catch (err) {}
+      ui.ghStatus = "Key removed. Quotes now save on this device only.";
+      break;
+    case "mstyle":
+      ui.mail.style = v === "plain" ? "plain" : "designed";
+      try { localStorage.setItem(KEY + ".mstyle", ui.mail.style); } catch (err) {}
+      break;
+    case "copyapp": {
+      var ap = mailParts(compute(state));
+      if (!ap.ok) { ui.mail.err = ap.to ? BAD_EMAIL : "Add the customer's email address first."; updateMail(); var tf2 = document.getElementById("mTo"); if (tf2) tf2.focus(); return; }
+      var af = document.getElementById("mailFallback");
+      var afail = function(){ if (af) { af.value = ap.appHref; af.hidden = false; af.focus(); af.select(); } toast("Select the text and copy it."); };
+      try { navigator.clipboard.writeText(ap.appHref).then(function(){ toast("Copied. Now tap your Outlook Quote shortcut."); }, afail); } catch (err) { afail(); }
+      return;
+    }
+    case "openmail": case "openweb": case "openapp": {
+      var mp = mailParts(compute(state));
+      if (!mp.ok) {
+        e.preventDefault();
+        ui.mail.err = mp.to ? BAD_EMAIL : "Add the customer's email address first.";
+        updateMail();
+        var tf = document.getElementById("mTo"); if (tf) tf.focus();
+        return;
+      }
+      b.setAttribute("href", act === "openweb" ? mp.webHref : (act === "openapp" ? mp.appHref : mp.href));
+      toast(act === "openweb" ? "Opening Outlook.com. Check the email, then tap Send."
+          : (act === "openapp" ? "Opening the Outlook app. Check the From line, then tap Send." : "Trying your mail app. If nothing opens, use Outlook.com."));
+      return;
+    }
+    case "copymail": {
+      var body = mailParts(compute(state)).body, mf = document.getElementById("mailFallback");
+      var mfail = function(){ if (mf) { mf.value = body; mf.hidden = false; mf.focus(); mf.select(); } toast("Select the text and copy it."); };
+      try { navigator.clipboard.writeText(body).then(function(){ toast("Message copied. Paste it into a new email."); }, mfail); } catch (err) { mfail(); }
+      return;
+    }
+    case "sheet": ui.sheet = v; if (v === "email") ui.mail.err = ""; if (v === "save") live.saved = null; if (v === "open") { live.openErr = ""; loadRecent(); } break;
+    case "dosave": { var ne = document.getElementById("qNote"); doSave(ne ? ne.value : ""); return; }
+    case "copyid": {
+      var sid = live.saved && live.saved.id; if (!sid) return;
+      try { navigator.clipboard.writeText(sid).then(function(){ toast("Quote ID " + sid + " copied."); }, function(){ toast("Quote ID: " + sid); }); } catch (err) { toast("Quote ID: " + sid); }
+      return;
+    }
+    case "openid": doOpen(v); return;
+    case "reprice":
+      state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; });
+      state.loaded = null; toast("Repriced with today's offers."); break;
+    case "unload": state = blankState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
+    case "close": ui.sheet = null; ui.edit = null; break;
+    case "build": ui.sheet = null; ui.edit = null; window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); break;
+    case "startnew":
+      if (!ui.confirm) { ui.confirm = true; clearTimeout(ui._ct); ui._ct = setTimeout(function(){ ui.confirm = false; renderAll(); }, 3500); break; }
+      ui.confirm = false; state = blankState(); ui.sheet = null; resetMail(); toast("Started a new quote."); break;
+    case "example": state = exampleState(); ui.sheet = null; resetMail(); toast("Example quote loaded."); break;
+    case "tab": state.tab = v; break;
+    case "discounts": state.discountsOpen = !state.discountsOpen; break;
+    case "cust":
+      state.cust = v;
+      state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
+      if (v === "existing") state.planDiscount = "none";
+      break;
+    case "exlines": state.existingLines = Math.max(1, Math.min(11, state.existingLines + (+v))); break;
+    case "plan": if (state.cust === "new") state.planNew = v; else state.planExp = v; afterPlanChange(); break;
+    case "view": state.view = v; break;
+    case "tray": ui.trayOpen = !ui.trayOpen; break;
+    case "traytab": ui.trayTab = v; break;
+    case "add": {
+      var ng = newGroup(v, state.cust);
+      state.groups.push(ng);
+      toast(TYPES[v].label + " added. Tap Edit Options to set it up.");
+      break;
+    }
+    case "remove": state.groups = state.groups.filter(function(x){ return x.id !== v; }); if (ui.edit === v) { ui.sheet = null; ui.edit = null; } break;
+    case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
+    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
+    case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
+    case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
+    case "mfr": ui.mfr = v; break;
+    case "model": if (g) { g.dev.model = v || null; if (!v) g.dev.offer = "best"; } break;
+    case "pay": if (g) g.pay.method = v; break;
+    case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
+    case "hinton": state.hint.on = !state.hint.on; break;
+    case "hplan": state.hint.plan = v; state.hint.on = true; break;
+    default: return;
+  }
+  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear"].indexOf(act) < 0 && act !== "example") state.example = false;
+  var focusId = document.activeElement && document.activeElement.id;
+  renderAll();
+  if (act === "sheet" || act === "edit") { var t = $("#dTitle"); if (t) t.focus({preventScroll:true}); }
+  else if (focusId) { var fe = document.getElementById(focusId); if (fe) fe.focus({preventScroll:true}); }
+});
+document.addEventListener("input", function(e){
+  var el = e.target;
+  if (el.dataset && el.dataset.m) {
+    ui.mail[el.dataset.m] = el.value;
+    if (el.dataset.m === "sig") { try { localStorage.setItem(KEY + ".sig", el.value); } catch (err) {} }
+    if (el.dataset.m === "to") ui.mail.err = "";
+    updateMail();
+    return;
+  }
+  if (!el.dataset || !el.dataset.k) return;
+  if (el.tagName === "SELECT" || el.type === "checkbox" || el.type === "radio") return;
+  setPath(el.dataset.k, el.dataset.t === "num" ? (parseFloat(el.value) || 0) : el.value);
+  state.example = false;
+  renderLive();
+});
+document.addEventListener("change", function(e){
+  var el = e.target;
+  if (el.dataset && el.dataset.m === "to") { var tv = el.value.trim(); ui.mail.err = tv && !EMAIL_RE.test(tv) ? BAD_EMAIL : ""; updateMail(); return; }
+  if (!el.dataset || !el.dataset.k) return;
+  if (el.tagName !== "SELECT" && el.type !== "checkbox" && el.type !== "radio") return;
+  var t = el.dataset.t, val;
+  if (t === "bool") val = el.checked; else if (t === "bool01") val = el.value === "1"; else if (t === "num") val = parseFloat(el.value) || 0; else val = el.value;
+  setPath(el.dataset.k, val);
+  if (el.dataset.k === "__plan") afterPlanChange();
+  state.example = false;
+  var id = el.id;
+  renderAll();
+  var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});
+});
+document.addEventListener("submit", function(e){
+  if (e.target && e.target.id === "openForm") { e.preventDefault(); var f = document.getElementById("qId"); doOpen(f ? f.value : ""); }
+});
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape" && ui.sheet) { ui.sheet = null; ui.edit = null; renderAll(); }
+});
+
+renderAll();
+startLive();
+})();
+</script>
+
+</body>
+</html>
