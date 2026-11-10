@@ -171,6 +171,12 @@ button:disabled{cursor:not-allowed}
 .cost .cr span:last-child{color:var(--good)}
 .cost .tot{border-top:1px solid var(--line);margin-top:4px;padding-top:4px;font-weight:700}
 .cwarn{font-size:12.5px;color:var(--warn);font-weight:600}
+/* A new line zooms in from small; a removed one zooms back out. */
+@keyframes popIn{from{transform:scale(.55);opacity:0}70%{transform:scale(1.02);opacity:1}to{transform:none;opacity:1}}
+@keyframes popOut{from{transform:none;opacity:1}to{transform:scale(.55);opacity:0}}
+.popin{animation:popIn .28s cubic-bezier(.2,.8,.3,1) both}
+.popout{animation:popOut .19s ease-in both;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
 .lrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
 .lrow .devico{width:44px;height:46px}
@@ -978,7 +984,7 @@ function card(g, i, q){
   var planLines = o.lines.filter(function(x){ return x.l === "Plan" || (!T0.voice && cplanOf(g).name === x.l); });
   var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
   var lt = g.lineType === "upgrade" ? "Upgrade" : (g.lineType === "port" ? "Number transfer" : "New line");
-  return '<article class="card"><div class="chead"><div class="ctitle"><span>' + esc(g.name || T0.label) + '</span><button class="x" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>' +
+  return '<article class="card' + (ui.popIn === g.id ? ' popin' : '') + '" data-gid="' + g.id + '"><div class="chead"><div class="ctitle"><span>' + esc(g.name || T0.label) + '</span><button class="x" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>' +
     '<div class="cdev"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
     '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
     '<div class="cbody"><button class="editbtn" data-act="edit" data-v="' + g.id + '">Edit options</button>' + planSel +
@@ -994,7 +1000,7 @@ function card(g, i, q){
 function costRow(x){ return '<div class="r' + (x.c === "cr" ? " cr" : "") + '"><span>' + esc(x.l) + (x.sub ? ' <small>· ' + esc(x.sub) + '</small>' : '') + '</span><span>' + fmt(x.a) + '</span></div>'; }
 function listRow(g, i, q){
   var T0 = TYPES[g.type], o = q.groups[g.id], d = devMath(g, q.c);
-  return '<div class="lrow"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
+  return '<div class="lrow' + (ui.popIn === g.id ? ' popin' : '') + '" data-gid="' + g.id + '"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
     '<div class="lt"><b>' + esc(g.name || T0.label) + (g.qty > 1 ? ' ×' + g.qty : '') + '</b><span>' + esc(d.name) + (d.offer ? ' · ' + esc(d.offer.label) : '') + '</span></div>' +
     '<div class="lm">' + fmt(o.unit * g.qty) + '<button data-act="edit" data-v="' + g.id + '">Edit options</button></div></div>';
 }
@@ -1921,10 +1927,22 @@ document.addEventListener("click", function(e){
     case "add": {
       var ng = newGroup(v, state.cust);
       state.groups.push(ng);
+      ui.popIn = ng.id; setTimeout(function(){ if (ui.popIn === ng.id) ui.popIn = null; }, 450);
       toast(TYPES[v].label + " added. Tap Edit Options to set it up.");
       break;
     }
-    case "remove": state.groups = state.groups.filter(function(x){ return x.id !== v; }); if (ui.edit === v) { ui.sheet = null; ui.edit = null; } break;
+    case "remove": {
+      var dropGroup = function(){ state.groups = state.groups.filter(function(x){ return x.id !== v; }); if (ui.edit === v) { ui.sheet = null; ui.edit = null; } };
+      /* Shrink the card away first, then take it off the quote. */
+      var gone = document.querySelector('[data-gid="' + v + '"]');
+      if (gone && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        if (gone.classList.contains("popout")) return;
+        gone.classList.add("popout");
+        setTimeout(function(){ dropGroup(); state.example = false; renderAll(); }, 190);
+        return;
+      }
+      dropGroup(); break;
+    }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
     case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
