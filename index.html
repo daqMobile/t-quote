@@ -2003,7 +2003,7 @@ document.addEventListener("click", function(e){
   var focusId = document.activeElement && document.activeElement.id;
   renderAll();
   if (act === "sheet" || act === "edit") { var t = $("#dTitle"); if (t) t.focus({preventScroll:true}); }
-  else if (focusId) { var fe = document.getElementById(focusId); if (fe) fe.focus({preventScroll:true}); }
+  else if (focusId) { var fe = document.getElementById(focusId); if (fe && !(fe.tagName === "SELECT" && matchMedia("(pointer: coarse)").matches)) fe.focus({preventScroll:true}); }
 });
 document.addEventListener("input", function(e){
   var el = e.target;
@@ -2030,9 +2030,11 @@ document.addEventListener("change", function(e){
   setPath(el.dataset.k, val);
   if (el.dataset.k === "__plan") afterPlanChange();
   state.example = false;
-  var id = el.id;
+  var id = el.id, wasSelect = el.tagName === "SELECT";
   renderAll();
-  var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});
+  /* Put focus back for keyboards, but not on a dropdown on a touch screen: on iPad, focusing a dropdown opens its list again. */
+  var ne = id && document.getElementById(id);
+  if (ne && !(wasSelect && matchMedia("(pointer: coarse)").matches)) ne.focus({preventScroll:true});
 });
 document.addEventListener("submit", function(e){
   if (e.target && e.target.id === "openForm") { e.preventDefault(); var f = document.getElementById("qId"); doOpen(f ? f.value : ""); }
