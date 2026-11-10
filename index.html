@@ -1533,10 +1533,10 @@ function currentId(q){
   var L = state.loaded; if (!L) return null;
   return (Math.abs(q.monthly - (L.monthly || 0)) < 0.01 && Math.abs(q.today - (L.today || 0)) < 0.01) ? L.id : null;
 }
-/* Leads with the rep's name, not the brand: "T-Mobile" in the subject from an outlook.com address looks like a scam to spam filters. */
+/* Reads as a person at T-Mobile, not a T-Mobile notice: a company-style subject from an outlook.com address looks like a scam to spam filters. */
 function defaultSubject(id, sig){
   var who = String(sig || "").split(/\r?\n/)[0].trim().slice(0, 40) || "Nik";
-  return "Your quote from " + who + (id ? " (Quote " + id + ")" : "");
+  return "Your quote from " + who + " at T-Mobile" + (id ? " (Quote " + id + ")" : "");
 }
 function quoteHead(q){
   var c = q.c;
