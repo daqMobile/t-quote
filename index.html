@@ -361,6 +361,8 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
 .dot.on{background:var(--good)}
 .dot.wait{background:var(--badge)}
 .dot.off{background:var(--warn)}
+.livefoot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line)}
+.livefoot .livesum{margin-bottom:0}
 .livesum{margin:-4px 0 12px;font-size:12.5px;color:var(--muted);max-width:75ch}
 .banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:4px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 .banner p{margin:0;max-width:75ch}
@@ -895,7 +897,7 @@ function banner(q){
     '<div class="inl"><button class="obtn" data-act="reprice">Reprice with current offers</button><button class="linkbtn" data-act="unload">Close quote</button></div></div>';
 }
 function renderStage(q){
-  var s = state, c = q.c, h = liveLine() + banner(q);
+  var s = state, c = q.c, h = banner(q);
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
     '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + (s.hint.on ? 1 : 0) + ')</button></div>';
@@ -909,7 +911,9 @@ function renderStage(q){
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
     '<span class="bchip' + (discounts.length && q.pc && q.pc.portSave ? " on" : "") + '">' + (q.pc && q.pc.portSave ? esc(discounts[0]) : "No additional discounts applied") + '</span></div>';
 
-  if (s.tab === "internet") { h += renderInternet(q); $("#stage").innerHTML = h; return; }
+  /* Promotion status sits at the very bottom, out of the way. */
+  var foot = '<div class="livefoot">' + liveLine() + '</div>';
+  if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
 
   if (s.discountsOpen) {
     var portAvail = c.fam === "tmix" && TMIX[c.pid].port[c.n] != null;
@@ -956,7 +960,7 @@ function renderStage(q){
         return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span>' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span>' + TYPES[t].label + '</button>';
       }).join("") + '</div>' +
       (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
-    '</div>' : '') + '</section>';
+    '</div>' : '') + '</section>' + foot;
   $("#stage").innerHTML = h;
 }
 
