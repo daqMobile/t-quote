@@ -2005,7 +2005,7 @@ document.addEventListener("click", function(e){
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
     case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
     case "mfr": ui.mfr = v; break;
-    case "model": if (g) { g.dev.model = v || null; if (!v) g.dev.offer = "best"; } break;
+    case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "best"; } break;
     case "pay": if (g) g.pay.method = v; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
