@@ -448,10 +448,12 @@ var SEG = {
   senior:    {label:"55+", ap:{saver:[30,60], standard:[50,75], more:[65,120], loaded:[85,150]}, addl:{}, max:{saver:2, standard:2, more:2, loaded:2},
               hint:"The account holder must be 55 or older. Up to 2 phone lines."},
   employee:  {label:"Employee", pct:true,
-              hint:"Employee pricing takes the percentage set in Settings off the plan price."}
+              hint:"Employee pricing: a percentage off every wireless line (75%) and off Home Internet (20%). Change the percentages in Settings."}
 };
 function segOf(s){ return s.cust === "new" && SEG[s.planDiscount] ? s.planDiscount : null; }
-function empPct(){ return Math.min(100, num(state.set.employeePct)); }
+/* Employee pricing: 75% off every wireless line and 20% off Home Internet unless changed in Settings. */
+function empPct(){ return Math.min(100, num(state.set.employeePct) || 75); }
+function empHintPct(){ return Math.min(100, num(state.set.employeeHintPct) || 20); }
 /* What a T-Mix plan shows when it can't be priced: not offered with the chosen discount, or over its line limit. */
 function planNA(id, seg, short){
   var S = seg && SEG[seg];
@@ -699,7 +701,7 @@ function exampleState(){
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
     autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
-    set:{connect:35, employeePct:0}};
+    set:{connect:35, employeePct:75, employeeHintPct:20}};
 }
 function blankState(){
   var s = exampleState();
@@ -827,10 +829,9 @@ function devMath(g, c){
 
 /* ================= Quote math ================= */
 function compute(s){
-  var W = [], T = [], ONE = [], notes = [], groupsOut = {};
+  var W = [], T = [], ONE = [], notes = [], groupsOut = {}, empConn = 0;
   var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
-  if (seg === "employee" && !empPct()) notes.push({t:"warn", m:"Set the employee discount percentage in Settings."});
   var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
   var portOn = c.fam === "tmix" && s.planDiscount === "port" && allPort;
   if (c.fam === "tmix" && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
@@ -844,7 +845,7 @@ function compute(s){
       plan = pc.total; share = pc.total / c.n;
       W.push({l:P.full + " · " + c.n + " line" + (c.n > 1 ? "s" : ""), a:pc.base, sub: s.autopay ? "AutoPay price" : ""});
       if (pc.portSave) W.push({l:"Number transfer price", a:-pc.portSave, c:"credit"});
-      if (pc.empSave) W.push({l:"Employee pricing", a:-pc.empSave, sub: empPct() + "% off the plan", c:"credit"});
+      if (pc.empSave) W.push({l:"Employee pricing · phone lines", a:-pc.empSave, sub: empPct() + "% off the plan", c:"credit"});
       if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
       if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
@@ -873,6 +874,7 @@ function compute(s){
       if (cp.byod && g.dev.kind !== "existing") out.warn = (out.warn ? out.warn + " " : "") + "BYOD pricing needs the customer's own device.";
       if (g.lineType !== "upgrade") {
         out.lines.push({l:cp.name, a:price, sub: alone && !cp.byod ? "No phone line · +$" + TAB_NO_VOICE : ""});
+        if (seg === "employee") empConn += price * q;
         W.push({l:label + " · " + cp.name, a:price * q, sub: (q > 1 ? q + " × " + fmt(price) : "") + (alone && !cp.byod ? (q > 1 ? " · " : "") + "standalone price, no phone line" : "")});
       }
       if (!okByod) notes.push({t:"warn", m:out.warn});
@@ -912,12 +914,15 @@ function compute(s){
   /* Taxes and fees (sales tax, the regulatory & telco recovery fee, government surcharges) change, so quotes leave them out.
      Connection charges stay in Due today. */
 
+  if (empConn) W.push({l:"Employee pricing · watch/tablet lines", a:-round2(empConn * empPct() / 100), sub: empPct() + "% off", c:"credit"});
+
   var H = [];
   if (s.hint.on) {
     var hp = HINT[s.hint.plan], voiceOk = c.fam === "exp" || c.newVoice > 0;
     H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
     if (!s.autopay) H.push({l:"No AutoPay", a:5});
     if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
+    if (seg === "employee") H.push({l:"Employee pricing", a:-round2(hp.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
     if (s.hint.voice && !voiceOk) notes.push({t:"warn", m:"The Home Internet voice line discount needs a phone line on the account."});
     if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
   }
@@ -968,7 +973,7 @@ function banner(q){
 /* One option under Apply a plan discount, greyed out when the current plan or line count doesn't qualify. */
 function segOpt(v, label){
   var s = state, c = ctxOf(s), S = SEG[v], why = "", ok = true;
-  if (S.pct) why = empPct() ? " · " + empPct() + "% off" : " · set % in Settings";
+  if (S.pct) why = " · " + empPct() + "% off lines";
   else if (!S.ap[c.pid]) { ok = false; why = " (not on " + TMIX[c.pid].name + ")"; }
   else if (S.max[c.pid] && c.newVoice > S.max[c.pid]) { ok = false; why = " (max " + S.max[c.pid] + " phone lines)"; }
   return '<option value="' + v + '"' + (s.planDiscount === v ? " selected" : (ok ? "" : " disabled")) + '>' + label + why + '</option>';
@@ -1231,7 +1236,8 @@ function feesBody(){
   function mf(id, label, k, v){ return '<div class="f"><label for="' + id + '">' + label + '</label><span class="money"><input class="tin" id="' + id + '" type="number" inputmode="decimal" min="0" step="0.01" data-k="' + k + '" data-t="num" value="' + v + '"></span></div>'; }
   return '<div class="fields">' +
     mf("sConn", "Connection charge per line", "set.connect", st.connect) +
-    '<div class="f"><label for="sEmp">Employee discount (% off the plan)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + (st.employeePct || "") + '" placeholder="e.g. 25"></div></div>' +
+    '<div class="f"><label for="sEmp">Employee discount, wireless lines (%)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + empPct() + '"></div>' +
+    '<div class="f"><label for="sEmpH">Employee discount, Home Internet (%)</label><input class="tin" id="sEmpH" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeeHintPct" data-t="num" value="' + empHintPct() + '"></div></div>' +
     '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>';
 }
 
