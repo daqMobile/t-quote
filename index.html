@@ -1607,7 +1607,8 @@ function mailParts(q){
   var enc = function(x){ return encodeURIComponent(x).replace(/[!'()*]/g, function(c){ return "%" + c.charCodeAt(0).toString(16).toUpperCase(); }); };
   var href = "mailto:" + (ok ? to : "") + "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(crlf);
   var webHref = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(ok ? to : "") + "&subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(crlf);
-  var appHref = "ms-outlook://compose?to=" + enc(ok ? to : "") + "&subject=" + enc(subj) + "&body=" + enc(m.style === "plain" ? body : html);
+  /* Outlook's app link only takes plain text. The designed email goes on the clipboard instead and is pasted in Outlook. */
+  var appHref = "ms-outlook://compose?to=" + enc(ok ? to : "") + "&subject=" + enc(subj) + (m.style === "plain" ? "&body=" + enc(body) : "");
   return {id:id, to:to, ok:ok, subj:subj, body:body, html:html, href:href, webHref:webHref, appHref:appHref};
 }
 function updateMail(){
@@ -1638,12 +1639,28 @@ function emailBody(q){
   h += '<div><div class="qrow" style="align-items:center;margin-bottom:6px"><h4 style="margin:0">Preview</h4><div class="seg sm" role="group" aria-label="Email style">' +
       '<button data-act="mstyle" data-v="designed" aria-pressed="' + !plain + '">Designed</button><button data-act="mstyle" data-v="plain" aria-pressed="' + plain + '">Plain text</button></div></div>' +
     (plain ? '<pre class="mailprev" id="mPrev">' + esc(p.body) + '</pre>' : '<div class="mailhtml" id="mPrev">' + p.html + '</div>') +
-    '<div class="inl" style="margin-top:8px"><button class="linkbtn" data-act="copymail" style="font-size:13px">Copy message (plain text)</button></div></div>' +
-    '<p class="info warn" id="mLong"' + (p.href.length > 4000 ? '' : ' hidden') + '>' + I.info + '<span>This is a long email. If it arrives cut off, use Copy message and paste it into a new email.</span></p>' +
-    '<p class="fhint">Open Outlook app starts a new email in the Outlook app, addressed and written. Outlook.com opens a plain-text version in your browser. Check that the From line says ' + FROM + ', then tap Send. Nothing is sent from this page, and the customer\'s email address isn\'t saved.</p>' +
-    '<p class="fhint">If Outlook doesn\'t open, tap <button class="linkbtn" data-act="copyapp">Copy for Outlook</button> and run your Outlook Quote shortcut.</p>' +
+    '<div class="inl" style="margin-top:8px">' + (plain ? '' : '<button class="linkbtn" data-act="copyrich" style="font-size:13px">Copy designed email</button>') +
+      '<button class="linkbtn" data-act="copymail" style="font-size:13px">Copy plain text</button></div></div>' +
+    (plain ? '<p class="info warn" id="mLong"' + (p.appHref.length > 30000 ? '' : ' hidden') + '>' + I.info + '<span>This is a long email. If it arrives cut off, use Copy plain text and paste it into the email.</span></p>' +
+             '<p class="fhint">Open Outlook app starts a new email in Outlook, addressed and written.'
+           : '<p class="info">' + I.info + '<span><b>Open Outlook app</b> copies this email and starts a new one to the customer. In Outlook, touch and hold the message area, then tap <b>Paste</b>.</span></p>' +
+             '<p class="fhint">') +
+    ' Check that the From line says ' + FROM + ', then tap Send. Outlook.com opens a plain-text version in your browser. Nothing is sent from this page, and the customer\'s email address isn\'t saved.</p>' +
     '<textarea id="mailFallback" class="tin" readonly hidden aria-label="Email text" style="min-height:180px"></textarea>';
   return h;
+}
+
+/* Puts the designed email on the clipboard as formatted text, with a plain-text copy for apps that can't paste formatting. */
+function copyRich(html, text){
+  try {
+    if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      return navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob(['<meta charset="utf-8">' + html], {type:"text/html"}),
+        "text/plain": new Blob([text], {type:"text/plain"})
+      })]);
+    }
+  } catch (e) {}
+  return Promise.reject(new Error("no_rich_clipboard"));
 }
 
 /* ================= Copy text ================= */
@@ -1763,8 +1780,19 @@ document.addEventListener("click", function(e){
         return;
       }
       b.setAttribute("href", act === "openweb" ? mp.webHref : (act === "openapp" ? mp.appHref : mp.href));
+      if (act === "openapp" && ui.mail.style !== "plain") {
+        toast("Email copied. In Outlook, touch and hold the message area and tap Paste.");
+        copyRich(mp.html, mp.body).then(null, function(){ toast("Couldn't copy the designed email. Tap Copy designed email, then try again."); });
+        return;
+      }
       toast(act === "openweb" ? "Opening Outlook.com. Check the email, then tap Send."
           : (act === "openapp" ? "Opening the Outlook app. Check the From line, then tap Send." : "Trying your mail app. If nothing opens, use Outlook.com."));
+      return;
+    }
+    case "copyrich": {
+      var rp = mailParts(compute(state));
+      copyRich(rp.html, rp.body).then(function(){ toast("Designed email copied. Paste it into the message in Outlook."); },
+        function(){ toast("This browser can't copy the designed email. Use Plain text instead."); });
       return;
     }
     case "copymail": {
