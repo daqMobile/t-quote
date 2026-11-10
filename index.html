@@ -63,6 +63,8 @@ button:disabled{cursor:not-allowed}
 .ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- Top bar ---------- */
+/* Everything in the top bar is drawn 15% larger, as a whole. */
+.topin{zoom:1.15}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--surface);border-bottom:1px solid var(--line);padding-block:8px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
 .topin{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"brand pill acts";align-items:center;gap:8px 14px}
 .brand{grid-area:brand;display:flex;align-items:center;gap:8px;border:0;background:none;padding:4px 2px;font-weight:600;font-size:16px}
@@ -94,7 +96,7 @@ button:disabled{cursor:not-allowed}
 @media (min-width:900px){
   .shell{grid-template-columns:minmax(0,1fr) 50px;min-height:calc(100vh - 60px)}
   .rail{display:flex;flex-direction:column;justify-content:flex-start;border:0;padding:0;color:#fff;position:relative}
-  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 63px);height:calc(100vh - 63px - env(safe-area-inset-top,0px));height:calc(100dvh - 63px - env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:14px;letter-spacing:.12em;padding:18px 0;width:100%}
+  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);height:calc(100vh - 70px - env(safe-area-inset-top,0px));height:calc(100dvh - 70px - env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:14px;letter-spacing:.12em;padding:18px 0;width:100%}
   .rail.review{background:var(--review);color:var(--review-ink)}
   .rail.review span{transform:none}
   .rail b{font-size:18px;line-height:1}
