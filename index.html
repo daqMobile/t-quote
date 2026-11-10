@@ -199,7 +199,11 @@ button:disabled{cursor:not-allowed}
 .empty{border:2px dashed var(--line);border-radius:6px;padding:28px 18px;text-align:center;color:var(--muted)}
 
 /* ---------- Add devices tray ---------- */
-.tray{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;position:relative}
+.tray{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;position:sticky;bottom:0;z-index:20;box-shadow:0 -12px 24px -20px rgba(0,0,0,.4)}
+@media (max-width:899px){.tray{bottom:calc(54px + env(safe-area-inset-bottom,0px))}}
+.tray .trayin{max-height:420px;overflow:hidden;transition:max-height .28s ease,padding .28s ease,opacity .2s ease}
+.tray.shut{border-bottom-color:transparent;box-shadow:none}
+.tray.shut .trayin{max-height:0;padding-block:0;opacity:0;pointer-events:none}
 .handle{position:absolute;left:50%;top:-1px;transform:translate(-50%,-100%);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:center;gap:0}
 .handle .ico{width:16px;height:12px;transition:transform .15s}
 .handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
@@ -1054,15 +1058,15 @@ function renderStage(q){
   s.groups.forEach(function(g){ counts[g.type] += g.qty; });
   var full = q.devices >= 20, voiceFull = c.newVoice >= c.max - c.E;
   var tiles = ["phone","tablet","watch","basic"];
-  h += '<section class="tray" aria-label="Add devices">' +
+  h += '<section class="tray' + (ui.trayOpen ? '' : ' shut') + '" aria-label="Add devices">' +
     '<button class="handle" data-act="tray" aria-expanded="' + ui.trayOpen + '">' + I.down + 'Add devices</button>' +
-    (ui.trayOpen ? '<div class="trayin"><span class="traycount">' + q.devices + '/20 devices added</span>' +
+    '<div class="trayin"' + (ui.trayOpen ? '' : ' aria-hidden="true"') + '><span class="traycount">' + q.devices + '/20 devices added</span>' +
       '<div class="tiles">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
         return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
       }).join("") + '</div>' +
       (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
-    '</div>' : '') + '</section>' + foot;
+    '</div></section>' + foot;
   $("#stage").innerHTML = h;
 }
 
@@ -2035,7 +2039,12 @@ document.addEventListener("click", function(e){
     case "exlines": state.existingLines = Math.max(1, Math.min(11, state.existingLines + (+v))); break;
     case "plan": if (state.cust === "new") state.planNew = v; else state.planExp = v; afterPlanChange(); break;
     case "view": state.view = v; break;
-    case "tray": ui.trayOpen = !ui.trayOpen; break;
+    case "tray": {
+      ui.trayOpen = !ui.trayOpen;
+      var tr = document.querySelector(".tray");
+      if (tr) { tr.classList.toggle("shut", !ui.trayOpen); b.setAttribute("aria-expanded", String(ui.trayOpen)); var ti = tr.querySelector(".trayin"); if (ti) { if (ui.trayOpen) ti.removeAttribute("aria-hidden"); else ti.setAttribute("aria-hidden", "true"); } return; }
+      break;
+    }
     case "add": {
       var ng = newGroup(v, state.cust);
       state.groups.push(ng);
