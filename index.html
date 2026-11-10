@@ -466,11 +466,23 @@ var EXP = {
   more:   {name:"More",   full:"Experience More",   max:12, ap:[85,140,140,160,180],  addl:[30,30,30,40,40,40,40], specs:"Unlimited premium data · 60GB hotspot · Netflix with ads"}
 };
 var EXP_ORDER = ["beyond","more"];
+/* Legacy plans an existing account may still be on (T-Mobile moved Simple Choice, ONE, Magenta and Sprint plans to
+   Experience in 2026; Go5G plans stayed). Upgrades only: the tool doesn't add lines on them, so they carry no pricing.
+   Device offers name the legacy plans they accept; the daily promo check records those ids in each offer's plans. */
+var LEGACY = {
+  go5gnext:   {name:"Go5G Next", full:"Go5G Next", max:12, legacy:true},
+  go5gplus:   {name:"Go5G Plus", full:"Go5G Plus", max:12, legacy:true},
+  go5g:       {name:"Go5G", full:"Go5G", max:12, legacy:true},
+  essentials: {name:"Essentials", full:"Essentials", max:12, legacy:true}
+};
+var LEGACY_ORDER = ["go5gnext","go5gplus","go5g","essentials"];
+Object.keys(LEGACY).forEach(function(k){ EXP[k] = LEGACY[k]; });
+function isLegacy(c){ return c.fam === "exp" && !!(EXP[c.pid] && EXP[c.pid].legacy); }
 
 function planCalc(fam, id, n, autopay, portOn, seg){
   if (!(n >= 1)) return null;
   var p = fam === "tmix" ? TMIX[id] : EXP[id];
-  if (!p || n > p.max) return null;
+  if (!p || p.legacy || n > p.max) return null;
   var S = fam === "tmix" && seg ? SEG[seg] : null, base, est;
   if (S && S.ap) {
     var t = S.ap[id];
@@ -669,7 +681,7 @@ function newGroup(type, cust){
   var t = type;
   return {
     id:"g" + (gid++), type:t, qty:1, name:"",
-    lineType: TYPES[t].voice ? "port" : "new",
+    lineType: (state && state.cust === "existing" && EXP[state.planExp] && EXP[state.planExp].legacy) ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
     /* No device is picked for a new line until the rep chooses one. */
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"best", customCredit:0, customPicks:0},
@@ -763,6 +775,7 @@ function offersFor(g, c){
     else if (!c.autopay) why = "Needs AutoPay";
     else if (o.need === "port" && g.lineType !== "port") why = "Needs a number transfer (Box 1)";
     else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
+    else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
     else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
     else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
     else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 new lines with number transfers";
@@ -835,6 +848,8 @@ function compute(s){
       if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
       if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
+  } else if (isLegacy(c)) {
+    if (c.newVoice > 0) notes.push({t:"bad", m:P.full + " is an older plan: quote upgrades only. Set each phone line's Line type to Upgrade (Box 1)."});
   } else {
     var before = planCalc("exp", c.pid, c.E, s.autopay, false), after = planCalc("exp", c.pid, c.n, s.autopay, false);
     if (!after) notes.push({t:"bad", m:P.full + " allows up to " + P.max + " lines."});
@@ -986,7 +1001,11 @@ function renderStage(q){
         (s.cust === "existing" ? '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Lines already on the account</span><div class="stepper">' +
           '<button data-act="exlines" data-v="-1" aria-label="Fewer existing lines"' + (s.existingLines <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + s.existingLines + '</output>' +
           '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (s.existingLines >= 11 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
-          '<p class="fhint">The quote shows what the added lines and devices add to their current bill.</p>' : '<p class="fhint">T-Mix replaced Experience for new customers on Nov 5, 2026.</p>') +
+          '<div style="margin-top:12px"><label class="flabel" for="curPlan">Their current plan</label><div class="selwrap"><select id="curPlan" data-k="__plan" data-t="str">' +
+            EXP_ORDER.map(function(id){ return '<option value="' + id + '"' + (s.planExp === id ? " selected" : "") + '>' + EXP[id].full + '</option>'; }).join("") +
+            '<optgroup label="Older plans · upgrades only">' + LEGACY_ORDER.map(function(id){ return '<option value="' + id + '"' + (s.planExp === id ? " selected" : "") + '>' + LEGACY[id].full + '</option>'; }).join("") + '</optgroup>' +
+          '</select></div></div>' +
+          '<p class="fhint">' + (EXP[s.planExp] && EXP[s.planExp].legacy ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here." : "The quote shows what the added lines and devices add to their current bill.") + '</p>' : '<p class="fhint">T-Mix replaced Experience for new customers on Nov 5, 2026.</p>') +
       '</div>' +
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
@@ -998,7 +1017,7 @@ function renderStage(q){
   }
 
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : "Experience") + ' <small>' + Math.max(c.n,1) + ' phone line tier</small></span>' +
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? esc(EXP[c.pid].full) : "Experience")) + ' <small>' + (isLegacy(c) ? "upgrades only" : Math.max(c.n,1) + " phone line tier") + '</small></span>' +
     order.map(function(id){
       var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
@@ -1032,6 +1051,7 @@ function card(g, i, q){
   var planSel = "";
   if (T0.voice) {
     var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
+    if (c.fam === "exp") order = order.concat(LEGACY_ORDER);
     planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="Plan for all phone lines">' + order.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + planName(c.fam, id) + '</option>'; }).join("") + '</select>';
   } else {
     planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : (p.byod && tabletAlone(g.type, c) ? " disabled" : "")) + '>' + p.name + ' · $' + cplanPrice(p, g.type, c, state.autopay) + '</option>'; }).join("") + '</select>';
@@ -1116,7 +1136,7 @@ function renderSheet(q){
 
 function reviewBody(q){
   var s = state, c = q.c;
-  var head = c.fam === "tmix" ? (c.n ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : "No phone lines") : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new";
+  var head = c.fam === "tmix" ? (c.n ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : "No phone lines") : (isLegacy(c) ? q.P.full + " · upgrade" : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new");
   var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
@@ -1225,18 +1245,19 @@ function editBody(g, q){
   /* Box 1: Plan */
   var b1 = "";
   if (T0.voice) {
-    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER, n = Math.max(c.n, 1);
+    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER.concat(LEGACY_ORDER), n = Math.max(c.n, 1);
     b1 += '<div><h4>Choose plan</h4><p class="info">' + I.info + 'Prices below reflect discounts applied and the total number of phone lines on the quote.</p><div class="radios">' +
       order.map(function(id){
         var pc = c.fam === "tmix" ? planCalc("tmix", id, n, state.autopay, state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
         var P = (c.fam === "tmix" ? TMIX : EXP)[id];
         var pk = c.fam === "tmix" ? picksFor(id, n) : null;
+        if (P.legacy) return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, P.full + ' <span class="why">· older plan, upgrades only</span>', "", false, "__plan");
         return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· ' + (c.fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "Customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New number", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "Customer keeps their number from another carrier", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New number", isLegacy(c), "g." + g.id + ".lineType") +
       (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "No added plan charge", false, "g." + g.id + ".lineType") : "") +
       '</div></div>';
     if (c.fam === "tmix") b1 += picksBlock(q);
@@ -1246,7 +1267,7 @@ function editBody(g, q){
       return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + cplanPrice(p, g.type, c, state.autopay) + '/mo</b> - ' + p.name + (tabletAlone(g.type, c) && !p.byod ? ' <span class="why">· no phone line on the account</span>' : ''), p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
     }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "", isLegacy(c), "g." + g.id + ".lineType") +
       (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "", false, "g." + g.id + ".lineType") : "") + '</div></div>';
   }
   b += box(1, "Plan", b1);
@@ -1655,7 +1676,7 @@ function quoteHead(q){
   var c = q.c;
   var extra = sum(state.groups.filter(function(g){ return !TYPES[g.type].voice && g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var head = c.fam === "tmix" ? q.P.full + ", " + c.n + " phone line" + (c.n === 1 ? "" : "s")
-                              : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s");
+                              : (isLegacy(c) ? q.P.full + ", upgrade" : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s"));
   if (c.fam === "tmix" && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
   else if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
   if (state.hint.on) head += (head ? " + " : "") + "5G Home Internet";
@@ -1861,7 +1882,7 @@ function renderLive(){
 /* ================= Events ================= */
 function setPath(path, val){
   var parts = path.split("."), o;
-  if (parts[0] === "__plan") { if (state.cust === "new") state.planNew = val; else state.planExp = val; return; }
+  if (parts[0] === "__plan") { if (state.cust === "new") state.planNew = val; else state.planExp = val; afterPlanChange(); return; }
   if (parts[0] === "g") { o = grp(parts[1]); parts = parts.slice(2); if (!o) return; }
   else o = state;
   for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
@@ -1869,6 +1890,7 @@ function setPath(path, val){
 }
 function afterPlanChange(){
   var c = ctxOf(state);
+  if (isLegacy(c)) state.groups.forEach(function(g){ g.lineType = "upgrade"; });
   if (c.fam === "tmix" && state.planNew === "saver") state.groups.forEach(function(g){ if (g.dev.offer === "custom") g.dev.customPicks = 0; });
 }
 document.addEventListener("touchmove", function(e){
