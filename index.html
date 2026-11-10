@@ -114,9 +114,11 @@ button:disabled{cursor:not-allowed}
 .bchip.on{background:var(--badge);color:var(--badge-ink);font-weight:700}
 .dpanel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:14px;display:grid;gap:14px}
 @media (min-width:720px){.dpanel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
-/* Sizing: the discount panel is drawn smaller and the plan tiers and line cards larger, each scaled as a whole. */
+/* Sizing: the discount panel and the Add Devices box are drawn smaller and the plan tiers and line cards
+   larger, each scaled as a whole. The Add Devices handle keeps its size. */
 .dpanel{zoom:.85}
-.tierbar,.cards,.empty{zoom:1.15}
+.trayin{zoom:.85}
+.tierbar,.cards,.empty{zoom:1.25}
 .flabel{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
 .fhint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
 .selwrap{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
