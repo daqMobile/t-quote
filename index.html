@@ -1928,7 +1928,6 @@ document.addEventListener("click", function(e){
       var ng = newGroup(v, state.cust);
       state.groups.push(ng);
       ui.popIn = ng.id; setTimeout(function(){ if (ui.popIn === ng.id) ui.popIn = null; }, 450);
-      toast(TYPES[v].label + " added. Tap Edit Options to set it up.");
       break;
     }
     case "remove": {
