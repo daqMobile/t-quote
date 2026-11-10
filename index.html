@@ -186,9 +186,11 @@ button:disabled{cursor:not-allowed}
 .traycount{font-size:13px;color:var(--muted)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,118px));justify-content:center;gap:12px;width:100%}
 .tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--accent);font-size:13.5px}
-.tile svg.dev{width:46px;height:52px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tile .plus{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
-.tile .plus .ico{width:16px;height:16px;stroke-width:2.6}
+/* Device outline with a small + in the middle of it */
+.tile .tico{position:relative;width:64px;height:64px;display:grid;place-items:center}
+.tile svg.dev{width:64px;height:64px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tile .plus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.tile .plus .ico{width:12px;height:12px;stroke-width:3}
 .tile .badge{top:6px;right:6px}
 .tile:disabled{opacity:.45}
 
@@ -957,7 +959,7 @@ function renderStage(q){
       '<div class="seg" role="group" aria-label="Device list"><button data-act="traytab" data-v="top" aria-pressed="' + (ui.trayTab === "top") + '">Top Devices</button><button data-act="traytab" data-v="conn" aria-pressed="' + (ui.trayTab === "conn") + '">Connected Devices</button></div>' +
       '<div class="tiles">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
-        return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span>' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span>' + TYPES[t].label + '</button>';
+        return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
       }).join("") + '</div>' +
       (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
     '</div>' : '') + '</section>' + foot;
