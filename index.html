@@ -511,7 +511,8 @@ var PERKS = [
 ];
 var P360 = [
   {v:"0",label:"No protection",p:0},{v:"1",label:"Tier 1 · $7/mo",p:7},{v:"2",label:"Tier 2 · $9/mo",p:9},{v:"3",label:"Tier 3 · $13/mo",p:13},
-  {v:"4",label:"Tier 4 · $16/mo",p:16},{v:"5",label:"Tier 5 · $19/mo",p:19},{v:"byod",label:"BYOD · $19/mo",p:19},{v:"6",label:"Tier 6 · $26/mo",p:26}
+  {v:"4",label:"Tier 4 · $16/mo",p:16},{v:"5",label:"Tier 5 · $19/mo",p:19},{v:"byod",label:"BYOD · $19/mo",p:19},{v:"6",label:"Tier 6 · $26/mo",p:26},
+  {v:"emp",label:"Employee pricing · $6/mo",p:6,short:"employee"}
 ];
 /* Connected-device plans. ap = AutoPay price; +$5 without AutoPay. */
 var CPLANS = {
@@ -872,7 +873,7 @@ function compute(s){
     if (d.down) T.push({l:label + " down payment", a:d.down * q});
     if (d.due) T.push({l:label + " · " + d.name + " paid in full", a:d.due * q});
     var pr = P360.filter(function(x){ return x.v === g.p360; })[0];
-    if (pr && pr.p) { out.lines.push({l:"Protection 360", a:pr.p}); W.push({l:label + " · Protection 360", a:pr.p * q}); }
+    if (pr && pr.p) { var pl = "Protection 360" + (pr.short ? " (" + pr.short + ")" : ""); out.lines.push({l:pl, a:pr.p}); W.push({l:label + " · " + pl, a:pr.p * q}); }
     if (g.credit.monthlyOn && num(g.credit.amt)) {
       var ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[g.credit.type] || "Line";
       out.lines.push({l:ct + " credit", a:-num(g.credit.amt), c:"cr", sub:"for " + (+g.credit.months || 1) + " months"});
@@ -1227,8 +1228,8 @@ function editBody(g, q){
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "New line · number transfer", "Customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line · new number", "", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "Customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New number", false, "g." + g.id + ".lineType") +
       (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "No added plan charge", false, "g." + g.id + ".lineType") : "") +
       '</div></div>';
     if (c.fam === "tmix") b1 += picksBlock(q);
