@@ -1491,8 +1491,37 @@ function startLive(){
   }, function(){ live.state = "error"; renderSoon(); });
 }
 document.addEventListener("visibilitychange", function(){
-  if (document.visibilityState === "visible" && Date.now() - (startLive._t || 0) > 10 * 60 * 1000) startLive();
+  if (document.visibilityState !== "visible") return;
+  if (Date.now() - (startLive._t || 0) > 10 * 60 * 1000) startLive();
+  checkUpdate();
 });
+
+/* ================= Updates ================= */
+/* GitHub Pages lets devices reuse a saved copy of the page for up to 10 minutes.
+   On open, compare this page's code with the live one and switch to the new version.
+   The quote on screen is saved first, so nothing is lost. */
+function pageCode(doc){
+  var els = doc.querySelectorAll("script:not([src]), style"), out = "";
+  for (var i = 0; i < els.length; i++) out += els[i].textContent;
+  return out;
+}
+var MY_CODE = pageCode(document), _upd = 0;
+function checkUpdate(){
+  if (location.protocol !== "https:" && location.hostname !== "localhost") return;
+  if (Date.now() - _upd < 60 * 1000) return;
+  _upd = Date.now();
+  fetch(location.pathname + "?u=" + Date.now(), {cache:"no-store"}).then(function(r){ return r.ok ? r.text() : ""; }).then(function(t){
+    if (!t) return;
+    var code = pageCode(new DOMParser().parseFromString(t, "text/html"));
+    if (!code || code === MY_CODE) return;
+    if (ui.sheet || ui.edit) { _upd = 0; return; }   // a drawer is open: update next time instead
+    var last = 0; try { last = +sessionStorage.getItem(KEY + ".upd") || 0; } catch (e) {}
+    if (Date.now() - last < 2 * 60 * 1000) return;    // already tried just now; never loop
+    try { sessionStorage.setItem(KEY + ".upd", String(Date.now())); } catch (e) {}
+    save();
+    fetch(location.pathname, {cache:"reload"}).then(null, function(){}).then(function(){ location.reload(); });
+  }).catch(function(){});
+}
 
 /* ================= Email ================= */
 var EMAIL_RE = /^[A-Za-z0-9._+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
@@ -1899,6 +1928,7 @@ document.addEventListener("keydown", function(e){
 
 renderAll();
 startLive();
+checkUpdate();
 })();
 </script>
 
