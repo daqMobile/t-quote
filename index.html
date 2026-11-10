@@ -76,6 +76,15 @@ button:disabled{cursor:not-allowed}
 .pill .amt b{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 .pill .amt small{font-size:12.5px}
 .pill .go{width:34px;height:34px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.pill{position:relative}
+.qfind{position:absolute;top:calc(100% + 8px);right:0;z-index:45;width:min(300px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 32px -12px rgba(0,0,0,.35);padding:14px}
+.qfind form{display:flex;flex-direction:column;gap:8px}
+.qfind label{font-weight:700;font-size:14px}
+.qfrow{display:flex;gap:8px}
+.qfrow .tin{flex:1;min-width:0}
+.qferr{margin:0;font-size:12.5px;color:var(--bad)}
+.qferr:empty{display:none}
+.qfind .linkbtn{align-self:flex-start;font-size:13px}
 .acts{grid-area:acts;display:flex;align-items:center;gap:8px}
 .ja{border:0;background:none;font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px;padding:6px 4px}
 .startnew{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:10px 18px;white-space:nowrap}
@@ -399,7 +408,15 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
       <button class="cq" data-act="sheet" data-v="review"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>Current Quote <span class="exchip" id="exChip">Example</span></button>
       <span class="sep" aria-hidden="true"></span>
       <button class="amt" data-act="sheet" data-v="review" aria-label="Open the quote"><b id="pillAmt">$0.00</b><small>mo</small><svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
-      <button class="go" data-act="sheet" data-v="review" aria-label="Review the quote"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+      <button class="go" id="findBtn" data-act="qfind" aria-label="Open a quote by ID" aria-expanded="false" aria-controls="qFind"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
+      <div class="qfind" id="qFind" hidden>
+        <form id="findForm" autocomplete="off">
+          <label for="findId">Open a quote</label>
+          <div class="qfrow"><input class="tin qidin" id="findId" maxlength="5" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="E6BGH" aria-label="Quote ID"><button class="pbtn" id="findGo" type="submit">Open</button></div>
+          <p class="qferr" id="findErr" role="alert"></p>
+          <button class="linkbtn" type="button" data-act="sheet" data-v="open">See recent quotes</button>
+        </form>
+      </div>
     </div>
     <div class="acts">
       <button class="ja" data-act="sheet" data-v="open">Open quote</button>
@@ -1909,7 +1926,9 @@ document.addEventListener("click", function(e){
   var b = e.target.closest ? e.target.closest("[data-act]") : null; if (!b || b.disabled) return;
   var act = b.dataset.act, v = b.dataset.v, g = b.dataset.g ? grp(b.dataset.g) : null;
   if (act !== "startnew" && ui.confirm) { ui.confirm = false; }
+  if (act !== "qfind" && $("#qFind") && !$("#qFind").hidden && act === "sheet") setFind(false);
   switch (act) {
+    case "qfind": setFind($("#qFind").hidden); return;
     case "copy": {
       var txt = quoteText(), fb = $("#copyFallback");
       var fail = function(){ if (fb) { fb.value = txt; fb.hidden = false; fb.focus(); fb.select(); } toast("Select the text and copy it."); };
@@ -2085,10 +2104,36 @@ document.addEventListener("change", function(e){
   var ne = id && document.getElementById(id);
   if (ne && !(wasSelect && matchMedia("(pointer: coarse)").matches)) ne.focus({preventScroll:true});
 });
+/* Quote ID box under the price pill. */
+function setFind(open){
+  var box = $("#qFind"), btn = $("#findBtn"); if (!box) return;
+  box.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+  if (open) { $("#findErr").textContent = ""; var f = $("#findId"); f.value = ""; f.focus(); }
+}
+function findQuote(raw){
+  var id = String(raw || "").toUpperCase().replace(/[^A-Z0-9]/g, ""), err = $("#findErr"), go = $("#findGo");
+  if (id.length !== 5) { err.textContent = "Quote IDs are 5 letters and numbers, like E6BGH."; return; }
+  err.textContent = ""; go.disabled = true; go.textContent = "Opening…";
+  Quotes.get(id).then(function(d){
+    go.disabled = false; go.textContent = "Open";
+    if (!d) { err.textContent = "No saved quote has the ID " + id + (ghCfg() ? "" : " on this device") + "."; return; }
+    applyQuote(d); ui.sheet = null; ui.edit = null; state.tab = "wireless"; state.discountsOpen = false; resetMail();
+    setFind(false); if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    toast("Opened quote " + id + ".");
+    renderAll(); window.scrollTo(0, 0);
+  }, function(e){ go.disabled = false; go.textContent = "Open"; err.textContent = ghError(e); });
+}
+document.addEventListener("click", function(e){
+  var box = $("#qFind"); if (!box || box.hidden) return;
+  if (e.target.closest && (e.target.closest("#qFind") || e.target.closest("#findBtn"))) return;
+  setFind(false);
+}, true);
 document.addEventListener("submit", function(e){
+  if (e.target && e.target.id === "findForm") { e.preventDefault(); findQuote($("#findId").value); return; }
   if (e.target && e.target.id === "openForm") { e.preventDefault(); var f = document.getElementById("qId"); doOpen(f ? f.value : ""); }
 });
 document.addEventListener("keydown", function(e){
+  if (e.key === "Escape" && $("#qFind") && !$("#qFind").hidden) { setFind(false); return; }
   if (e.key === "Escape" && ui.sheet) { ui.sheet = null; ui.edit = null; renderAll(); }
 });
 
