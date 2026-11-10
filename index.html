@@ -640,7 +640,7 @@ function exampleState(){
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
   var c = newGroup("watch"); c.dev.model = "awse3";
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
-    autopay:true, planDiscount:"none", discountsOpen:true, groups:[a,b,c], perks:["netflixAds"],
+    autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     set:{connect:35}};
 }
@@ -670,6 +670,7 @@ try {
     }
   }
 } catch (e) {}
+state.discountsOpen = false;   // Plan discounts starts closed every time the tool opens
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
 /* ================= Helpers ================= */
@@ -1499,7 +1500,7 @@ function doOpen(raw){
   Quotes.get(id).then(function(d){
     live.opening = false;
     if (!d) { live.openErr = "No saved quote has the ID " + id + (ghCfg() ? "" : " on this device") + ". Check the letters and try again."; renderAll(); return; }
-    applyQuote(d); ui.sheet = null; ui.edit = null; state.tab = "wireless"; resetMail();
+    applyQuote(d); ui.sheet = null; ui.edit = null; state.tab = "wireless"; state.discountsOpen = false; resetMail();
     toast("Opened quote " + id + ".");
     renderAll(); window.scrollTo(0, 0);
   }, function(e){ live.opening = false; live.openErr = ghError(e); renderAll(); });
