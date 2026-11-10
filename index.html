@@ -183,14 +183,14 @@ button:disabled{cursor:not-allowed}
 .handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
 .trayin{padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .traycount{font-size:13px;color:var(--muted)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,118px));justify-content:center;gap:12px;width:100%}
-.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--accent);font-size:13.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,190px));justify-content:center;gap:16px;width:100%}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 8px 18px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--accent);font-size:16px;font-weight:500}
 /* Device outline with a small + in the middle of it */
-.tile .tico{position:relative;width:64px;height:64px;display:grid;place-items:center}
-.tile svg.dev{width:64px;height:64px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.tile .plus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
-.tile .plus .ico{width:12px;height:12px;stroke-width:3}
-.tile .badge{top:6px;right:6px}
+.tile .tico{position:relative;width:92px;height:92px;display:grid;place-items:center}
+.tile svg.dev{width:92px;height:92px;fill:none;stroke:var(--muted);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tile .plus{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.tile .plus .ico{width:15px;height:15px;stroke-width:3}
+.tile .badge{top:8px;right:8px}
 .tile:disabled{opacity:.45}
 
 /* ---------- Home internet ---------- */
@@ -945,11 +945,10 @@ function renderStage(q){
   var counts = {phone:0, basic:0, tablet:0, watch:0};
   s.groups.forEach(function(g){ counts[g.type] += g.qty; });
   var full = q.devices >= 20, voiceFull = c.newVoice >= c.max - c.E;
-  var tiles = ui.trayTab === "top" ? ["phone","tablet","watch","basic"] : ["tablet","watch"];
+  var tiles = ["phone","tablet","watch","basic"];
   h += '<section class="tray" aria-label="Add devices">' +
     '<button class="handle" data-act="tray" aria-expanded="' + ui.trayOpen + '">' + I.down + 'Add devices</button>' +
     (ui.trayOpen ? '<div class="trayin"><span class="traycount">' + q.devices + '/20 devices added</span>' +
-      '<div class="seg" role="group" aria-label="Device list"><button data-act="traytab" data-v="top" aria-pressed="' + (ui.trayTab === "top") + '">Top Devices</button><button data-act="traytab" data-v="conn" aria-pressed="' + (ui.trayTab === "conn") + '">Connected Devices</button></div>' +
       '<div class="tiles">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
         return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
@@ -1912,7 +1911,6 @@ document.addEventListener("click", function(e){
     case "plan": if (state.cust === "new") state.planNew = v; else state.planExp = v; afterPlanChange(); break;
     case "view": state.view = v; break;
     case "tray": ui.trayOpen = !ui.trayOpen; break;
-    case "traytab": ui.trayTab = v; break;
     case "add": {
       var ng = newGroup(v, state.cust);
       state.groups.push(ng);
