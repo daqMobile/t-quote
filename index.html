@@ -1115,7 +1115,7 @@ function menuBody(){
 }
 function ghSettingsHtml(){
   var c = ghCfg(), raw = ghRaw() || {};
-  var dr = ui.ghDraft || {}, owner = dr.owner != null ? dr.owner : (raw.owner || defaultOwner()), repo = dr.repo != null ? dr.repo : (raw.repo || "quick-quote-data");
+  var dr = ui.ghDraft || {}, owner = dr.owner != null ? dr.owner : (raw.owner || defaultOwner()), repo = dr.repo != null ? dr.repo : (raw.repo || "t-quote-data");
   return '<h3 class="eyebrow" style="margin:0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Saved quotes</h3>' +
     (c ? '<p class="info">' + I.info + '<span>Quotes save to your private repository <b>' + esc(c.owner + "/" + c.repo) + '</b>.</span></p>'
        : '<p class="info warn">' + I.info + '<span>Quotes save on this device only until you add a GitHub key.</span></p>') +
