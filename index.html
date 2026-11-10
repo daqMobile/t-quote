@@ -17,7 +17,7 @@
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: a store quoting console. Sticky top bar with the running quote price; a Review rail
    on the right of the work area on wide screens (a bottom Review bar on narrow screens). Work area = tabs, discount band,
@@ -28,9 +28,10 @@
   --band:#B50064; --band-ink:#FFFFFF; --review:#2E333A; --review-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
   --good:#0E7A54; --warn:#9A4A0A; --bad:#BF2A1F;
   --scrim:rgba(13,18,23,.45);
-  --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
-  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* TeleNeo is Telekom's own licensed typeface and can't be served from this site; Inter is the closest free match. */
+  --display:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -138,7 +139,7 @@ button:disabled{cursor:not-allowed}
 .tiers{display:flex;align-items:stretch;background:var(--sunk);border:1px solid var(--line);border-radius:4px;overflow-x:auto;max-width:100%;font-size:13px}
 .tiers .lead{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--accent-soft);color:var(--accent);font-weight:700;white-space:nowrap}
 .tiers .lead small{font-weight:500;font-size:11px}
-.tiers button{border:0;background:transparent;padding:8px 18px;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums}
+.tiers button{border:0;background:transparent;padding:8px 20px;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums}
 .tiers button[aria-pressed="true"]{font-weight:700;color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 .tiers button:disabled{color:var(--muted)}
 .tbtns{display:flex;align-items:center;gap:10px}
@@ -158,7 +159,7 @@ button:disabled{cursor:not-allowed}
 .devico svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .badge{position:absolute;top:-8px;right:-8px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--badge);color:var(--badge-ink);font-size:11.5px;font-weight:700;display:grid;place-items:center}
 .cbody{padding:14px;display:flex;flex-direction:column;gap:12px}
-.cbody select.tin{font-size:17px;font-weight:600}
+.cbody select.tin{font-size:17px;font-weight:500}
 .editbtn{align-self:flex-start;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;padding:10px 20px}
 .cost{border-left:3px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:2px;font-size:14px}
 .cost .h{font-weight:600;font-size:14.5px;margin-bottom:2px}
