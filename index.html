@@ -626,7 +626,8 @@ function newGroup(type, cust){
   return {
     id:"g" + (gid++), type:t, qty:1, name:"",
     lineType: TYPES[t].voice ? "port" : "new",
-    dev:{kind: t === "basic" ? "custom" : "new", model: t === "tablet" ? "ipada16" : (t === "watch" ? "awse3" : null),
+    /* No device is picked for a new line until the rep chooses one. */
+    dev:{kind: t === "basic" ? "custom" : "new", model: null,
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"best", customCredit:0, customPicks:0},
     p360:"0",
     pay:{method:"eip", term:36, connect:true, down:0},
@@ -638,7 +639,7 @@ function exampleState(){
   gid = 1;
   var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
-  var c = newGroup("watch");
+  var c = newGroup("watch"); c.dev.model = "awse3";
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
     autopay:true, planDiscount:"none", discountsOpen:true, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
