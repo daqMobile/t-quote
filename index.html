@@ -432,6 +432,29 @@ var TMIX = {
   saver:    {name:"Saver",    full:"T-Mix Saver",    max:2,  ap:[45,80],                  addl:0,  port:{1:30,2:65},   specs:"50GB premium data · 480p video · no Picks"}
 };
 var TMIX_ORDER = ["loaded","more","standard","saver"];
+/* Discounted T-Mix versions, chosen under Apply a plan discount. AutoPay prices = the page prices on t-mobile.com
+   (Nov 10, 2026: military-discounts, first-responder-discounts, 55+ pages) minus $10 per line.
+   Military and First Responder have no Saver version; 55+ is 2 phone lines max.
+   Employee pricing takes a percentage off the plan; the rep sets it in Settings. */
+var SEG = {
+  military:  {label:"Military", ap:{loaded:[80,130,165,200,235], more:[60,105,130,155,180], standard:[45,70,85,100,115]}, addl:{loaded:35, more:25, standard:15}, max:{},
+              hint:"For military members and veterans. The military status holder must be the account holder. Verify at activation, or the plan loses Military Savings (up to $15 more per line)."},
+  responder: {label:"First Responder", ap:{loaded:[80,130,165,200,235], more:[60,105,130,155,180], standard:[45,70,85,100,115]}, addl:{loaded:35, more:25, standard:15}, max:{},
+              hint:"For state and local law enforcement, firefighters, EMS, their pensioned retirees, and families of first responders killed in the line of duty. Federal employees aren't eligible. Verify at activation."},
+  senior:    {label:"55+", ap:{saver:[30,60], standard:[50,75], more:[65,120], loaded:[85,150]}, addl:{}, max:{saver:2, standard:2, more:2, loaded:2},
+              hint:"The account holder must be 55 or older. Up to 2 phone lines."},
+  employee:  {label:"Employee", pct:true,
+              hint:"Employee pricing takes the percentage set in Settings off the plan price."}
+};
+function segOf(s){ return s.cust === "new" && SEG[s.planDiscount] ? s.planDiscount : null; }
+function empPct(){ return Math.min(100, num(state.set.employeePct)); }
+/* What a T-Mix plan shows when it can't be priced: not offered with the chosen discount, or over its line limit. */
+function planNA(id, seg, short){
+  var S = seg && SEG[seg];
+  if (S && S.ap && !S.ap[id]) return short ? "n/a" : "not offered with " + S.label + " Savings";
+  var mx = S && S.max && S.max[id] ? S.max[id] : TMIX[id].max;
+  return short ? "max " + mx : "up to " + mx + " lines";
+}
 /* Experience (existing accounts adding lines). AutoPay prices from T-Mobile's add-a-line page (lines 1–5);
    lines 6+ are estimates. +$5 per line without AutoPay (up to 8 lines). */
 var EXP = {
@@ -440,19 +463,25 @@ var EXP = {
 };
 var EXP_ORDER = ["beyond","more"];
 
-function planCalc(fam, id, n, autopay, portOn){
+function planCalc(fam, id, n, autopay, portOn, seg){
   if (!(n >= 1)) return null;
   var p = fam === "tmix" ? TMIX[id] : EXP[id];
   if (!p || n > p.max) return null;
-  var base;
-  if (fam === "tmix") base = n <= p.ap.length ? p.ap[n-1] : p.ap[p.ap.length-1] + (n - p.ap.length) * p.addl;
-  else base = n <= 5 ? p.ap[n-1] : p.ap[4] + p.addl.slice(0, n-5).reduce(function(a,b){ return a+b; }, 0);
+  var S = fam === "tmix" && seg ? SEG[seg] : null, base, est;
+  if (S && S.ap) {
+    var t = S.ap[id];
+    if (!t || (S.max[id] && n > S.max[id])) return null;
+    base = n <= t.length ? t[n-1] : t[t.length-1] + (n - t.length) * S.addl[id];
+    est = false; portOn = false;
+  } else if (fam === "tmix") { base = n <= p.ap.length ? p.ap[n-1] : p.ap[p.ap.length-1] + (n - p.ap.length) * p.addl; est = id !== "saver" && n >= 6; }
+  else { base = n <= 5 ? p.ap[n-1] : p.ap[4] + p.addl.slice(0, n-5).reduce(function(a,b){ return a+b; }, 0); est = n >= 6; }
   var promo = fam === "tmix" ? p.port[n] : undefined;
   var usePort = !!portOn && promo != null && promo < base;
   var price = usePort ? promo : base;
+  var empSave = S && S.pct ? round2(price * empPct() / 100) : 0;
+  price -= empSave;
   var noAp = autopay ? 0 : (fam === "tmix" ? 10 * Math.min(n,12) : 5 * Math.min(n,8));
-  return {base:base, price:price, portSave: usePort ? base - promo : 0, noAp:noAp, total: price + noAp,
-          est: fam === "tmix" ? (id !== "saver" && n >= 6) : n >= 6};
+  return {base:base, price:price, portSave: usePort ? base - promo : 0, empSave:empSave, noAp:noAp, total: price + noAp, est:est};
 }
 function picksFor(id, n){
   if (!(n >= 1)) return 0;
@@ -653,7 +682,7 @@ function exampleState(){
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
     autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
-    set:{connect:35}};
+    set:{connect:35, employeePct:0}};
 }
 function blankState(){
   var s = exampleState();
@@ -708,8 +737,9 @@ function ctxOf(s){
   var newVoice = sum(voice.filter(function(g){ return g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var portVoice = sum(voice.filter(function(g){ return g.lineType === "port"; }).map(function(g){ return g.qty; }));
   var E = fam === "exp" ? s.existingLines : 0;
-  return {fam:fam, pid:pid, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, E:E, n:E + newVoice,
-          max: (fam === "tmix" ? TMIX[pid] : EXP[pid]).max};
+  var S = fam === "tmix" ? SEG[s.planDiscount] : null, mx = (fam === "tmix" ? TMIX[pid] : EXP[pid]).max;
+  if (S && S.max && S.max[pid]) mx = Math.min(mx, S.max[pid]);
+  return {fam:fam, pid:pid, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, E:E, n:E + newVoice, max:mx};
 }
 
 /* Offers that apply to a group's chosen phone, with eligibility */
@@ -773,21 +803,24 @@ function devMath(g, c){
 
 /* ================= Quote math ================= */
 function compute(s){
-  var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid];
   var W = [], T = [], ONE = [], notes = [], groupsOut = {};
+  var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
+  if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
+  if (seg === "employee" && !empPct()) notes.push({t:"warn", m:"Set the employee discount percentage in Settings."});
   var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
   var portOn = c.fam === "tmix" && s.planDiscount === "port" && allPort;
   if (c.fam === "tmix" && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
 
   var pc = null, plan = 0, share = 0;
   if (c.fam === "tmix") {
-    pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn);
+    pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn, seg);
     if (c.n === 0) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."});
-    else if (!pc) notes.push({t:"bad", m:P.full + " allows up to " + P.max + " phone lines. Remove lines or pick another plan."});
+    else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
     else {
       plan = pc.total; share = pc.total / c.n;
       W.push({l:P.full + " · " + c.n + " line" + (c.n > 1 ? "s" : ""), a:pc.base, sub: s.autopay ? "AutoPay price" : ""});
       if (pc.portSave) W.push({l:"Number transfer price", a:-pc.portSave, c:"credit"});
+      if (pc.empSave) W.push({l:"Employee pricing", a:-pc.empSave, sub: empPct() + "% off the plan", c:"credit"});
       if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
       if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
@@ -905,6 +938,14 @@ function banner(q){
     (differs ? '<p class="muted">Saved totals were ' + fmt(L.monthly || 0) + '/mo and ' + fmt(L.today || 0) + ' due today. The totals now differ because the quote or pricing changed.</p>' : '') +
     '<div class="inl"><button class="obtn" data-act="reprice">Reprice with current offers</button><button class="linkbtn" data-act="unload">Close quote</button></div></div>';
 }
+/* One option under Apply a plan discount, greyed out when the current plan or line count doesn't qualify. */
+function segOpt(v, label){
+  var s = state, c = ctxOf(s), S = SEG[v], why = "", ok = true;
+  if (S.pct) why = empPct() ? " · " + empPct() + "% off" : " · set % in Settings";
+  else if (!S.ap[c.pid]) { ok = false; why = " (not on " + TMIX[c.pid].name + ")"; }
+  else if (S.max[c.pid] && c.newVoice > S.max[c.pid]) { ok = false; why = " (max " + S.max[c.pid] + " phone lines)"; }
+  return '<option value="' + v + '"' + (s.planDiscount === v ? " selected" : (ok ? "" : " disabled")) + '>' + label + why + '</option>';
+}
 function renderStage(q){
   var s = state, c = q.c, h = banner(q);
   h += '<div class="tabs" role="tablist">' +
@@ -938,17 +979,18 @@ function renderStage(q){
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
         (c.fam === "tmix" ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
+        (c.fam === "tmix" ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("employee", "Employee pricing") : '') +
       '</select></div>' +
-      '<p class="fhint">' + (c.fam === "tmix" ? "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number." : "Experience accounts keep their current plan pricing. Use Line Credits in Edit Options for any account-specific credit.") + '</p></div>' +
+      '<p class="fhint">' + (c.fam === "tmix" ? (segOf(s) ? esc(SEG[s.planDiscount].hint) : "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number.") : "Experience accounts keep their current plan pricing. Use Line Credits in Edit Options for any account-specific credit.") + '</p></div>' +
     '</div>';
   }
 
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
   h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : "Experience") + ' <small>' + Math.max(c.n,1) + ' phone line tier</small></span>' +
     order.map(function(id){
-      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, s.planDiscount === "port") : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
+      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
-      return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : "max " + (c.fam === "tmix" ? TMIX[id].max : 12)) + '</button>';
+      return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : (c.fam === "tmix" ? planNA(id, segOf(s), true) : "max 12")) + '</button>';
     }).join("") + '</div>' +
     '<div class="tbtns"><button class="obtn" data-act="sheet" data-v="compare">Compare plans</button>' +
       '<div class="vtog" role="group" aria-label="View"><button data-act="view" data-v="grid" aria-pressed="' + (s.view === "grid") + '" aria-label="Card view">' + I.grid + '</button><button data-act="view" data-v="list" aria-pressed="' + (s.view === "list") + '" aria-label="List view">' + I.list + '</button></div></div></div>';
@@ -1088,7 +1130,7 @@ function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
   var rows = order.map(function(id){
-    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, s.planDiscount === "port" && c.portVoice === c.newVoice) : planCalc("exp", id, n, s.autopay, false);
+    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, s.planDiscount === "port" && c.portVoice === c.newVoice, segOf(s)) : planCalc("exp", id, n, s.autopay, false);
     return {id:id, pc:pc, pk: c.fam === "tmix" ? picksFor(id, n) : null};
   });
   var max = Math.max.apply(null, rows.map(function(r){ return r.pc ? r.pc.total : 0; }));
@@ -1096,7 +1138,7 @@ function compareBody(q){
   var curT = cur && cur.pc ? cur.pc.total : 0;
   return '<div class="cmp">' + rows.map(function(r){
     var name = planName(c.fam, r.id), spec = (c.fam === "tmix" ? TMIX : EXP)[r.id].specs;
-    if (!r.pc) return '<div class="cmprow na"><span class="cl">' + name + '</span><div class="track"></div><span class="cmpval muted">—<small>max ' + (c.fam === "tmix" ? TMIX[r.id].max : 12) + ' lines</small></span></div>';
+    if (!r.pc) return '<div class="cmprow na"><span class="cl">' + name + '</span><div class="track"></div><span class="cmpval muted">—<small>' + (c.fam === "tmix" ? planNA(r.id, segOf(s), false) : "up to 12 lines") + '</small></span></div>';
     var diff = r.pc.total - curT;
     return '<button class="cmprow' + (r.id === c.pid ? " cur" : "") + '" data-act="plan" data-v="' + r.id + '" style="width:100%;border:0;background:none;padding:0;text-align:left;color:inherit"><span class="cl">' + name + '<small class="muted" style="display:block;font-weight:400;font-size:12px">' + spec + '</small></span>' +
       '<div class="track"><div class="fillbar" style="width:' + (max ? r.pc.total / max * 100 : 0).toFixed(1) + '%"></div></div>' +
@@ -1154,7 +1196,8 @@ function feesBody(){
   var st = state.set;
   function mf(id, label, k, v){ return '<div class="f"><label for="' + id + '">' + label + '</label><span class="money"><input class="tin" id="' + id + '" type="number" inputmode="decimal" min="0" step="0.01" data-k="' + k + '" data-t="num" value="' + v + '"></span></div>'; }
   return '<div class="fields">' +
-    mf("sConn", "Connection charge per line", "set.connect", st.connect) + '</div>' +
+    mf("sConn", "Connection charge per line", "set.connect", st.connect) +
+    '<div class="f"><label for="sEmp">Employee discount (% off the plan)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + (st.employeePct || "") + '" placeholder="e.g. 25"></div></div>' +
     '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>';
 }
 
@@ -1171,10 +1214,10 @@ function editBody(g, q){
     var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER, n = Math.max(c.n, 1);
     b1 += '<div><h4>Choose plan</h4><p class="info">' + I.info + 'Prices below reflect discounts applied and the total number of phone lines on the quote.</p><div class="radios">' +
       order.map(function(id){
-        var pc = c.fam === "tmix" ? planCalc("tmix", id, n, state.autopay, state.planDiscount === "port" && c.portVoice === c.newVoice) : planCalc("exp", id, n, state.autopay, false);
+        var pc = c.fam === "tmix" ? planCalc("tmix", id, n, state.autopay, state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
         var P = (c.fam === "tmix" ? TMIX : EXP)[id];
         var pk = c.fam === "tmix" ? picksFor(id, n) : null;
-        return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· up to ' + P.max + ' lines</span>',
+        return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· ' + (c.fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
           P.specs + (pk != null ? " · " + (pk ? pk + " Pick" + (pk > 1 ? "s" : "") : "no Picks") : ""), !pc, "__plan");
       }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
