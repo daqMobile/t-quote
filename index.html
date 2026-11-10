@@ -26,7 +26,6 @@
   --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F3F5F8; --ink:#121A22; --muted:#56646F; --line:#D3DAE1;
   --accent:#C2006A; --accent-ink:#FFFFFF; --accent-soft:#FBE7F1;
   --band:#B50064; --band-ink:#FFFFFF; --review:#2E333A; --review-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
-  --paper:#FCFCF7; --paper-line:#BFC5BC;
   --good:#0E7A54; --warn:#9A4A0A; --bad:#BF2A1F;
   --scrim:rgba(13,18,23,.45);
   --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
@@ -38,7 +37,6 @@
     --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
     --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
     --band:#EC70B0; --band-ink:#0D1217; --review:#3F4650; --review-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
-    --paper:#1A2027; --paper-line:#3A444D;
     --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
     --scrim:rgba(0,0,0,.6);
     color-scheme:dark;
@@ -48,7 +46,6 @@
   --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
   --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
   --band:#EC70B0; --band-ink:#0D1217; --review:#3F4650; --review-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
-  --paper:#1A2027; --paper-line:#3A444D;
   --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
   --scrim:rgba(0,0,0,.6);
   color-scheme:dark;
@@ -94,15 +91,15 @@ button:disabled{cursor:not-allowed}
 .shell{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr)}
 .rail{display:none}
 @media (min-width:900px){
-  .shell{grid-template-columns:minmax(0,1fr) 34px;min-height:calc(100vh - 60px)}
-  .rail{display:block;border:0;padding:0;color:#fff;position:relative}
-  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px);display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:13px;letter-spacing:.12em;padding:18px 0;width:100%}
+  .shell{grid-template-columns:minmax(0,1fr) 50px;min-height:calc(100vh - 60px)}
+  .rail{display:flex;flex-direction:column;justify-content:flex-start;border:0;padding:0;color:#fff;position:relative}
+  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px);display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:14px;letter-spacing:.12em;padding:18px 0;width:100%}
   .rail.review{background:var(--review);color:var(--review-ink)}
   .rail.review span{transform:none}
   .rail b{font-size:18px;line-height:1}
 }
 .stage{min-width:0;padding-block:14px 150px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
-@media (min-width:900px){.stage{padding:16px 20px 60px}}
+@media (min-width:900px){.stage{padding:16px 6px 60px 20px}}
 
 /* ---------- Tabs & discount band ---------- */
 .tabs{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
@@ -317,28 +314,25 @@ button:disabled{cursor:not-allowed}
 .srcs{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 .srcs a{color:var(--accent)}
 
-/* Receipt */
-.receipt{position:relative;margin:8px 0;background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:12.5px;line-height:1.5;padding:18px 16px 16px;box-shadow:0 14px 28px -20px rgba(0,0,0,.45)}
-.receipt::before,.receipt::after{content:"";position:absolute;left:0;right:0;height:8px;background:radial-gradient(circle at 6px 0,transparent 5px,var(--paper) 5.5px) repeat-x;background-size:12px 8px}
-.receipt::before{top:-8px}
-.receipt::after{bottom:-8px;transform:scaleY(-1)}
-.rhead{text-align:center}
-.rtitle{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.12em;text-transform:uppercase;line-height:1}
-.rhead .rp{margin-top:6px;font-weight:600}
-.rule{border-top:1px dashed var(--paper-line);margin:12px 0}
-.rsec{font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:11px;color:var(--muted);margin-bottom:4px}
-.rr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:2px 0}
+/* Review summary: plain layout, magenta rules between sections */
+.receipt{margin:2px 0 8px;padding:18px 18px 16px;background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--ink);font-size:14px;line-height:1.45}
+.rhead{display:flex;flex-direction:column;gap:2px}
+.rtitle{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.2}
+.rhead .rp{font-weight:600}
+.rhead .rid{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.rule{border-top:1.5px solid var(--accent);margin:16px 0 12px}
+.rsec{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:11.5px;color:var(--accent);margin-bottom:6px}
+.rr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 0}
 .rr .l{min-width:0}
-.rr .l small{display:block;color:var(--muted);font-size:11px}
-.rr .a{white-space:nowrap;font-variant-numeric:tabular-nums}
+.rr .l small{display:block;color:var(--muted);font-size:12px}
+.rr .a{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
 .rr.credit .a{color:var(--good)}
-.rr.est .l{font-style:italic}
-.rr.off{color:var(--muted)}
-.rtotal{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:6px}
-.rtotal .lbl{font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:11.5px}
+.rr.off,.rr.off .a{color:var(--muted);font-weight:400}
+.rtotal{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:8px;padding-top:10px;border-top:1px solid var(--line)}
+.rtotal .lbl{font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
 .rtotal .big{font-family:var(--display);font-weight:700;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
 .rtotal .mid{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
-.rsub{text-align:right;font-size:11px;color:var(--muted)}
+.rsub{text-align:right;font-size:12px;color:var(--muted)}
 .notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-family:var(--body);font-size:12.5px;line-height:1.35}
 .notes li{padding-left:12px;position:relative}
 .notes li::before{content:"";position:absolute;left:0;top:.5em;width:6px;height:6px;border-radius:50%;background:var(--muted)}
@@ -1050,7 +1044,7 @@ function renderSheet(q){
 function reviewBody(q){
   var s = state, c = q.c;
   var head = c.fam === "tmix" ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new";
-  var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="mono" style="margin-top:4px">ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
+  var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
