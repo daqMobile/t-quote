@@ -93,7 +93,7 @@ button:disabled{cursor:not-allowed}
 @media (min-width:900px){
   .shell{grid-template-columns:minmax(0,1fr) 50px;min-height:calc(100vh - 60px)}
   .rail{display:flex;flex-direction:column;justify-content:flex-start;border:0;padding:0;color:#fff;position:relative}
-  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px);display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:14px;letter-spacing:.12em;padding:18px 0;width:100%}
+  .rail span{position:sticky;top:calc(env(safe-area-inset-top,0px) + 63px);height:calc(100vh - 63px - env(safe-area-inset-top,0px));height:calc(100dvh - 63px - env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:center;gap:10px;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:14px;letter-spacing:.12em;padding:18px 0;width:100%}
   .rail.review{background:var(--review);color:var(--review-ink)}
   .rail.review span{transform:none}
   .rail b{font-size:18px;line-height:1}
