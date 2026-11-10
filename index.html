@@ -733,6 +733,12 @@ function model(id){
 }
 function grp(id){ return state.groups.filter(function(g){ return g.id === id; })[0] || null; }
 function planName(fam, id){ return (fam === "tmix" ? TMIX[id] : EXP[id]).full; }
+/* Tablet plans are add-on prices. With no phone line on the account they cost $40 more per line
+   (t-mobile.com tablet plans: "Up to $40 more per line/mo. without qualifying voice line"; Tablet Unlimited $60 and
+   Unlimited Plus $65 standalone). BYOD tablet lines need a T-Mix Loaded phone line, so they aren't offered alone. */
+var TAB_NO_VOICE = 40;
+function tabletAlone(type, c){ return type === "tablet" && c.n === 0; }
+function cplanPrice(p, type, c, autopay){ return p.ap + (autopay ? 0 : 5) + (tabletAlone(type, c) && !p.byod ? TAB_NO_VOICE : 0); }
 function cplanOf(g){ var list = CPLANS[g.type]; return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
 
 function ctxOf(s){
@@ -819,7 +825,7 @@ function compute(s){
   var pc = null, plan = 0, share = 0;
   if (c.fam === "tmix") {
     pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn, seg);
-    if (c.n === 0) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."});
+    if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."}); }
     else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
     else {
       plan = pc.total; share = pc.total / c.n;
@@ -847,14 +853,15 @@ function compute(s){
     var out = {lines:[], unit:0, warn:""};
     if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share, sub:(c.fam === "exp" ? "added " : "") + c.n + " phone line price tier"});
     if (!T0.voice) {
-      var cp = cplanOf(g), price = cp.ap + (s.autopay ? 0 : 5), okByod = true;
-      if (cp.byod && (cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
+      var cp = cplanOf(g), price = cplanPrice(cp, g.type, c, s.autopay), okByod = true, alone = tabletAlone(g.type, c);
+      if (cp.byod && (alone || cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
       if (cp.byod && g.dev.kind !== "existing") out.warn = (out.warn ? out.warn + " " : "") + "BYOD pricing needs the customer's own device.";
       if (g.lineType !== "upgrade") {
-        out.lines.push({l:cp.name, a:price});
-        W.push({l:label + " · " + cp.name, a:price * q, sub: q > 1 ? q + " × " + fmt(price) : ""});
+        out.lines.push({l:cp.name, a:price, sub: alone && !cp.byod ? "No phone line · +$" + TAB_NO_VOICE : ""});
+        W.push({l:label + " · " + cp.name, a:price * q, sub: (q > 1 ? q + " × " + fmt(price) : "") + (alone && !cp.byod ? (q > 1 ? " · " : "") + "standalone price, no phone line" : "")});
       }
       if (!okByod) notes.push({t:"warn", m:out.warn});
+      if (alone && !cp.byod) notes.push({t:"warn", m:"Tablet lines cost $" + TAB_NO_VOICE + " more per line without a phone line on the account. Adding a phone line brings them back to the add-on price."});
     }
     var d = devMath(g, c);
     if (d.warn) { out.warn = (out.warn ? out.warn + " " : "") + d.warn; notes.push({t:"warn", m:label + ": " + d.warn}); }
@@ -1027,7 +1034,7 @@ function card(g, i, q){
     var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
     planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="Plan for all phone lines">' + order.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + planName(c.fam, id) + '</option>'; }).join("") + '</select>';
   } else {
-    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : "") + '>' + p.name + ' · $' + (p.ap + (state.autopay ? 0 : 5)) + '</option>'; }).join("") + '</select>';
+    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : (p.byod && tabletAlone(g.type, c) ? " disabled" : "")) + '>' + p.name + ' · $' + cplanPrice(p, g.type, c, state.autopay) + '</option>'; }).join("") + '</select>';
   }
   var planLines = o.lines.filter(function(x){ return x.l === "Plan" || (!T0.voice && cplanOf(g).name === x.l); });
   var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
@@ -1109,7 +1116,7 @@ function renderSheet(q){
 
 function reviewBody(q){
   var s = state, c = q.c;
-  var head = c.fam === "tmix" ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new";
+  var head = c.fam === "tmix" ? (c.n ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : "No phone lines") : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new";
   var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
@@ -1235,8 +1242,8 @@ function editBody(g, q){
     if (c.fam === "tmix") b1 += picksBlock(q);
   } else {
     b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + CPLANS[g.type].map(function(p){
-      var dis = p.byod && p.plans.indexOf(c.pid) < 0;
-      return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + (p.ap + (state.autopay ? 0 : 5)) + '/mo</b> - ' + p.name, p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
+      var dis = p.byod && (tabletAlone(g.type, c) || p.plans.indexOf(c.pid) < 0);
+      return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + cplanPrice(p, g.type, c, state.autopay) + '/mo</b> - ' + p.name + (tabletAlone(g.type, c) && !p.byod ? ' <span class="why">· no phone line on the account</span>' : ''), p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
     }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
       radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "", false, "g." + g.id + ".lineType") +
@@ -1649,8 +1656,9 @@ function quoteHead(q){
   var extra = sum(state.groups.filter(function(g){ return !TYPES[g.type].voice && g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var head = c.fam === "tmix" ? q.P.full + ", " + c.n + " phone line" + (c.n === 1 ? "" : "s")
                               : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s");
-  if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
-  if (state.hint.on) head += " + 5G Home Internet";
+  if (c.fam === "tmix" && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
+  else if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
+  if (state.hint.on) head += (head ? " + " : "") + "5G Home Internet";
   return head;
 }
 /* Customer-facing row labels: drop the rep's group name ("Smartphone ×2 · ") and show the count at the end. */
