@@ -23,8 +23,8 @@
    plan tier strip, device-group cards, Add Devices tray. Edit Options and Review open as side drawers. */
 :root{
   --bg:#ECEFF3; --surface:#FFFFFF; --sunk:#F3F5F8; --ink:#121A22; --muted:#56646F; --line:#D3DAE1;
-  --accent:#2742D1; --accent-ink:#FFFFFF; --accent-soft:#E3E8FC;
-  --band:#2742D1; --band-ink:#FFFFFF; --build:#B4412E; --build-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
+  --accent:#C2006A; --accent-ink:#FFFFFF; --accent-soft:#FBE7F1;
+  --band:#C2006A; --band-ink:#FFFFFF; --build:#2E333A; --build-ink:#FFFFFF; --badge:#E8A13A; --badge-ink:#121A22;
   --paper:#FCFCF7; --paper-line:#BFC5BC;
   --good:#0E7A54; --warn:#9A4A0A; --bad:#BF2A1F;
   --scrim:rgba(13,18,23,.45);
@@ -35,8 +35,8 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
-    --accent:#8FA0FF; --accent-ink:#0D1217; --accent-soft:#1E2747;
-    --band:#3A52D9; --band-ink:#FFFFFF; --build:#C4553F; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
+    --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
+    --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
     --paper:#1A2027; --paper-line:#3A444D;
     --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
     --scrim:rgba(0,0,0,.6);
@@ -45,8 +45,8 @@
 }
 :root[data-theme="dark"]{
   --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
-  --accent:#8FA0FF; --accent-ink:#0D1217; --accent-soft:#1E2747;
-  --band:#3A52D9; --band-ink:#FFFFFF; --build:#C4553F; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
+  --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
+  --band:#B8006B; --band-ink:#FFFFFF; --build:#3F4650; --build-ink:#FFFFFF; --badge:#F0B357; --badge-ink:#121A22;
   --paper:#1A2027; --paper-line:#3A444D;
   --good:#4FC48D; --warn:#F0A257; --bad:#FF7B70;
   --scrim:rgba(0,0,0,.6);
@@ -1592,7 +1592,7 @@ function emailText(q, m){
 /* Designed version for the Outlook app: inline styles and tables only, so mail apps keep the layout. */
 function emailHtml(q, m){
   var b = mailBits(q, m);
-  var MUT = "#5B6670", INK = "#16202A", ACC = "#2742D1", GOOD = "#0E7A54", LINE = "#E3E7EC", SOFT = "#F1F3F9";
+  var MUT = "#5B6670", INK = "#16202A", ACC = "#C2006A", GOOD = "#0E7A54", LINE = "#E3E7EC", SOFT = "#FBF0F6";
   var CAP = "font-size:11px;letter-spacing:1px;color:" + MUT + ";font-weight:700;";
   function para(t){ return '<p style="margin:0 0 14px">' + esc(t).replace(/\n/g, "<br>") + '</p>'; }
   function sec(title, rows){
