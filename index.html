@@ -199,11 +199,16 @@ button:disabled{cursor:not-allowed}
 .empty{border:2px dashed var(--line);border-radius:6px;padding:28px 18px;text-align:center;color:var(--muted)}
 
 /* ---------- Add devices tray ---------- */
-.tray{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:6px;position:sticky;bottom:0;z-index:20;box-shadow:0 -12px 24px -20px rgba(0,0,0,.4)}
-@media (max-width:899px){.tray{bottom:calc(54px + env(safe-area-inset-bottom,0px))}}
-.tray .trayin{max-height:420px;overflow:hidden;transition:max-height .28s ease,padding .28s ease,opacity .2s ease}
-.tray.shut{border-bottom-color:transparent;box-shadow:none}
-.tray.shut .trayin{max-height:0;padding-block:0;opacity:0;pointer-events:none}
+/* Add Devices is a sheet fixed to the bottom of the screen, lined up with the work area.
+   Hiding it slides it down until only its tab shows; a spacer at the end of the page shrinks with it. */
+.tray{position:fixed;z-index:30;bottom:0;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));
+  background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -12px 24px -18px rgba(0,0,0,.4);transition:transform .28s ease,box-shadow .28s ease}
+.tray.shut{transform:translateY(100%);box-shadow:none}
+@media (min-width:900px){.tray{left:calc((100vw - min(100vw,1320px)) / 2 + 20px);right:calc((100vw - min(100vw,1320px)) / 2 + 56px)}}
+@media (max-width:899px){.tray{bottom:calc(54px + env(safe-area-inset-bottom,0px));padding-bottom:0}}
+.trayspace{transition:height .28s ease}
+@media (prefers-reduced-motion:reduce){.tray,.trayspace{transition:none}}
 .handle{position:absolute;left:50%;top:-1px;transform:translate(-50%,-100%);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:center;gap:0}
 .handle .ico{width:16px;height:12px;transition:transform .15s}
 .handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
@@ -1066,7 +1071,7 @@ function renderStage(q){
         return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
       }).join("") + '</div>' +
       (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
-    '</div></section>' + foot;
+    '</div></section>' + foot + '<div class="trayspace" aria-hidden="true"></div>';
   $("#stage").innerHTML = h;
 }
 
@@ -1248,6 +1253,11 @@ function appearanceHtml(){
     '<div class="seg" role="group" aria-label="Appearance" style="flex:none;align-self:flex-start">' + b("auto", "Automatic") + b("light", "Light") + b("dark", "Dark") + '</div>' +
     '<p class="fhint">Automatic follows your iPad\'s Light or Dark setting.</p>';
 }
+/* When this copy of the page was published (from the server's Last-Modified), to tell whether the iPad has the newest version. */
+function versionLine(){
+  var d = new Date(document.lastModified);
+  return '<p class="fhint" style="margin-top:4px">This version: ' + (isNaN(d) ? "unknown" : esc(d.toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}))) + '</p>';
+}
 function settingsBody(){
   return appearanceHtml() + ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
 }
@@ -1258,7 +1268,7 @@ function feesBody(){
     mf("sConn", "Connection charge per line", "set.connect", st.connect) +
     '<div class="f"><label for="sEmp">Employee discount, wireless lines (%)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + empPct() + '"></div>' +
     '<div class="f"><label for="sEmpH">Employee discount, Home Internet (%)</label><input class="tin" id="sEmpH" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeeHintPct" data-t="num" value="' + empHintPct() + '"></div></div>' +
-    '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>';
+    '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>' + versionLine();
 }
 
 /* ----- Edit options: numbered boxes ----- */
@@ -1879,6 +1889,13 @@ function quoteText(){
 function toast(m){ var r = $("#toastRoot"); r.innerHTML = '<div class="toast">' + esc(m) + '</div>'; clearTimeout(toast._t); toast._t = setTimeout(function(){ r.innerHTML = ""; }, 2600); }
 
 /* ================= Render all ================= */
+/* Room at the end of the page so the last content can scroll clear of the Add Devices sheet (or just its tab). */
+function sizeTraySpace(){
+  var t = document.querySelector(".tray"), sp = document.querySelector(".trayspace");
+  if (!t || !sp) return;
+  sp.style.height = ((ui.trayOpen ? t.offsetHeight : 0) + 48) + "px";
+}
+window.addEventListener("resize", sizeTraySpace);
 function renderAll(){
   var q = compute(state);
   $("#pillAmt").textContent = fmt(q.monthly);
@@ -1886,6 +1903,7 @@ function renderAll(){
   $("#exChip").hidden = !state.example;
   var sn = $("#startNew"); sn.textContent = ui.confirm ? "Tap to clear" : "Start new"; sn.className = "startnew" + (ui.confirm ? " confirm" : "");
   renderStage(q);
+  sizeTraySpace();
   renderSheet(q);
   save();
   return q;
@@ -1896,6 +1914,7 @@ function renderLive(){
   $("#navAmt").textContent = fmt(q.monthly);
   $("#exChip").hidden = !state.example;
   renderStage(q);
+  sizeTraySpace();
   if (ui.sheet === "edit") {
     var g = grp(ui.edit), dc = $("#devcalc"), cp = $("#crprev");
     if (g && dc && !dc.contains(document.activeElement)) dc.innerHTML = devCalc(g, q);
@@ -2042,7 +2061,7 @@ document.addEventListener("click", function(e){
     case "tray": {
       ui.trayOpen = !ui.trayOpen;
       var tr = document.querySelector(".tray");
-      if (tr) { tr.classList.toggle("shut", !ui.trayOpen); b.setAttribute("aria-expanded", String(ui.trayOpen)); var ti = tr.querySelector(".trayin"); if (ti) { if (ui.trayOpen) ti.removeAttribute("aria-hidden"); else ti.setAttribute("aria-hidden", "true"); } return; }
+      if (tr) { tr.classList.toggle("shut", !ui.trayOpen); b.setAttribute("aria-expanded", String(ui.trayOpen)); var ti = tr.querySelector(".trayin"); if (ti) { if (ui.trayOpen) ti.removeAttribute("aria-hidden"); else ti.setAttribute("aria-hidden", "true"); } sizeTraySpace(); return; }
       break;
     }
     case "add": {
