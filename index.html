@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Quick Quote">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#FFFFFF">
+<script>try{var qqt=localStorage.getItem("tmix-quick-quote.v2.theme");if(qqt==="light"||qqt==="dark")document.documentElement.setAttribute("data-theme",qqt)}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -1031,7 +1032,7 @@ function renderSheet(q){
   else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
   else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
   else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
-  else if (s === "settings") html = drawer("Settings", "Saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
+  else if (s === "settings") html = drawer("Settings", "Appearance, saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "edit") {
     var g = grp(ui.edit);
     if (!g) { ui.sheet = null; root.innerHTML = ""; return; }
@@ -1106,7 +1107,7 @@ function menuBody(){
     '<button data-act="sheet" data-v="email">Email quote<small>Opens Outlook with the quote written</small></button>' +
     '<button data-act="sheet" data-v="open">Open a saved quote<small>Type a Quote ID or pick a recent one</small></button>' +
     '<button data-act="sheet" data-v="jobaid">Job Aid<small>Step-by-step for building a quote</small></button>' +
-    '<button data-act="sheet" data-v="settings">Settings<small>Saved quotes, connection charge</small></button>' +
+    '<button data-act="sheet" data-v="settings">Settings<small>Light or dark, saved quotes, connection charge</small></button>' +
     '<button data-act="example">Load the example quote<small>Replaces what\'s on screen</small></button></div>' +
     '<div class="srcs"><span>Independent tool, not made by or affiliated with T-Mobile. Prices as of ' + ASOF + '. Confirm in the store system before you quote.</span>' +
     '<span>Sources: <a href="https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" target="_blank" rel="noopener">T-Mobile holiday offers</a> · <a href="https://www.t-mobile.com/customers/device-add-a-line" target="_blank" rel="noopener">T-Mobile add-a-line pricing</a> · <a href="https://www.droid-life.com/2026/10/26/t-mobile-t-mix-plans-explained-are-they-any-good/" target="_blank" rel="noopener">Droid Life T-Mix breakdown</a> · <a href="https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" target="_blank" rel="noopener">Android Central deals</a> · <a href="https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/" target="_blank" rel="noopener">MacRumors iPhone prices</a> · <a href="https://magentapulse.t-mobile.com/us/en/customer-support/plans/consumer/wearables-iot/t-mobile-watch-plans" target="_blank" rel="noopener">Watch plans</a> · <a href="https://mytmoclaim.com/media/fseb1a2a/ms98691-ny-1125-p23pdf_v24.pdf" target="_blank" rel="noopener">Protection 360 rates</a></span></div>';
@@ -1124,8 +1125,16 @@ function ghSettingsHtml(){
     (ui.ghStatus ? '<p class="fhint" aria-live="polite">' + esc(ui.ghStatus) + '</p>' : '') +
     '<p class="fhint">The key stays on this device. Use a key that can only read and write your quotes repository.</p>';
 }
+function themeNow(){ var t = document.documentElement.getAttribute("data-theme"); return t === "light" || t === "dark" ? t : "auto"; }
+function appearanceHtml(){
+  var t = themeNow();
+  function b(v, l){ return '<button data-act="theme" data-v="' + v + '" aria-pressed="' + (t === v) + '">' + l + '</button>'; }
+  return '<h3 class="eyebrow" style="margin:0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Appearance</h3>' +
+    '<div class="seg" role="group" aria-label="Appearance" style="flex:none;align-self:flex-start">' + b("auto", "Automatic") + b("light", "Light") + b("dark", "Dark") + '</div>' +
+    '<p class="fhint">Automatic follows your iPad\'s Light or Dark setting.</p>';
+}
 function settingsBody(){
-  return ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
+  return appearanceHtml() + ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
 }
 function feesBody(){
   var st = state.set;
@@ -1336,7 +1345,7 @@ var Quotes = {
   save: function(doc){
     var c = ghCfg();
     if (!c) return localPut(doc) ? Promise.resolve(doc) : Promise.reject({code:"local_full"});
-    return ghPut(c, "quotes/" + doc.id + ".json", doc, null, "Save quote " + doc.id).then(function(){
+    return ghPut(c, "quotes/" + doc.id + ".json", doc, null, "Save quote " + doc.id).catch(function(e){ if (e && e.status === 422) return null; throw e; }).then(function(){
       localPut(doc);
       function addToIndex(tries){
         return ghGet(c, "quotes/index.json").then(function(r){
@@ -1393,9 +1402,8 @@ function genId(){
   return s;
 }
 function round2(n){ return Math.round(n * 100) / 100; }
-function doSave(note){
-  if (live.saving) return;
-  live.saving = true; renderAll();
+/* The saved-quote record for what's on screen. */
+function quoteDoc(id, note){
   var q = compute(state), applied = {}, offers = {}, devices = {}, pool = offerPool();
   state.groups.forEach(function(g){
     var d = devMath(g, q.c);
@@ -1410,13 +1418,18 @@ function doSave(note){
   });
   var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
   var headline = q.c.fam === "tmix" ? q.P.full + ", " + q.c.n + " line" + (q.c.n === 1 ? "" : "s") : q.P.full + ", adding " + q.c.newVoice + " to " + q.c.E;
+  return {id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
+          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE}};
+}
+function doSave(note){
+  if (live.saving) return;
+  live.saving = true; renderAll();
   var tries = 0;
   function attempt(){
     var id = genId();
     return Quotes.exists(id).then(function(ex){
       if (ex && ++tries < 6) return attempt();
-      return Quotes.save({id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
-                          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE}});
+      return Quotes.save(quoteDoc(id, note));
     });
   }
   attempt().then(function(doc){
@@ -1428,6 +1441,41 @@ function doSave(note){
     toast(e && e.code === "local_full" ? "This device's quote storage is full. Add your GitHub key in Settings to keep saving." : ghError(e));
     renderAll();
   });
+}
+/* Sending the email saves the quote on the spot, so its Quote ID is in the email.
+   It saves on this device right away and uploads to GitHub in the background; anything that
+   didn't finish uploading (say, the iPad switched to Outlook first) is retried when the tool is next open. */
+var PENDING_Q = KEY + ".pending";
+function pendingIds(){ try { return JSON.parse(localStorage.getItem(PENDING_Q) || "[]") || []; } catch (e) { return []; } }
+function setPending(a){ try { localStorage.setItem(PENDING_Q, JSON.stringify(a)); } catch (e) {} }
+function flushPending(){
+  if (!ghCfg() || flushPending.busy) return;
+  var ids = pendingIds(), all = localQuotes();
+  if (!ids.length) return;
+  flushPending.busy = true;
+  ids.reduce(function(p, id){
+    return p.then(function(){
+      var done = function(){ setPending(pendingIds().filter(function(x){ return x !== id; })); };
+      if (!all[id]) { done(); return; }
+      return Quotes.save(all[id]).then(done, function(){});
+    });
+  }, Promise.resolve()).then(function(){ flushPending.busy = false; });
+}
+function reserveId(){
+  if (currentId(compute(state))) return;
+  var id = genId(); ui.mail.newId = id;
+  Quotes.exists(id).then(function(ex){ if (ex && ui.mail.newId === id) reserveId(); }, function(){});
+}
+function saveForEmail(){
+  if (currentId(compute(state))) return false;
+  var id = ui.mail.newId || genId(), nm = (ui.mail.name || "").trim();
+  ui.mail.newId = null;
+  var doc = quoteDoc(id, nm ? nm + " · emailed" : "Emailed");
+  localPut(doc);
+  applyQuote(doc);
+  live.saved = null;
+  if (ghCfg()) { setPending(pendingIds().concat([id])); flushPending(); }
+  return true;
 }
 function applyQuote(d){
   var src = d.state || {}, s = Object.assign(exampleState(), JSON.parse(JSON.stringify(src)));
@@ -1486,6 +1534,7 @@ function startLive(){
 document.addEventListener("visibilitychange", function(){
   if (document.visibilityState !== "visible") return;
   if (Date.now() - (startLive._t || 0) > 10 * 60 * 1000) startLive();
+  flushPending();
   checkUpdate();
 });
 
@@ -1529,7 +1578,7 @@ function currentId(q){
 /* Reads as a person at T-Mobile, not a T-Mobile notice: a company-style subject from an outlook.com address looks like a scam to spam filters. */
 function defaultSubject(id, sig){
   var who = String(sig || "").split(/\r?\n/)[0].trim().slice(0, 40) || "Nik";
-  return "Your quote from " + who + " at T-Mobile" + (id ? " (Quote " + id + ")" : "");
+  return "Your quote from " + who + " at T-Mobile";
 }
 function quoteHead(q){
   var c = q.c;
@@ -1574,7 +1623,6 @@ function emailText(q, m){
   out.push(b.monthLabel.toUpperCase() + ": " + fmt(q.monthly) + "/mo (" + b.taxNote.toLowerCase() + ")");
   out.push("DUE TODAY: " + fmt(q.today) + " (plus tax)");
   out.push(b.head);
-  if (b.id) out.push("Quote ID: " + b.id + " (mention it if you come back in)");
   function sec(title, rows){
     if (!rows.length) return;
     out.push("", title);
@@ -1587,6 +1635,7 @@ function emailText(q, m){
   if (b.perks.length) out.push("", "INCLUDED WITH YOUR PICKS", b.perks.join(", "));
   out.push("", b.fine);
   if (b.sig) out.push("", b.sig);
+  if (b.id) out.push("", "Ref. " + b.id);
   return out.join("\n");
 }
 /* Designed version for the Outlook app: inline styles and tables only, so mail apps keep the layout. */
@@ -1616,7 +1665,6 @@ function emailHtml(q, m){
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:14px;border-top:1px solid ' + LINE + '"><tr>' +
         '<td style="padding-top:12px;' + CAP + '">DUE TODAY <span style="font-weight:400;letter-spacing:0">· plus tax</span></td>' +
         '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
-      (b.id ? '<div style="font-size:12px;color:' + MUT + ';margin-top:10px">Quote ID <b style="color:' + INK + ';letter-spacing:1px">' + esc(b.id) + '</b> · mention it if you come back in</div>' : '') +
     '</td></tr></table>' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">' +
       sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) +
@@ -1624,6 +1672,7 @@ function emailHtml(q, m){
     (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
     '<p style="margin:22px 0 0;font-size:12px;line-height:1.45;color:' + MUT + '">' + esc(b.fine) + '</p>' +
     (b.sig ? '<p style="margin:20px 0 0">' + esc(b.sig).replace(/\n/g, "<br>") + '</p>' : '') +
+    (b.id ? '<p style="margin:18px 0 0;font-size:10px;color:#A3ACB4">Ref. ' + esc(b.id) + '</p>' : '') +
   '</div>';
 }
 function mailParts(q){
@@ -1658,9 +1707,9 @@ function emailBody(q){
     '<div class="f"><label for="mSig">Your name</label><input class="tin" id="mSig" autocomplete="off" data-m="sig" placeholder="Signs the email" value="' + esc(m.sig) + '"></div></div>' +
     '<div class="f"><div class="qrow"><label for="mSubj">Subject</label><button class="linkbtn" data-act="copyfield" data-v="subj" style="font-size:13px">Copy</button></div><input class="tin" id="mSubj" autocomplete="off" data-m="subj" value="' + esc(p.subj) + '"></div>' +
     '<div class="f"><label for="mIntro">Opening line</label><textarea class="tin" id="mIntro" rows="2" data-m="intro">' + esc(m.intro != null ? m.intro : DEFAULT_INTRO) + '</textarea></div>';
-  if (p.id) h += '<p class="info">' + I.info + '<span>Quote ID <b class="mono">' + esc(p.id) + '</b> is in the email, so the customer can bring it back in.</span></p>';
-  else h += '<div class="inl"><p class="info" style="margin:0">' + I.info + '<span>' + (L ? "This quote changed after it was saved as " + esc(L.id) + ". Save it again to put a Quote ID in the email." : "Save the quote to put a Quote ID in the email.") + '</span></p>' +
-    '<button class="obtn" data-act="sheet" data-v="save">Save quote</button>' + '</div>';
+  if (p.id) h += '<p class="info">' + I.info + '<span>Saved as Quote ID <b class="mono">' + esc(p.id) + '</b>. It\'s in small print at the bottom of the email.</span></p>';
+  else h += '<p class="info">' + I.info + '<span>' + (L ? "This quote changed after it was saved as " + esc(L.id) + ". " : "") +
+    'Sending saves the quote automatically, and its Quote ID goes in small print at the bottom of the email.</span></p>';
   if (checks.length) h += '<div><h4>Check before sending</h4><ul class="notes">' + checks.map(function(x){ return '<li class="' + x.t + '">' + esc(x.m) + '</li>'; }).join("") + '</ul></div>';
   var plain = m.style === "plain";
   h += '<div><div class="qrow" style="align-items:center;margin-bottom:6px"><h4 style="margin:0">Preview</h4><div class="seg sm" role="group" aria-label="Email style">' +
@@ -1806,6 +1855,7 @@ document.addEventListener("click", function(e){
         var tf = document.getElementById("mTo"); if (tf) tf.focus();
         return;
       }
+      if (saveForEmail()) { mp = mailParts(compute(state)); updateMail(); setTimeout(renderAll, 600); }
       b.setAttribute("href", act === "openweb" ? mp.webHref : (act === "openapp" ? mp.appHref : mp.href));
       if (act === "openapp" && ui.mail.style !== "plain") {
         toast("Email copied. In Outlook, touch and hold the message area and tap Paste.");
@@ -1817,18 +1867,24 @@ document.addEventListener("click", function(e){
       return;
     }
     case "copyrich": {
+      if (saveForEmail()) setTimeout(renderAll, 600);
       var rp = mailParts(compute(state));
       copyRich(rp.html, rp.body).then(function(){ toast("Designed email copied. Paste it into the message in Outlook."); },
         function(){ toast("This browser can't copy the designed email. Use Plain text instead."); });
       return;
     }
     case "copymail": {
+      if (saveForEmail()) setTimeout(renderAll, 600);
       var body = mailParts(compute(state)).body, mf = document.getElementById("mailFallback");
       var mfail = function(){ if (mf) { mf.value = body; mf.hidden = false; mf.focus(); mf.select(); } toast("Select the text and copy it."); };
       try { navigator.clipboard.writeText(body).then(function(){ toast("Message copied. Paste it into a new email."); }, mfail); } catch (err) { mfail(); }
       return;
     }
-    case "sheet": ui.sheet = v; if (v === "email") ui.mail.err = ""; if (v === "save") live.saved = null; if (v === "open") { live.openErr = ""; loadRecent(); } break;
+    case "theme":
+      if (v === "light" || v === "dark") document.documentElement.setAttribute("data-theme", v); else document.documentElement.removeAttribute("data-theme");
+      try { if (v === "light" || v === "dark") localStorage.setItem(KEY + ".theme", v); else localStorage.removeItem(KEY + ".theme"); } catch (err) {}
+      break;
+    case "sheet": ui.sheet = v; if (v === "email") { ui.mail.err = ""; reserveId(); } if (v === "save") live.saved = null; if (v === "open") { live.openErr = ""; loadRecent(); } break;
     case "dosave": { var ne = document.getElementById("qNote"); doSave(ne ? ne.value : ""); return; }
     case "copyid": {
       var sid = live.saved && live.saved.id; if (!sid) return;
@@ -1921,6 +1977,7 @@ document.addEventListener("keydown", function(e){
 
 renderAll();
 startLive();
+flushPending();
 checkUpdate();
 })();
 </script>
