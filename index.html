@@ -1504,7 +1504,11 @@ function currentId(q){
   var L = state.loaded; if (!L) return null;
   return (Math.abs(q.monthly - (L.monthly || 0)) < 0.01 && Math.abs(q.today - (L.today || 0)) < 0.01) ? L.id : null;
 }
-function defaultSubject(id){ return "Your T-Mobile quote" + (id ? " (Quote " + id + ")" : ""); }
+/* Leads with the rep's name, not the brand: "T-Mobile" in the subject from an outlook.com address looks like a scam to spam filters. */
+function defaultSubject(id, sig){
+  var who = String(sig || "").split(/\r?\n/)[0].trim().slice(0, 40) || "Nik";
+  return "Your quote from " + who + (id ? " (Quote " + id + ")" : "");
+}
 function quoteHead(q){
   var c = q.c;
   var extra = sum(state.groups.filter(function(g){ return !TYPES[g.type].voice && g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
@@ -1602,7 +1606,7 @@ function emailHtml(q, m){
 }
 function mailParts(q){
   var m = ui.mail, id = currentId(q), to = (m.to || "").trim(), ok = EMAIL_RE.test(to);
-  var subj = m.subj != null ? m.subj : defaultSubject(id), body = emailText(q, m), html = emailHtml(q, m);
+  var subj = m.subj != null ? m.subj : defaultSubject(id, m.sig), body = emailText(q, m), html = emailHtml(q, m);
   var crlf = body.replace(/\r?\n/g, "\r\n");
   var enc = function(x){ return encodeURIComponent(x).replace(/[!'()*]/g, function(c){ return "%" + c.charCodeAt(0).toString(16).toUpperCase(); }); };
   var href = "mailto:" + (ok ? to : "") + "?subject=" + encodeURIComponent(subj) + "&body=" + encodeURIComponent(crlf);
@@ -1618,6 +1622,7 @@ function updateMail(){
   var a = document.getElementById("mOpen"); if (a) a.setAttribute("href", p.href);
   var wl = document.getElementById("mWeb"); if (wl) { wl.setAttribute("href", p.webHref); wl.setAttribute("aria-disabled", String(!p.ok)); }
   var al = document.getElementById("mApp"); if (al) { al.setAttribute("href", p.appHref); al.setAttribute("aria-disabled", String(!p.ok)); }
+  var sj = document.getElementById("mSubj"); if (sj && ui.mail.subj == null && document.activeElement !== sj) sj.value = p.subj;
   var er = document.getElementById("mErr"); if (er) er.textContent = ui.mail.err || "";
   var ln = document.getElementById("mLong"); if (ln) ln.hidden = p.appHref.length <= 30000;
 }
