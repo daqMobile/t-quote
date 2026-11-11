@@ -1,14 +1,15 @@
 {
  "meta": {
-  "checkedAt": "2026-11-11T11:11:14-06:00",
-  "summary": "50 offers still listed as active, none ended. This run couldn't reach T-Mobile's offer pages, so all 50 are marked unconfirmed until the next check.",
+  "checkedAt": "2026-11-11T11:31:04-06:00",
+  "summary": "50 offers active, none ended. 7 T-Mix offers confirmed from a Nov 6 Android Police roundup; T-Mobile's own pages blocked this run, so the other 43 stay marked unconfirmed.",
   "changes": [
-   "Marked all 50 active offers as unconfirmed: T-Mobile's offer pages and other deal sites were blocked by this run's network settings, and search results only showed the Nov 5 holiday offers still running, with no end dates"
+   "Confirmed 7 T-Mix offers still running (Pixel 11 1 Pick, Pixel 11 Pro/Pro XL 2 Picks, Galaxy S26 2 Picks, Galaxy 3 Picks new line, razr+ 2 Picks new line, 6 and 7 Picks any-phone) from Android Police's Nov 6 roundup",
+   "Left the other 43 active offers marked unconfirmed: T-Mobile's offer pages refused automated access and no other source gave matching terms or end dates"
   ],
   "sources": [
-   "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
    "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
-   "https://www.tmonews.com/2026/11/t-mobiles-holiday-deals-are-here-iphone-18-pro-on-us-four-lines-for-25-and-more/"
+   "https://www.techradar.com/deals/the-best-cell-phone-deals",
+   "https://www.technobezz.com/news/black-friday-phone-deals-verizon-att-t-mobile"
   ]
  },
  "offers": [
@@ -933,7 +934,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on T-Mix More or Loaded. No trade-in needed. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -948,12 +949,12 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
    "dated": true,
@@ -979,7 +980,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on T-Mix Loaded. No trade-in needed. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -997,12 +998,12 @@
    "plans": [
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
    "dated": true,
@@ -1228,7 +1229,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 6 Picks on a $155+/mo T-Mix account (e.g. More with 3 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1262,15 +1263,15 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 7 Picks on a $180+/mo T-Mix account (e.g. More with 4 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1304,15 +1305,15 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1329,12 +1330,12 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
    "dated": true,
@@ -1362,7 +1363,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1378,12 +1379,12 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
    "dated": true,
@@ -1457,7 +1458,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1472,12 +1473,12 @@
     "more",
     "loaded"
    ],
-   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "source": "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
    "starts": "2026-11-05",
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-10"
+   "verified": "2026-11-11"
   },
   {
    "dated": true,
