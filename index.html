@@ -723,7 +723,7 @@ function exampleState(){
   var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
   var c = newGroup("watch"); c.dev.model = "awse3";
-  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond",
+  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond", exFam:"exp",
     autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     set:{connect:35, employeePct:75, employeeHintPct:20}};
@@ -780,16 +780,47 @@ function tabletAlone(type, c){ return type === "tablet" && c.n === 0; }
 function cplanPrice(p, type, c, autopay){ return p.ap + (autopay ? 0 : 5) + (tabletAlone(type, c) && !p.byod ? TAB_NO_VOICE : 0); }
 function cplanOf(g){ var list = CPLANS[g.type]; return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
 
+/* An existing account is on Experience, an older plan, or T-Mix (accounts opened since Nov 5, 2026).
+   Upgrade lines are lines already on the account, so the account has at least as many phone lines as upgrades. */
 function ctxOf(s){
-  var fam = s.cust === "new" ? "tmix" : "exp";
+  var ex = s.cust === "existing";
+  var fam = (!ex || s.exFam === "tmix") ? "tmix" : "exp";
   var pid = fam === "tmix" ? s.planNew : s.planExp;
   var voice = s.groups.filter(function(g){ return TYPES[g.type].voice; });
   var newVoice = sum(voice.filter(function(g){ return g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var portVoice = sum(voice.filter(function(g){ return g.lineType === "port"; }).map(function(g){ return g.qty; }));
-  var E = fam === "exp" ? s.existingLines : 0;
-  var S = fam === "tmix" ? SEG[s.planDiscount] : null, mx = (fam === "tmix" ? TMIX[pid] : EXP[pid]).max;
+  var upVoice = sum(voice.filter(function(g){ return g.lineType === "upgrade"; }).map(function(g){ return g.qty; }));
+  var E = ex ? Math.max(s.existingLines, upVoice) : 0;
+  var sg = segOf(s), S = sg ? SEG[sg] : null, mx = (fam === "tmix" ? TMIX[pid] : EXP[pid]).max;
   if (S && S.max && S.max[pid]) mx = Math.min(mx, S.max[pid]);
-  return {fam:fam, pid:pid, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, E:E, n:E + newVoice, max:mx};
+  return {fam:fam, pid:pid, ex:ex, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, upVoice:upVoice, E:E, n:E + newVoice, max:mx};
+}
+/* Plan value for pickers: an existing account's T-Mix plan is "tmix:<id>" so it can't be mistaken for Experience More. */
+function planVal(c, id, fam){ return c.ex && fam === "tmix" ? "tmix:" + id : id; }
+function curPlanVal(c){ return planVal(c, c.pid, c.fam); }
+/* Plan options for a dropdown: new customers pick a T-Mix tier; existing accounts pick the plan they're on now. */
+function planOptions(c){
+  function opt(id, fam){ var v = planVal(c, id, fam); return '<option value="' + v + '"' + (v === curPlanVal(c) ? " selected" : "") + '>' + planName(fam, id) + '</option>'; }
+  if (!c.ex) return TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("");
+  return '<optgroup label="Experience">' + EXP_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>' +
+    '<optgroup label="T-Mix · accounts opened since Nov 5">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
+    '<optgroup label="Older plans · upgrades only">' + LEGACY_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>';
+}
+/* Upgrades are only for existing accounts, so choosing Upgrade on a new-customer quote turns it into one. */
+function makeExisting(){
+  if (state.cust === "existing") return;
+  state.cust = "existing"; state.planDiscount = "none";
+  if (state.exFam !== "tmix") state.exFam = "exp";
+  state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
+  var c = ctxOf(state);
+  toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
+}
+/* A one-line description of the account for headings: "T-Mix More · 3 phone lines", "Experience Beyond · upgrade". */
+function acctLine(c, P, sep){
+  var pl = function(n, w){ return n + " " + w + (n === 1 ? "" : "s"); };
+  if (!c.ex) return c.n ? P.full + sep + pl(c.n, "phone line") : "";
+  if (isLegacy(c) || !c.newVoice) return P.full + sep + (c.upVoice ? (c.upVoice === 1 ? "upgrade" : pl(c.upVoice, "upgrade")) : "existing account");
+  return P.full + sep + c.E + " existing + " + c.newVoice + " new" + (c.upVoice ? " (" + (c.upVoice === 1 ? "1 upgrade" : pl(c.upVoice, "upgrade")) + ")" : "");
 }
 
 /* Offers that apply to a group's chosen phone, with eligibility */
@@ -858,11 +889,23 @@ function compute(s){
   var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
   var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
-  var portOn = c.fam === "tmix" && s.planDiscount === "port" && allPort;
-  if (c.fam === "tmix" && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
+  var portOn = c.fam === "tmix" && !c.ex && s.planDiscount === "port" && allPort;
+  if (c.fam === "tmix" && !c.ex && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
 
   var pc = null, plan = 0, share = 0;
-  if (c.fam === "tmix") {
+  if (c.fam === "tmix" && c.ex) {
+    /* Existing T-Mix account: the quote adds only what new lines add to the bill. Upgrades keep their plan. */
+    var tb = planCalc("tmix", c.pid, c.E, s.autopay, false, null), ta = planCalc("tmix", c.pid, c.n, s.autopay, false, null);
+    pc = ta;
+    if (!ta) notes.push({t:"bad", m:P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
+    else if (c.newVoice > 0) {
+      plan = ta.total - (tb ? tb.total : 0); share = plan / c.newVoice;
+      W.push({l:P.full + " · adding " + c.newVoice + " line" + (c.newVoice > 1 ? "s" : ""), a:plan,
+              sub: fmt(tb ? tb.total : 0) + " for " + c.E + " → " + fmt(ta.total) + " for " + c.n + (s.autopay ? "" : " (no AutoPay)")});
+      if (ta.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
+    }
+    if (ta && picksFor(c.pid, c.n)) notes.push({t:"info", m:"Picks shown are the account's total for " + c.n + " phone line" + (c.n === 1 ? "" : "s") + ". Picks the account already uses on perks or other promos count against them."});
+  } else if (c.fam === "tmix") {
     pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn, seg);
     if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."}); }
     else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
@@ -892,7 +935,7 @@ function compute(s){
   s.groups.forEach(function(g, gi){
     var q = g.qty, T0 = TYPES[g.type], label = (g.name || T0.label) + (q > 1 ? " ×" + q : "");
     var out = {lines:[], unit:0, warn:""};
-    if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share, sub:(c.fam === "exp" ? "added " : "") + c.n + " phone line price tier"});
+    if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share, sub:(c.ex ? "added " : "") + c.n + " phone line price tier"});
     if (!T0.voice) {
       var cp = cplanOf(g), price = cplanPrice(cp, g.type, c, s.autopay), okByod = true, alone = tabletAlone(g.type, c);
       if (cp.byod && (alone || cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
@@ -943,7 +986,7 @@ function compute(s){
 
   var H = [];
   if (s.hint.on) {
-    var hp = HINT[s.hint.plan], voiceOk = c.fam === "exp" || c.newVoice > 0;
+    var hp = HINT[s.hint.plan], voiceOk = c.ex || c.newVoice > 0;
     H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
     if (!s.autopay) H.push({l:"No AutoPay", a:5});
     if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
@@ -995,6 +1038,19 @@ function banner(q){
     (differs ? '<p class="muted">Saved totals were ' + fmt(L.monthly || 0) + '/mo and ' + fmt(L.today || 0) + ' due today. The totals now differ because the quote or pricing changed.</p>' : '') +
     '<div class="inl"><button class="obtn" data-act="reprice">Reprice with current offers</button><button class="linkbtn" data-act="unload">Close quote</button></div></div>';
 }
+/* The existing account's line count and current plan. Shown under Plan discounts and in Box 1 of Edit options. */
+function acctFields(c, pfx){
+  var lo = Math.max(1, c.upVoice);
+  var hint = isLegacy(c) ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here."
+    : (c.fam === "tmix" ? "T-Mix accounts opened since Nov 5, 2026. The quote shows what the added lines and devices add to their current bill, and T-Mix offers use the account's Picks."
+    : "The quote shows what the added lines and devices add to their current bill.");
+  return '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Phone lines already on the account</span><div class="stepper">' +
+      '<button data-act="exlines" data-v="-1" aria-label="Fewer existing lines"' + (c.E <= lo ? " disabled" : "") + '>' + I.minus + '</button><output>' + c.E + '</output>' +
+      '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (c.E + c.newVoice >= c.max || c.E >= 11 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
+    (c.upVoice ? '<p class="fhint" style="margin-top:4px">Includes the ' + c.upVoice + ' line' + (c.upVoice === 1 ? "" : "s") + ' being upgraded.</p>' : '') +
+    '<div style="margin-top:12px"><label class="flabel" for="' + pfx + 'CurPlan">Their current plan</label><div class="selwrap"><select id="' + pfx + 'CurPlan" data-k="__plan" data-t="str">' + planOptions(c) + '</select></div></div>' +
+    '<p class="fhint">' + hint + '</p>';
+}
 /* One option under Apply a plan discount, greyed out when the current plan or line count doesn't qualify. */
 function segOpt(v, label){
   var s = state, c = ctxOf(s), S = SEG[v], why = "", ok = true;
@@ -1023,33 +1079,26 @@ function renderStage(q){
   if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
 
   if (s.discountsOpen) {
-    var portAvail = c.fam === "tmix" && TMIX[c.pid].port[c.n] != null;
+    var portAvail = !c.ex && TMIX[c.pid].port[c.n] != null;
     h += '<div class="dpanel">' +
       '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
         '<button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile · T-Mix</button>' +
-        '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing account · Experience</button></div>' +
-        (s.cust === "existing" ? '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Lines already on the account</span><div class="stepper">' +
-          '<button data-act="exlines" data-v="-1" aria-label="Fewer existing lines"' + (s.existingLines <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + s.existingLines + '</output>' +
-          '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (s.existingLines >= 11 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
-          '<div style="margin-top:12px"><label class="flabel" for="curPlan">Their current plan</label><div class="selwrap"><select id="curPlan" data-k="__plan" data-t="str">' +
-            EXP_ORDER.map(function(id){ return '<option value="' + id + '"' + (s.planExp === id ? " selected" : "") + '>' + EXP[id].full + '</option>'; }).join("") +
-            '<optgroup label="Older plans · upgrades only">' + LEGACY_ORDER.map(function(id){ return '<option value="' + id + '"' + (s.planExp === id ? " selected" : "") + '>' + LEGACY[id].full + '</option>'; }).join("") + '</optgroup>' +
-          '</select></div></div>' +
-          '<p class="fhint">' + (EXP[s.planExp] && EXP[s.planExp].legacy ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here." : "The quote shows what the added lines and devices add to their current bill.") + '</p>' : '<p class="fhint">T-Mix replaced Experience for new customers on Nov 5, 2026.</p>') +
+        '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing account</button></div>' +
+        (c.ex ? acctFields(c, "pd") : '<p class="fhint">T-Mix replaced Experience for new customers on Nov 5, 2026. Choosing Upgrade as a line type makes the quote an existing account.</p>') +
       '</div>' +
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
-        (c.fam === "tmix" ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
-        (c.fam === "tmix" ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("employee", "Employee pricing") : '') +
+        (!c.ex ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
+        (!c.ex ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("employee", "Employee pricing") : '') +
       '</select></div>' +
-      '<p class="fhint">' + (c.fam === "tmix" ? (segOf(s) ? esc(SEG[s.planDiscount].hint) : "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number.") : "Experience accounts keep their current plan pricing. Use Line Credits in Edit Options for any account-specific credit.") + '</p></div>' +
+      '<p class="fhint">' + (!c.ex ? (segOf(s) ? esc(SEG[s.planDiscount].hint) : "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number.") : "Existing accounts keep their current plan pricing. Use Line Credits in Edit Options for any account-specific credit.") + '</p></div>' +
     '</div>';
   }
 
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
   h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? esc(EXP[c.pid].full) : "Experience")) + ' <small>' + (isLegacy(c) ? "upgrades only" : Math.max(c.n,1) + " phone line tier") + '</small></span>' +
     order.map(function(id){
-      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
+      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
       return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : (c.fam === "tmix" ? planNA(id, segOf(s), true) : "max 12")) + '</button>';
     }).join("") + '</div>' +
@@ -1080,9 +1129,7 @@ function card(g, i, q){
   var d = devMath(g, c);
   var planSel = "";
   if (T0.voice) {
-    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
-    if (c.fam === "exp") order = order.concat(LEGACY_ORDER);
-    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="Plan for all phone lines">' + order.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + planName(c.fam, id) + '</option>'; }).join("") + '</select>';
+    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="' + (c.ex ? "Their current plan" : "Plan for all phone lines") + '">' + planOptions(c) + '</select>';
   } else {
     planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : (p.byod && tabletAlone(g.type, c) ? " disabled" : "")) + '>' + p.name + ' · $' + cplanPrice(p, g.type, c, state.autopay) + '</option>'; }).join("") + '</select>';
   }
@@ -1112,7 +1159,7 @@ function listRow(g, i, q){
 }
 
 function renderInternet(q){
-  var s = state, hi = s.hint, voiceOk = q.c.fam === "exp" || q.c.newVoice > 0;
+  var s = state, hi = s.hint, voiceOk = q.c.ex || q.c.newVoice > 0;
   return '<div class="panel">' +
     '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Home Internet to this quote</button>' +
     '<div class="hint-plans">' + HINT_ORDER.map(function(id){
@@ -1166,13 +1213,13 @@ function renderSheet(q){
 
 function reviewBody(q){
   var s = state, c = q.c;
-  var head = c.fam === "tmix" ? (c.n ? q.P.full + " · " + c.n + " phone line" + (c.n === 1 ? "" : "s") : "No phone lines") : (isLegacy(c) ? q.P.full + " · upgrade" : q.P.full + " · " + c.E + " existing + " + c.newVoice + " new");
+  var head = acctLine(c, q.P, " · ") || "No phone lines";
   var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
-    '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.fam === "exp" ? " · added to current bill" : "") + '</div></div>' +
+    '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? " · added to current bill" : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
     '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>' +
-    '<div class="rtotal"><span class="lbl">' + (c.fam === "exp" ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
+    '<div class="rtotal"><span class="lbl">' + (c.ex ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
     '<div class="rsub">plus taxes &amp; fees</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
@@ -1194,7 +1241,7 @@ function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
   var rows = order.map(function(id){
-    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, s.planDiscount === "port" && c.portVoice === c.newVoice, segOf(s)) : planCalc("exp", id, n, s.autopay, false);
+    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, !c.ex && s.planDiscount === "port" && c.portVoice === c.newVoice, segOf(s)) : planCalc("exp", id, n, s.autopay, false);
     return {id:id, pc:pc, pk: c.fam === "tmix" ? picksFor(id, n) : null};
   });
   var max = Math.max.apply(null, rows.map(function(r){ return r.pc ? r.pc.total : 0; }));
@@ -1207,7 +1254,7 @@ function compareBody(q){
     return '<button class="cmprow' + (r.id === c.pid ? " cur" : "") + '" data-act="plan" data-v="' + r.id + '" style="width:100%;border:0;background:none;padding:0;text-align:left;color:inherit"><span class="cl">' + name + '<small class="muted" style="display:block;font-weight:400;font-size:12px">' + spec + '</small></span>' +
       '<div class="track"><div class="fillbar" style="width:' + (max ? r.pc.total / max * 100 : 0).toFixed(1) + '%"></div></div>' +
       '<span class="cmpval">' + (r.pc.est ? "≈" : "") + fmt0(r.pc.total) + '<small>' + (r.id === c.pid ? "current" : (diff === 0 ? "same" : (diff > 0 ? "+" : "−") + fmt0(Math.abs(diff)))) + (r.pk != null ? " · " + (r.pk ? r.pk + " Pick" + (r.pk > 1 ? "s" : "") : "no Picks") : "") + '</small></span></button>';
-  }).join("") + '</div><p class="fhint">Plan charge for the whole account' + (c.fam === "exp" ? " at " + n + " lines" : "") + '. Devices, protection, connected lines and fees stay the same on every plan. Tap a plan to switch.</p>';
+  }).join("") + '</div><p class="fhint">Plan charge for the whole account' + (c.ex ? " at " + n + " lines" : "") + '. Devices, protection, connected lines and fees stay the same on every plan. Tap a plan to switch.</p>';
 }
 
 function jobAid(){
@@ -1281,21 +1328,27 @@ function editBody(g, q){
   /* Box 1: Plan */
   var b1 = "";
   if (T0.voice) {
-    var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER.concat(LEGACY_ORDER), n = Math.max(c.n, 1);
-    b1 += '<div><h4>Choose plan</h4><p class="info">' + I.info + 'Prices below reflect discounts applied and the total number of phone lines on the quote.</p><div class="radios">' +
-      order.map(function(id){
-        var pc = c.fam === "tmix" ? planCalc("tmix", id, n, state.autopay, state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
-        var P = (c.fam === "tmix" ? TMIX : EXP)[id];
-        var pk = c.fam === "tmix" ? picksFor(id, n) : null;
-        if (P.legacy) return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, P.full + ' <span class="why">· older plan, upgrades only</span>', "", false, "__plan");
-        return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full : P.full + ' <span class="why">· ' + (c.fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
+    var n = Math.max(c.n, 1);
+    /* New customers pick a T-Mix tier. Existing accounts pick the plan they're on now: Experience, T-Mix or an older plan. */
+    var opts = c.ex ? EXP_ORDER.map(function(id){ return ["exp", id]; }).concat(TMIX_ORDER.map(function(id){ return ["tmix", id]; }), LEGACY_ORDER.map(function(id){ return ["exp", id]; }))
+                    : TMIX_ORDER.map(function(id){ return ["tmix", id]; });
+    b1 += '<div><h4>' + (c.ex ? "Their current plan" : "Choose plan") + '</h4><p class="info">' + I.info + (c.ex ? "Prices are per phone line at the account's " + n + "-line total, with the lines on this quote." : "Prices below reflect discounts applied and the total number of phone lines on the quote.") + '</p><div class="radios">' +
+      opts.map(function(fi){
+        var fam = fi[0], id = fi[1], v = planVal(c, id, fam), rid = "pl-" + g.id + "-" + v.replace(":", "-");
+        var pc = fam === "tmix" ? planCalc("tmix", id, n, state.autopay, !c.ex && state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
+        var P = (fam === "tmix" ? TMIX : EXP)[id];
+        var pk = fam === "tmix" ? picksFor(id, n) : null;
+        var tag = c.ex && fam === "tmix" ? ' <span class="why">· T-Mix account</span>' : "";
+        if (P.legacy) return radio("plan-" + g.id, rid, v, curPlanVal(c), P.full + ' <span class="why">· older plan, upgrades only</span>', "", false, "__plan");
+        return radio("plan-" + g.id, rid, v, curPlanVal(c), pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full + tag : P.full + ' <span class="why">· ' + (fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "Customer keeps their number from another carrier", isLegacy(c), "g." + g.id + ".lineType") +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New number", isLegacy(c), "g." + g.id + ".lineType") +
-      (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "No added plan charge", false, "g." + g.id + ".lineType") : "") +
-      '</div></div>';
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "New line · customer keeps their number from another carrier", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New line · new number", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a line they already have · no added plan charge", false, "g." + g.id + ".lineType") +
+      '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
+    if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
     if (c.fam === "tmix") b1 += picksBlock(q);
   } else {
     b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + CPLANS[g.type].map(function(p){
@@ -1303,8 +1356,9 @@ function editBody(g, q){
       return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + cplanPrice(p, g.type, c, state.autopay) + '/mo</b> - ' + p.name + (tabletAlone(g.type, c) && !p.byod ? ' <span class="why">· no phone line on the account</span>' : ''), p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
     }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "", isLegacy(c), "g." + g.id + ".lineType") +
-      (c.fam === "exp" ? radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade an existing line", "", false, "g." + g.id + ".lineType") : "") + '</div></div>';
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "Adds a " + T0.label.toLowerCase() + " line and its plan", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a " + T0.label.toLowerCase() + " line they already have · no added plan charge", false, "g." + g.id + ".lineType") + '</div>' +
+      (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
   }
   b += box(1, "Plan", b1);
 
@@ -1335,7 +1389,7 @@ function editBody(g, q){
         var has = AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
       }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div></div>';
-    if (c.fam === "exp") b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small></span></label>';
+    if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small></span></label>';
   }
   if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
   b += box(2, "Device", b2);
@@ -1545,7 +1599,7 @@ function quoteDoc(id, note){
     if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price};
   });
   var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
-  var headline = q.c.fam === "tmix" ? q.P.full + ", " + q.c.n + " line" + (q.c.n === 1 ? "" : "s") : q.P.full + ", adding " + q.c.newVoice + " to " + q.c.E;
+  var headline = acctLine(q.c, q.P, ", ");
   return {id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
           state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE}};
 }
@@ -1711,9 +1765,11 @@ function defaultSubject(id, sig){
 function quoteHead(q){
   var c = q.c;
   var extra = sum(state.groups.filter(function(g){ return !TYPES[g.type].voice && g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
-  var head = c.fam === "tmix" ? q.P.full + ", " + c.n + " phone line" + (c.n === 1 ? "" : "s")
-                              : (isLegacy(c) ? q.P.full + ", upgrade" : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s"));
-  if (c.fam === "tmix" && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
+  var ups = c.upVoice ? (c.upVoice === 1 ? "phone upgrade" : c.upVoice + " phone upgrades") : "";
+  var head = !c.ex ? q.P.full + ", " + c.n + " phone line" + (c.n === 1 ? "" : "s")
+    : (isLegacy(c) || !c.newVoice ? q.P.full + (ups ? ", " + ups : "")
+    : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s") + (ups ? " + " + ups : ""));
+  if (!c.ex && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
   else if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
   if (state.hint.on) head += (head ? " + " : "") + "5G Home Internet";
   return head;
@@ -1739,7 +1795,7 @@ function mailBits(q, m){
     sig: (m.sig || "").trim(),
     id: currentId(q),
     head: quoteHead(q),
-    monthLabel: c.fam === "exp" ? "Added to your monthly bill" : "Estimated monthly",
+    monthLabel: c.ex ? "Added to your monthly bill" : "Estimated monthly",
     taxNote: "Plus taxes and fees",
     W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
@@ -1873,11 +1929,11 @@ function dateStr(){ try { return new Date().toLocaleDateString("en-US",{month:"s
 function quoteText(){
   var q = compute(state), c = q.c, Wd = 50, out = [];
   function pad(l, a){ var dots = Wd - l.length - a.length - 2; return "  " + l + " " + (dots > 1 ? new Array(dots).join(".") : "") + " " + a; }
-  out.push("QUICK QUOTE · " + (c.fam === "tmix" ? q.P.full + ", " + c.n + " line" + (c.n === 1 ? "" : "s") : q.P.full + ", adding " + c.newVoice + " to " + c.E + " existing"));
+  out.push("QUICK QUOTE · " + (acctLine(c, q.P, ", ") || "No phone lines"));
   out.push(dateStr() + " · " + (state.autopay ? "AutoPay" : "No AutoPay") + (state.loaded ? " · Quote ID " + state.loaded.id : ""));
   out.push(""); out.push("MONTHLY");
   q.W.concat(q.H).forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
-  out.push(pad(c.fam === "exp" ? "Added monthly" : "Total monthly", fmt(q.monthly)) + "  + taxes & fees");
+  out.push(pad(c.ex ? "Added monthly" : "Total monthly", fmt(q.monthly)) + "  + taxes & fees");
   out.push(""); out.push("DUE TODAY");
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
   out.push(pad("Total due today", fmt(q.today)) + "  + tax");
@@ -1927,11 +1983,21 @@ function renderLive(){
 /* ================= Events ================= */
 function setPath(path, val){
   var parts = path.split("."), o;
-  if (parts[0] === "__plan") { if (state.cust === "new") state.planNew = val; else state.planExp = val; afterPlanChange(); return; }
+  if (parts[0] === "__plan") { setPlan(val); return; }
   if (parts[0] === "g") { o = grp(parts[1]); parts = parts.slice(2); if (!o) return; }
   else o = state;
   for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
   o[parts[parts.length-1]] = val;
+  if (parts[parts.length-1] === "lineType" && val === "upgrade") makeExisting();
+}
+/* "tmix:<id>" picks T-Mix for an existing account; a plain id is a T-Mix tier for a new customer,
+   or Experience / an older plan for an existing account. */
+function setPlan(val){
+  val = String(val);
+  if (val.indexOf("tmix:") === 0) { state.planNew = val.slice(5); if (state.cust === "existing") state.exFam = "tmix"; }
+  else if (state.cust === "new") state.planNew = val;
+  else { state.planExp = val; state.exFam = "exp"; }
+  afterPlanChange();
 }
 function afterPlanChange(){
   var c = ctxOf(state);
@@ -2055,8 +2121,9 @@ document.addEventListener("click", function(e){
       state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
       if (v === "existing") state.planDiscount = "none";
       break;
-    case "exlines": state.existingLines = Math.max(1, Math.min(11, state.existingLines + (+v))); break;
-    case "plan": if (state.cust === "new") state.planNew = v; else state.planExp = v; afterPlanChange(); break;
+    case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
+    /* Plan tier buttons and Compare plans list plans of the quote's own family. */
+    case "plan": { var cp0 = ctxOf(state); setPlan(cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v); break; }
     case "view": state.view = v; break;
     case "tray": {
       ui.trayOpen = !ui.trayOpen;
