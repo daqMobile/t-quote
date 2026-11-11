@@ -1,36 +1,19 @@
 {
  "meta": {
+  "checkedAt": "2026-11-11T11:11:14-06:00",
+  "summary": "50 offers still listed as active, none ended. This run couldn't reach T-Mobile's offer pages, so all 50 are marked unconfirmed until the next check.",
   "changes": [
-   "Confirmed all 37 running offers on T-Mobile's Nov 5 terms (verified Nov 10)",
-   "Added T-Mix 'any phone with Picks' offers with no new line or trade-in: 2 Picks up to $310, 3 Picks $700, 4 Picks $1,100, 6 Picks $1,900, 7 Picks $2,100",
-   "Added T-Mix any phone new line with 5 Picks, up to $1,400",
-   "Added T-Mix 1-Pick iPhone offers: trade-in + new line $830, number transfer $700, trade-in $300",
-   "Added T-Mix 1-Pick trade-in offers: Motorola $500, Galaxy $300",
-   "Added Pixel Watch 5 on Us ($500, new watch line) and Galaxy Watch9 on Us ($430; Watch Ultra2 $430 off)",
-   "Widened iPhone new line 1 Pick ($350) from iPhone 17e to all iPhones, per T-Mobile's terms",
-   "Widened Galaxy new line 1 Pick ($600) from S26 FE to all Galaxy phones, per T-Mobile's terms",
-   "Added iPhone Air to iPhone trade-in 3 Picks",
-   "Added devices: Pixel Watch 5 41mm ($499.99), Galaxy Watch9 40mm ($429.99), Galaxy Watch Ultra2 47mm ($699.99)",
-   "Confirmed 22 device prices on T-Mobile's deal pages; no price changes"
+   "Marked all 50 active offers as unconfirmed: T-Mobile's offer pages and other deal sites were blocked by this run's network settings, and search results only showed the Nov 5 holiday offers still running, with no end dates"
   ],
-  "checkedAt": "2026-11-10T06:50:01-06:00",
   "sources": [
-   "https://www.t-mobile.com/offers/promotional-offer-details",
-   "https://www.t-mobile.com/offers",
-   "https://www.t-mobile.com/offers/apple-iphone-deals",
-   "https://www.t-mobile.com/offers/samsung-phone-deals",
-   "https://www.t-mobile.com/offers/google-phone-deals",
-   "https://www.t-mobile.com/offers/motorola-phone-deals",
    "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
-   "https://www.t-mobile.com/cell-phone-plans",
-   "https://www.droid-life.com/2026/10/26/t-mobile-t-mix-plans-explained-are-they-any-good/",
-   "https://tmo.report/2026/10/t-mobiles-new-t-mix-plans-assign-picks-as-credits-towards-promos-exclusive/"
-  ],
-  "summary": "50 offers active and none ended: all 37 running offers were confirmed and 13 Nov 5 offers T-Mobile is running were added, mostly T-Mix Picks deals plus Pixel Watch 5 and Galaxy Watch9 on Us."
+   "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
+   "https://www.tmonews.com/2026/11/t-mobiles-holiday-deals-are-here-iphone-18-pro-on-us-four-lines-for-25-and-more/"
+  ]
  },
  "offers": [
   {
-   "dated": false,
+   "dated": true,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -50,7 +33,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line with a number transfer on Experience Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -74,7 +57,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone in any condition on Experience Beyond.",
    "ends": null,
    "fam": "exp",
@@ -98,7 +81,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line with a number transfer on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -124,7 +107,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -150,7 +133,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience More or Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -173,7 +156,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -196,7 +179,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -222,7 +205,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on Experience Beyond.",
    "ends": null,
    "fam": "exp",
@@ -248,7 +231,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -272,7 +255,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -295,7 +278,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience More or Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -318,7 +301,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -386,7 +369,7 @@
    "verified": null
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay; the same $430 credit takes Galaxy Watch Ultra2 to $269.99.",
    "ends": null,
    "fam": "any",
@@ -407,7 +390,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New tablet line on a $25+/mo tablet plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -450,7 +433,7 @@
    "verified": null
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience More or Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -517,7 +500,7 @@
    "verified": null
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -560,7 +543,7 @@
    "verified": null
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line on Experience Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -651,7 +634,7 @@
    "verified": null
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone.",
    "ends": null,
    "fam": "tmix",
@@ -673,7 +656,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -702,7 +685,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line with a number transfer on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -731,7 +714,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -760,7 +743,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone and add a new voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -789,7 +772,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line with a number transfer on T-Mix More or Loaded. Holds 2 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
@@ -815,7 +798,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -841,7 +824,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
@@ -865,7 +848,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone in any condition on T-Mix Loaded. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -890,7 +873,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -920,7 +903,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -950,7 +933,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on T-Mix More or Loaded. No trade-in needed. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -973,7 +956,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -996,7 +979,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on T-Mix Loaded. No trade-in needed. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1022,7 +1005,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix Loaded. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1048,7 +1031,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1074,7 +1057,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Use 2 Picks on a $75+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1117,7 +1100,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Use 3 Picks on a $95+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1160,7 +1143,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Use 4 Picks on a $115+/mo T-Mix account (e.g. Standard with 4 lines or More with 2); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1203,7 +1186,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on a $155+/mo T-Mix account using 5 Picks; no trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1245,7 +1228,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Use 6 Picks on a $155+/mo T-Mix account (e.g. More with 3 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1287,7 +1270,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Use 7 Picks on a $180+/mo T-Mix account (e.g. More with 4 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1329,7 +1312,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1354,7 +1337,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1379,7 +1362,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1403,7 +1386,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1427,7 +1410,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1451,7 +1434,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1474,7 +1457,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1497,7 +1480,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1520,7 +1503,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1543,7 +1526,7 @@
    "verified": "2026-11-10"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
