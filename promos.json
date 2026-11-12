@@ -1,19 +1,17 @@
 {
  "meta": {
   "changes": [
-   "Confirmed 49 of 50 running offers on T-Mobile's Nov 5 terms (verified Nov 11)",
-   "razr fold offer (Experience Beyond, new line): no matching current offer found, marked unconfirmed",
-   "Added Go5G Next, which T-Mobile's terms name, to the iPhone $1,200 trade-in and new line offers and the Galaxy $1,200 new line and trade-in offers",
-   "Added Go5G Plus, which T-Mobile's terms name, to the iPhone $930 trade-in and new line offers, the Galaxy S26 $1,000 new line and trade-in offers, and razr+ (2026) on Us",
-   "Added Go5G Plus and Go5G Next, which T-Mobile's terms name, to the Pixel 11 Pro $1,100 trade-in, Pixel 11 Pro on Us and Pixel 11 Pro XL new line offers",
-   "Added T-Mix trade-in offers with no Picks ($45+ plans, Saver included, any condition): any phone $200, Motorola $270",
-   "Added T-Mix Android new line with 1 Pick, up to $300.99 (moto g 2026 on Us)",
-   "Added existing-account offers: Galaxy new line $600 and trade-in $300 on most plans; iPhone new line $350 and trade-in + new line $830 on Essentials or higher",
-   "Added devices: iPhone 17 Pro 256GB ($1,099.99), iPhone 17 Pro Max 256GB ($1,199.99), iPhone 16 256GB ($829.99), Pixel 10 128GB ($699.99), Pixel 10 Pro 128GB ($999.99), razr ultra (2025) 512GB ($999.99), moto g (2026) 128GB ($269.99); other storage sizes not confirmed",
-   "Added the new phones to the offers T-Mobile shows them on: iPhone 17 Pro Max to the 3-Pick trade-in, iPhone 17 Pro to the 2-Pick trade-in, iPhone 16 to the 1-Pick trade-in + new line, Pixel 10 to the 1-Pick trade-in, Pixel 10 Pro to the 2-Pick new line, razr ultra to the 2-Pick razr+ offers, and all of them to the any-phone, all-iPhone and Motorola offers",
-   "Confirmed 25 device prices on T-Mobile's deal pages; no price changes"
+   "Confirmed all 57 running offers on T-Mobile's terms and deal pages (verified Nov 12)",
+   "razr fold offer (Experience Beyond, new line, $1,100): T-Mobile's razr fold page shows it, marked confirmed again",
+   "Added Motorola trade-in offer on Experience Beyond or Go5G Next, up to $1,100 (razr 2026 and razr ultra 2025 On Us)",
+   "Added Android new line offer on most plans, up to $300.99 (moto g 2026 and REVVL 8 Pro free)",
+   "Added devices: moto g stylus (2026) 128GB ($309.99) and REVVL 8 Pro 256GB ($249.99)",
+   "Added moto g stylus (2026) to the T-Mix Android new line, any-phone and Motorola offers, and REVVL 8 Pro to the T-Mix Android new line and any-phone offers",
+   "Added iPhone 17 to the 3-Pick trade-in (any condition), which T-Mobile's iPhone 17 page shows",
+   "moto g (2026) price $269.99 to $229.99 per T-Mobile's product page (the Motorola deals page fine print still shows $269.99)",
+   "Confirmed 32 other device prices on T-Mobile pages; no other price changes"
   ],
-  "checkedAt": "2026-11-11T06:52:11-06:00",
+  "checkedAt": "2026-11-12T06:51:47-06:00",
   "sources": [
    "https://www.t-mobile.com/offers/promotional-offer-details",
    "https://www.t-mobile.com/offers",
@@ -21,12 +19,18 @@
    "https://www.t-mobile.com/offers/samsung-phone-deals",
    "https://www.t-mobile.com/offers/google-phone-deals",
    "https://www.t-mobile.com/offers/motorola-phone-deals",
-   "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
    "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
    "https://www.t-mobile.com/cell-phone-plans",
-   "https://www.tomsguide.com/phones/iphones/best-iphone-18-pro-and-pro-max-deals"
+   "https://www.t-mobile.com/cell-phone/apple-iphone-17",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-plus-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-moto-g-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
+   "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro"
   ],
-  "summary": "57 offers active, none ended: all running offers but the razr fold Experience Beyond offer were confirmed, older plans named in T-Mobile's terms were added, and 7 Nov 5 offers plus 7 phones were added."
+  "summary": "59 offers active, none ended: all 57 running offers were confirmed (the razr fold Experience Beyond offer is confirmed again), 2 Experience offers and 2 phones were added, and the moto g (2026) price dropped to $229.99."
  },
  "offers": [
   {
@@ -47,7 +51,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -72,7 +76,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -97,7 +101,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -129,7 +133,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 350,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -161,7 +165,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 830,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -188,7 +192,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 930,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -215,7 +219,31 @@
    "status": "active",
    "tag": "trade",
    "upTo": 930,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
+  },
+  {
+   "dated": false,
+   "detail": "New line on most plans ($60+/mo with AutoPay). No trade-in needed.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exand300n",
+   "label": "Android free phone · new line",
+   "models": [
+    "motog26",
+    "revvl8pro"
+   ],
+   "need": "newline",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 300.99,
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -239,7 +267,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -263,7 +291,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -290,7 +318,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -317,7 +345,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -346,7 +374,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 300,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -375,7 +403,31 @@
    "status": "active",
    "tag": "newline",
    "upTo": 600,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
+  },
+  {
+   "dated": false,
+   "detail": "Trade in an eligible phone on Experience Beyond or Go5G Next ($100+/mo with AutoPay).",
+   "ends": null,
+   "fam": "exp",
+   "id": "exmot1100t",
+   "label": "Motorola trade-in offer",
+   "models": [
+    "razr26",
+    "razrultra25"
+   ],
+   "need": "trade",
+   "picks": 0,
+   "plans": [
+    "beyond",
+    "go5gnext"
+   ],
+   "source": "https://www.t-mobile.com/cell-phone/motorola-razr-2026",
+   "starts": null,
+   "status": "active",
+   "tag": "trade",
+   "upTo": 1100,
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -401,7 +453,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -424,7 +476,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -449,7 +501,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -473,7 +525,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -539,7 +591,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 430,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -559,7 +611,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -607,7 +659,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -671,7 +723,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 500,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -697,7 +749,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -711,12 +763,12 @@
    "plans": [
     "beyond"
    ],
-   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "source": "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
    "starts": null,
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-10"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -807,7 +859,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -839,7 +891,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -871,7 +923,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -903,7 +955,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -935,7 +987,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -961,7 +1013,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -988,7 +1040,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1012,7 +1064,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1026,7 +1078,8 @@
     "18pro",
     "18promax",
     "air",
-    "17promax"
+    "17promax",
+    "17"
    ],
    "need": "trade",
    "picks": 3,
@@ -1038,7 +1091,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1048,7 +1101,9 @@
    "id": "tmand1n",
    "label": "Android new line · 1 Pick",
    "models": [
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "newline",
    "picks": 1,
@@ -1062,7 +1117,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1098,7 +1153,9 @@
     "razrp26",
     "razrfold",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "trade",
    "picks": 0,
@@ -1113,7 +1170,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1143,7 +1200,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1173,7 +1230,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1196,7 +1253,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1219,7 +1276,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1245,7 +1302,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1271,7 +1328,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1285,7 +1342,8 @@
     "razrp26",
     "razrfold",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26"
    ],
    "need": "trade",
    "picks": 0,
@@ -1300,7 +1358,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1314,7 +1372,8 @@
     "razrp26",
     "razrfold",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26"
    ],
    "need": "trade",
    "picks": 1,
@@ -1328,7 +1387,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1364,7 +1423,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "none",
    "picks": 2,
@@ -1378,7 +1439,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1414,7 +1475,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "none",
    "picks": 3,
@@ -1428,7 +1491,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1464,7 +1527,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "none",
    "picks": 4,
@@ -1478,7 +1543,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1514,7 +1579,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "newline",
    "picks": 5,
@@ -1527,7 +1594,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1563,7 +1630,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "none",
    "picks": 6,
@@ -1576,7 +1645,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1612,7 +1681,9 @@
     "px10",
     "px10p",
     "razrultra25",
-    "motog26"
+    "motog26",
+    "motogstylus26",
+    "revvl8pro"
    ],
    "need": "none",
    "picks": 7,
@@ -1625,7 +1696,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1650,7 +1721,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1676,7 +1747,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1701,7 +1772,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1725,7 +1796,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1749,7 +1820,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1772,7 +1843,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1796,7 +1867,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1820,7 +1891,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1843,7 +1914,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "dated": false,
@@ -1866,7 +1937,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   }
  ],
  "devices": [
@@ -1879,7 +1950,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "17",
@@ -1887,10 +1958,10 @@
    "mfr": "Apple",
    "name": "iPhone 17 256GB",
    "price": 929.99,
-   "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "source": "https://www.t-mobile.com/cell-phone/apple-iphone-17",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "17",
@@ -1898,10 +1969,10 @@
    "mfr": "Apple",
    "name": "iPhone 17 512GB",
    "price": 1129.99,
-   "source": "https://www.macrumors.com/2026/09/12/how-much-each-iphone-18-pro-model-costs/",
+   "source": "https://www.t-mobile.com/cell-phone/apple-iphone-17",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-09"
+   "verified": "2026-11-12"
   },
   {
    "fam": "17e",
@@ -1912,7 +1983,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "17e",
@@ -1934,7 +2005,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "17promax",
@@ -1945,7 +2016,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "18pro",
@@ -1967,7 +2038,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "18pro",
@@ -2000,7 +2071,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "18promax",
@@ -2022,7 +2093,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "air",
@@ -2044,7 +2115,7 @@
    "source": "https://www.t-mobile.com/offers",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "duo",
@@ -2066,7 +2137,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "duo",
@@ -2088,7 +2159,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "fold8",
@@ -2099,7 +2170,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "fold8u",
@@ -2110,7 +2181,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "gw9",
@@ -2121,7 +2192,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "gwu2",
@@ -2132,7 +2203,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "ipada16",
@@ -2143,18 +2214,29 @@
    "source": "https://www.t-mobile.com/offers",
    "status": "active",
    "type": "tablet",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "motog26",
    "id": "motog26",
    "mfr": "Motorola",
    "name": "moto g (2026) 128GB",
-   "price": 269.99,
-   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "price": 229.99,
+   "source": "https://www.t-mobile.com/cell-phone/motorola-moto-g-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
+  },
+  {
+   "fam": "motogstylus26",
+   "id": "motogstylus26",
+   "mfr": "Motorola",
+   "name": "moto g stylus (2026) 128GB",
+   "price": 309.99,
+   "source": "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-12"
   },
   {
    "fam": "px10",
@@ -2165,7 +2247,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "px10p",
@@ -2176,7 +2258,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "px11",
@@ -2187,7 +2269,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "px11fold",
@@ -2198,7 +2280,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "px11p",
@@ -2209,7 +2291,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "px11xl",
@@ -2220,7 +2302,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "pxw5",
@@ -2231,7 +2313,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "razr26",
@@ -2239,10 +2321,10 @@
    "mfr": "Motorola",
    "name": "razr (2026) 256GB",
    "price": 769.99,
-   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "source": "https://www.t-mobile.com/cell-phone/motorola-razr-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "razrfold",
@@ -2250,10 +2332,10 @@
    "mfr": "Motorola",
    "name": "razr fold 512GB",
    "price": 1699.99,
-   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "source": "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "razrp26",
@@ -2264,7 +2346,7 @@
    "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "razrultra25",
@@ -2275,7 +2357,18 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
+  },
+  {
+   "fam": "revvl8pro",
+   "id": "revvl8pro",
+   "mfr": "T-Mobile",
+   "name": "REVVL 8 Pro 256GB",
+   "price": 249.99,
+   "source": "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro",
+   "status": "active",
+   "type": "phone",
+   "verified": "2026-11-12"
   },
   {
    "fam": "s26",
@@ -2286,7 +2379,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "s26fe",
@@ -2297,7 +2390,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "s26p",
@@ -2308,7 +2401,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   },
   {
    "fam": "s26u",
@@ -2319,7 +2412,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-11"
+   "verified": "2026-11-12"
   }
  ]
 }
