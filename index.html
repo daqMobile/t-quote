@@ -806,11 +806,12 @@ function planOptions(c){
     '<optgroup label="T-Mix · accounts opened since Nov 5">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
     '<optgroup label="Older plans · upgrades only">' + LEGACY_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>';
 }
-/* Upgrades are only for existing accounts, so choosing Upgrade on a new-customer quote turns it into one. */
+/* Upgrades are only for existing accounts, so choosing Upgrade on a new-customer quote turns it into one.
+   The account keeps the T-Mix plan that was on screen; the rep changes Their current plan if it differs. */
 function makeExisting(){
   if (state.cust === "existing") return;
   state.cust = "existing"; state.planDiscount = "none";
-  if (state.exFam !== "tmix") state.exFam = "exp";
+  state.exFam = "tmix";
   state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
   var c = ctxOf(state);
   toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
@@ -2149,7 +2150,7 @@ document.addEventListener("click", function(e){
     case "cust":
       state.cust = v;
       state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
-      if (v === "existing") state.planDiscount = "none";
+      if (v === "existing") { state.planDiscount = "none"; state.exFam = "tmix"; }   // keep the T-Mix plan that was on screen
       break;
     case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
     /* Plan tier buttons and Compare plans list plans of the quote's own family. */
