@@ -721,7 +721,7 @@ function newGroup(type, cust){
     lineType: (state && state.cust === "existing" && EXP[state.planExp] && EXP[state.planExp].legacy) ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
     /* No device is picked for a new line until the rep chooses one. */
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
-         customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"best", customCredit:0, customPicks:0},
+         customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0},
     p360:"0",
     pay:{method:"eip", term:36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
@@ -825,7 +825,7 @@ function makeExisting(){
   state.cust = "existing"; state.planDiscount = "none"; state.autoEx = true;
   state.existingLines = Math.max(1, ctxOf(state).upVoice);
   state.exFam = "tmix";
-  state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
+  state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
   var c = ctxOf(state);
   toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
 }
@@ -879,7 +879,7 @@ function bestPlan(c){
   if (c.fam === "tmix") {
     left = picksFor(c.pid, c.n) - sum((s.perks || []).map(function(id){ var p = PERKS.filter(function(x){ return x.id === id; })[0]; return p ? ((p.loadedFree && c.pid === "loaded") ? 0 : p.cost) : 0; }));
     s.groups.forEach(function(g){
-      if (g.dev.kind !== "new" || g.dev.offer === "best" || g.dev.offer === "full") return;
+      if (g.dev.kind !== "new" || !g.dev.offer || g.dev.offer === "best" || g.dev.offer === "full") return;
       if (g.dev.offer === "custom") { left -= (+g.dev.customPicks || 0) * g.qty; return; }
       var o = offerPool().filter(function(x){ return x.id === g.dev.offer; })[0];
       if (o && o.picks) left -= o.picks * g.qty;
@@ -909,7 +909,7 @@ function devMath(g, c){
   if (!r.retail) return r;
   if (g.pay.method === "full") {
     r.due = r.retail;
-    if (g.dev.offer !== "full" && g.dev.offer !== "best") r.warn = "Promotions need the installment plan.";
+    if (g.dev.offer && g.dev.offer !== "full" && g.dev.offer !== "best") r.warn = "Promotions need the installment plan.";
     return r;
   }
   r.down = Math.min(num(g.pay.down), r.retail);
@@ -918,7 +918,7 @@ function devMath(g, c){
   if (g.dev.offer === "custom") {
     var cc = Math.min(num(g.dev.customCredit), r.fin);
     if (cc > 0) off = {label:"Custom promo", credit:cc, picks: c.fam === "tmix" ? (+g.dev.customPicks || 0) : 0, custom:true};
-  } else if (g.dev.offer !== "full" && g.dev.kind === "new") {
+  } else if (g.dev.offer && g.dev.offer !== "full" && g.dev.kind === "new") {
     var list = offersFor(g, c), pick = null;
     if (g.dev.offer === "best") pick = bestPlan(c)[g.id] || null;
     else {
@@ -1004,6 +1004,7 @@ function compute(s){
       if (alone && !cp.byod) notes.push({t:"warn", m:"Tablet lines cost $" + TAB_NO_VOICE + " more per line without a phone line on the account. Adding a phone line brings them back to the add-on price."});
     }
     var d = devMath(g, c);
+    if (g.dev.kind === "new" && d.retail && !g.dev.offer && g.pay.method !== "full") notes.push({t:"warn", m:label + ": no promotion chosen yet. Pick one in Edit options, or Full Retail Price."});
     if (d.warn) { out.warn = (out.warn ? out.warn + " " : "") + d.warn; notes.push({t:"warn", m:label + ": " + d.warn}); }
     if (d.retail) retailBuy += d.retail * q;
     if (d.eip) {
@@ -1320,7 +1321,7 @@ function jobAid(){
   var steps = [
     ["Add the devices", "Use the Add Devices tray. Each card is a group of lines with the same setup. Use − and + on a card for more of the same phone."],
     ["Box 1 · Plan", "Pick the plan and the line type. We assume the customer keeps their number, so number transfer is the default. Picks are set here for T-Mix accounts."],
-    ["Box 2 · Device", "Choose New, Existing (bring their own) or Custom. Pick the promotion first if you like, then the manufacturer and model. Leave the promotion on Best available offer so the quote shows the best price. We assume they have a phone to trade in."],
+    ["Box 2 · Device", "Choose New, Existing (bring their own) or Custom. Pick the promotion first if you like, then the manufacturer and model. No promotion is chosen until you pick one: Best available offer, a specific offer, Custom promo or Full Retail Price. We assume they have a phone to trade in."],
     ["Box 3 · Protection", "Add Protection 360 at the device's tier."],
     ["Box 4 · Payment type", "Keep the installment plan unless they're paying in full. Uncheck the connection charge only when it's waived. Add any down payment."],
     ["Box 5 · Line credits", "Add a custom monthly credit (port-in, add-a-line or upgrade) and how many months it runs, or a one-time credit."],
@@ -1510,7 +1511,9 @@ function devCalc(g, q){
   }
   if (d.warn) h += '<p class="info warn">' + esc(d.warn) + '</p>';
   var list = g.dev.kind === "new" ? offersFor(g, c) : [];
-  var best = g.dev.kind === "new" ? bestPlan(c)[g.id] || null : null;
+  /* What Best available offer would pick for this device, shown even while another option (or none) is chosen. */
+  var best = null;
+  if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
   h += '<div><h4>Apply a promotion?</h4><div class="radios">';
   if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / 36) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
@@ -2198,7 +2201,7 @@ document.addEventListener("click", function(e){
     case "cust":
       if (state.cust === v) break;
       state.cust = v;
-      state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
+      state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
       state.autoEx = false;
       if (v === "existing") { state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
@@ -2233,10 +2236,10 @@ document.addEventListener("click", function(e){
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
     case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
-    case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
+    case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
     case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
     case "mfr": ui.mfr = v; break;
-    case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "best"; } break;
+    case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = ""; } break;
     case "pay": if (g) g.pay.method = v; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
