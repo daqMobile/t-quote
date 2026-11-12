@@ -2052,8 +2052,10 @@ function setPlan(val){
   val = String(val);
   if (val.indexOf("tmix:") === 0) { state.planNew = val.slice(5); if (state.cust === "existing") state.exFam = "tmix"; }
   else if (val.indexOf("exp:") === 0 || state.cust === "existing") {   // retired plans (Experience, Go5G, Essentials) are only for existing accounts
-    if (state.cust !== "existing") { state.cust = "existing"; state.planDiscount = "none"; state.autoEx = false; }
+    var wasNew = state.cust !== "existing";
+    if (wasNew) { state.cust = "existing"; state.planDiscount = "none"; state.autoEx = false; state.existingLines = Math.max(1, ctxOf(state).upVoice); }
     state.planExp = val.replace(/^exp:/, ""); state.exFam = "exp";
+    if (wasNew) { var cw = ctxOf(state); toast("This quote is now an existing account on " + planName("exp", cw.pid) + " with " + cw.E + " phone line" + (cw.E > 1 ? "s" : "") + " already on it. Set their real line count under Account in Box 1."); }
   }
   else state.planNew = val;
   afterPlanChange();
@@ -2176,10 +2178,11 @@ document.addEventListener("click", function(e){
     case "tab": state.tab = v; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
     case "cust":
+      if (state.cust === v) break;
       state.cust = v;
       state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
       state.autoEx = false;
-      if (v === "existing") { state.planDiscount = "none"; state.exFam = "tmix"; }   // keep the T-Mix plan that was on screen
+      if (v === "existing") { state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
     case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
     /* Plan tier buttons and Compare plans list plans of the quote's own family. */
