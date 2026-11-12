@@ -556,7 +556,7 @@ var P360 = [
   {v:"4",label:"Tier 4 · $16/mo",p:16},{v:"5",label:"Tier 5 · $19/mo",p:19},{v:"byod",label:"BYOD · $19/mo",p:19},{v:"6",label:"Tier 6 · $26/mo",p:26},
   {v:"emp",label:"Employee pricing · $6/mo",p:6,short:"employee"}
 ];
-/* Connected-device plans. ap = AutoPay price; +$5 without AutoPay. */
+/* Connected-device plans. ap = AutoPay price; +$5 without AutoPay (watch, tablet and other lines). */
 var CPLANS = {
   watch: [
     {id:"watch",name:"Watch Plan",ap:10},
@@ -680,6 +680,7 @@ var HINT = {
 };
 var HINT_ORDER = ["rely","amplified","allin"];
 var HINT_VOICE = 20;
+var HINT_AP = 10;   // Home Internet AutoPay discount: $10/mo per line (Rely $50 w/ AutoPay, $60 without)
 var TYPES = {
   phone:{label:"Smartphone",voice:true},
   basic:{label:"Basic Phone",voice:true},
@@ -1036,7 +1037,7 @@ function compute(s){
   if (s.hint.on) {
     var hp = HINT[s.hint.plan], voiceOk = c.ex || c.newVoice > 0;
     H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
-    if (!s.autopay) H.push({l:"No AutoPay", a:5});
+    if (!s.autopay) H.push({l:"No AutoPay", a:HINT_AP});
     if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
     if (seg === "employee") H.push({l:"Employee pricing", a:-round2(hp.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
     if (s.hint.voice && !voiceOk) notes.push({t:"warn", m:"The Home Internet voice line discount needs a phone line on the account."});
@@ -1118,7 +1119,7 @@ function renderStage(q){
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
-      '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card or bank</option>' +
+      '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa</option>' +
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
     '<span class="bchip' + (discounts.length && q.pc && q.pc.portSave ? " on" : "") + '">' + (q.pc && q.pc.portSave ? esc(discounts[0]) : "No additional discounts applied") + '</span></div>';
 
@@ -1211,7 +1212,7 @@ function renderInternet(q){
   return '<div class="panel">' +
     '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Home Internet to this quote</button>' +
     '<div class="hint-plans">' + HINT_ORDER.map(function(id){
-      var p = HINT[id], price = p.ap + (s.autopay ? 0 : 5) - (hi.voice && voiceOk ? HINT_VOICE : 0);
+      var p = HINT[id], price = p.ap + (s.autopay ? 0 : HINT_AP) - (hi.voice && voiceOk ? HINT_VOICE : 0);
       return '<button class="hplan" data-act="hplan" data-v="' + id + '" aria-pressed="' + (hi.on && hi.plan === id) + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + p.d + '</span><span class="d">' + fmt0(p.ap) + ' with AutoPay' + (hi.voice && voiceOk ? ', ' + fmt0(HINT_VOICE) + ' off with a voice line' : '') + '</span></button>';
     }).join("") + '</div>' +
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
