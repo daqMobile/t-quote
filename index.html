@@ -814,13 +814,21 @@ function planOptions(c){
    The account keeps the T-Mix plan that was on screen; the rep changes Their current plan if it differs. */
 function makeExisting(){
   if (state.cust === "existing") return;
-  state.cust = "existing"; state.planDiscount = "none";
+  state.cust = "existing"; state.planDiscount = "none"; state.autoEx = true;
+  state.existingLines = Math.max(1, ctxOf(state).upVoice);
   state.exFam = "tmix";
   state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
   var c = ctxOf(state);
   toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
 }
 /* A one-line description of the account for headings: "T-Mix More · 3 phone lines", "Experience Beyond · upgrade". */
+/* If Upgrade was what turned this into an existing-account quote and no upgrade lines are left, go back to a new-customer quote. */
+function maybeBackToNew(){
+  if (!state.autoEx || state.cust !== "existing" || isLegacy(ctxOf(state))) return;
+  if (state.groups.some(function(g){ return g.lineType === "upgrade"; })) return;
+  state.cust = "new"; state.autoEx = false;
+  toast("No upgrades left, so this is a new-customer quote again.");
+}
 function acctLine(c, P, sep){
   var pl = function(n, w){ return n + " " + w + (n === 1 ? "" : "s"); };
   if (!c.ex) return c.n ? P.full + sep + pl(c.n, "phone line") : "";
@@ -1135,7 +1143,7 @@ function renderStage(q){
   }
 
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? esc(EXP[c.pid].full) : "Experience")) + ' <small>' + (isLegacy(c) ? "upgrades only" : Math.max(c.n,1) + " phone line tier") + '</small></span>' +
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? esc(EXP[c.pid].full) : "Experience")) + ' <small>' + (isLegacy(c) ? "upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
       var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false);
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
@@ -2035,7 +2043,7 @@ function setPath(path, val){
   else o = state;
   for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
   o[parts[parts.length-1]] = val;
-  if (parts[parts.length-1] === "lineType" && val === "upgrade") makeExisting();
+  if (parts[parts.length-1] === "lineType") { if (val === "upgrade") makeExisting(); else maybeBackToNew(); }
 }
 /* "tmix:<id>" picks T-Mix for an existing account; a plain id is a T-Mix tier for a new customer,
    or Experience / an older plan for an existing account. */
@@ -2170,6 +2178,7 @@ document.addEventListener("click", function(e){
     case "cust":
       state.cust = v;
       state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = "best"; });
+      state.autoEx = false;
       if (v === "existing") { state.planDiscount = "none"; state.exFam = "tmix"; }   // keep the T-Mix plan that was on screen
       break;
     case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
@@ -2190,7 +2199,7 @@ document.addEventListener("click", function(e){
       break;
     }
     case "remove": {
-      var dropGroup = function(){ state.groups = state.groups.filter(function(x){ return x.id !== v; }); if (ui.edit === v) { ui.sheet = null; ui.edit = null; } };
+      var dropGroup = function(){ state.groups = state.groups.filter(function(x){ return x.id !== v; }); if (ui.edit === v) { ui.sheet = null; ui.edit = null; } maybeBackToNew(); };
       /* Shrink the card away first, then take it off the quote. */
       var gone = document.querySelector('[data-gid="' + v + '"]');
       if (gone && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
