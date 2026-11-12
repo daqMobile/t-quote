@@ -853,12 +853,12 @@ function offersFor(g, c){
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
     else if (!c.autopay) why = "Needs AutoPay";
-    else if (o.need === "port" && g.lineType !== "port") why = "Needs a number transfer (Box 1)";
+    else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type (Box 1)";
     else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
     else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
     else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
     else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
-    else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 new lines with number transfers";
+    else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
     else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
     else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
     var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
@@ -1183,7 +1183,7 @@ function card(g, i, q){
   }
   var planLines = o.lines.filter(function(x){ return x.l === "Plan" || (!T0.voice && cplanOf(g).name === x.l); });
   var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
-  var lt = g.lineType === "upgrade" ? "Upgrade" : (g.lineType === "port" ? "Number transfer" : "New line");
+  var lt = g.lineType === "upgrade" ? "Upgrade" : (g.lineType === "port" ? "Port" : "New");
   return '<article class="card' + (ui.popIn === g.id ? ' popin' : '') + '" data-gid="' + g.id + '"><div class="chead"><div class="ctitle"><span>' + esc(g.name || T0.label) + '</span><button class="x" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>' +
     '<div class="cdev"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
     '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
