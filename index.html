@@ -461,6 +461,9 @@ var TMIX = {
   saver:    {name:"Saver",    full:"T-Mix Saver",    max:2,  ap:[45,80],                  addl:0,  port:{1:30,2:65},   specs:"50GB premium data · 480p video · no Picks"}
 };
 var TMIX_ORDER = ["loaded","more","standard","saver"];
+/* New quotes start on the highest-priced plan of each family (today T-Mix Loaded and Experience Beyond),
+   worked out from the prices so it stays right if plans change. */
+function topPlan(table){ return Object.keys(table).filter(function(k){ return table[k].ap && !table[k].legacy; }).sort(function(a,b){ return table[b].ap[0] - table[a].ap[0]; })[0]; }
 /* Discounted T-Mix versions, chosen under Apply a plan discount. AutoPay prices = the page prices on t-mobile.com
    (Nov 10, 2026: military-discounts, first-responder-discounts, 55+ pages) minus $10 per line.
    Military and First Responder have no Saver version; 55+ is 2 phone lines max.
@@ -723,7 +726,7 @@ function exampleState(){
   var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
   var c = newGroup("watch"); c.dev.model = "awse3";
-  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:"more", planExp:"beyond", exFam:"exp",
+  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
     autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     set:{connect:35, employeePct:75, employeeHintPct:20}};
@@ -732,6 +735,7 @@ function blankState(){
   var s = exampleState();
   gid = 1;
   s.example = false; s.groups = [newGroup("phone")]; s.perks = []; s.planDiscount = "none"; s.cust = "new";
+  s.planNew = topPlan(TMIX); s.planExp = topPlan(EXP); s.exFam = "exp";
   s.hint = {on:false, plan:"amplified", voice:true, connect:true};
   return s;
 }
