@@ -1365,16 +1365,24 @@ function editBody(g, q){
   if (T0.voice) {
     var n = Math.max(c.n, 1);
     /* New customers pick a T-Mix tier. Existing accounts pick the plan they're on now: Experience, T-Mix or an older plan. */
-    var opts = c.ex ? EXP_ORDER.map(function(id){ return ["exp", id]; }).concat(TMIX_ORDER.map(function(id){ return ["tmix", id]; }), LEGACY_ORDER.map(function(id){ return ["exp", id]; }))
-                    : TMIX_ORDER.map(function(id){ return ["tmix", id]; });
-    b1 += '<div><h4>' + (c.ex ? "Their current plan" : "Choose plan") + '</h4><p class="info">' + I.info + (c.ex ? "Prices are per phone line at the account's " + n + "-line total, with the lines on this quote." : "Prices below reflect discounts applied and the total number of phone lines on the quote.") + '</p><div class="radios">' +
+    /* Current plans: T-Mix tiers for new customers; Experience and T-Mix for existing accounts. Older plans: retired plans an
+       existing customer may still be on, for upgrade quotes. */
+    var legTab = (ui.planTab || "current") === "legacy";
+    var opts = legTab ? LEGACY_ORDER.map(function(id){ return ["exp", id]; })
+             : (c.ex ? EXP_ORDER.map(function(id){ return ["exp", id]; }).concat(TMIX_ORDER.map(function(id){ return ["tmix", id]; })) : TMIX_ORDER.map(function(id){ return ["tmix", id]; }));
+    b1 += '<div><h4>' + (c.ex ? "Their current plan" : "Choose plan") + '</h4>' +
+      '<div class="seg" role="group" aria-label="Plan list" style="flex:none;align-self:flex-start;margin:2px 0 8px">' +
+        '<button data-act="plantab" data-v="current" aria-pressed="' + !legTab + '">Current</button>' +
+        '<button data-act="plantab" data-v="legacy" aria-pressed="' + legTab + '">Legacy / retired</button></div>' +
+      '<p class="info">' + I.info + (legTab ? "Older plans quote upgrades only: no added plan charge, and only device offers that name the plan. Picking one makes this an existing-account quote."
+        : (c.ex ? "Prices are per phone line at the account's " + n + "-line total, with the lines on this quote." : "Prices below reflect discounts applied and the total number of phone lines on the quote.")) + '</p><div class="radios">' +
       opts.map(function(fi){
         var fam = fi[0], id = fi[1], v = planVal(c, id, fam), rid = "pl-" + g.id + "-" + v.replace(":", "-");
         var pc = fam === "tmix" ? planCalc("tmix", id, n, state.autopay, !c.ex && state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
         var P = (fam === "tmix" ? TMIX : EXP)[id];
         var pk = fam === "tmix" ? picksFor(id, n) : null;
         var tag = c.ex && fam === "tmix" ? ' <span class="why">· T-Mix account</span>' : "";
-        if (P.legacy) return radio("plan-" + g.id, rid, v, curPlanVal(c), P.full + ' <span class="why">· older plan, upgrades only</span>', "", false, "__plan");
+        if (P.legacy) return radio("plan-" + g.id, rid, v, curPlanVal(c), P.full, "Upgrades only · no added plan charge", false, "__plan");
         return radio("plan-" + g.id, rid, v, curPlanVal(c), pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full + tag : P.full + ' <span class="why">· ' + (fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
@@ -2030,6 +2038,10 @@ function setPath(path, val){
 function setPlan(val){
   val = String(val);
   if (val.indexOf("tmix:") === 0) { state.planNew = val.slice(5); if (state.cust === "existing") state.exFam = "tmix"; }
+  else if (LEGACY[val]) {   // older plans are only for existing accounts, quoting upgrades
+    if (state.cust !== "existing") { state.cust = "existing"; state.planDiscount = "none"; }
+    state.planExp = val; state.exFam = "exp";
+  }
   else if (state.cust === "new") state.planNew = val;
   else { state.planExp = val; state.exFam = "exp"; }
   afterPlanChange();
@@ -2160,6 +2172,7 @@ document.addEventListener("click", function(e){
     /* Plan tier buttons and Compare plans list plans of the quote's own family. */
     case "plan": { var cp0 = ctxOf(state); setPlan(cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v); break; }
     case "view": state.view = v; break;
+    case "plantab": ui.planTab = v; break;
     case "tray": {
       ui.trayOpen = !ui.trayOpen;
       var tr = document.querySelector(".tray");
@@ -2185,7 +2198,7 @@ document.addEventListener("click", function(e){
       dropGroup(); break;
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
-    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
+    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.planTab = isLegacy(ctxOf(state)) ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
     case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
     case "mfr": ui.mfr = v; break;
