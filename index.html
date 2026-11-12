@@ -920,7 +920,7 @@ function devMath(g, c){
 
 /* ================= Quote math ================= */
 function compute(s){
-  var W = [], T = [], ONE = [], notes = [], groupsOut = {}, empConn = 0;
+  var W = [], T = [], ONE = [], notes = [], groupsOut = {}, empConn = 0, addNote = "";
   var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
   var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
@@ -931,6 +931,7 @@ function compute(s){
   if (c.fam === "tmix" && c.ex) {
     /* Existing T-Mix account: the quote adds only what new lines add to the bill. Upgrades keep their plan. */
     var tb = planCalc("tmix", c.pid, c.E, s.autopay, false, null), ta = planCalc("tmix", c.pid, c.n, s.autopay, false, null);
+    if (ta) addNote = fmt(tb ? tb.total : 0) + " for " + c.E + " → " + fmt(ta.total) + " for " + c.n;
     pc = ta;
     if (!ta) notes.push({t:"bad", m:P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
     else if (c.newVoice > 0) {
@@ -956,6 +957,7 @@ function compute(s){
     if (c.newVoice > 0) notes.push({t:"bad", m:P.full + " is an older plan: quote upgrades only. Set each phone line's Line type to Upgrade (Box 1)."});
   } else {
     var before = planCalc("exp", c.pid, c.E, s.autopay, false), after = planCalc("exp", c.pid, c.n, s.autopay, false);
+    if (after) addNote = fmt(before ? before.total : 0) + " for " + c.E + " → " + fmt(after.total) + " for " + c.n;
     if (!after) notes.push({t:"bad", m:P.full + " allows up to " + P.max + " lines."});
     else if (c.newVoice > 0) {
       plan = after.total - (before ? before.total : 0); share = plan / c.newVoice;
@@ -970,7 +972,9 @@ function compute(s){
   s.groups.forEach(function(g, gi){
     var q = g.qty, T0 = TYPES[g.type], label = (g.name || T0.label) + (q > 1 ? " ×" + q : "");
     var out = {lines:[], unit:0, warn:""};
-    if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share, sub:(c.ex ? "added " : "") + c.n + " phone line price tier"});
+    /* Existing accounts: the plan line is what the new line adds, e.g. "adding 1 line: $130.00 for 2 → $155.00 for 3". */
+    if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share,
+      sub: c.ex && addNote ? "adding " + (c.newVoice === 1 ? "1 line" : c.newVoice + " lines, split") + ": " + addNote : c.n + " phone line price tier"});
     if (!T0.voice) {
       var cp = cplanOf(g), price = cplanPrice(cp, g.type, c, s.autopay), okByod = true, alone = tabletAlone(g.type, c);
       if (cp.byod && (alone || cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
