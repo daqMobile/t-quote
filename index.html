@@ -824,12 +824,20 @@ function acctLine(c, P, sep){
 }
 
 /* Offers that apply to a group's chosen phone, with eligibility */
+/* What the account pays each month for its phone plan with AutoPay: T-Mix offer terms require
+   "Qualifying credit and service ($X+/mo. w/AutoPay)" rather than a particular plan. */
+function acctMonthly(c){
+  if (c.fam !== "tmix" || !c.n) return 0;
+  var pc = planCalc("tmix", c.pid, c.n, true, state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state));
+  return pc ? pc.price + (pc.empSave || 0) : 0;
+}
 function offersFor(g, c){
   if (g.dev.kind !== "new") return [];
   var m = model(g.dev.model); if (!m) return [];
   return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.models || []).indexOf(m.fam) > -1 && (!o.expired || g.dev.offer === o.id); }).map(function(o){
     var why = "";
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
+    else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
     else if (!c.autopay) why = "Needs AutoPay";
     else if (o.need === "port" && g.lineType !== "port") why = "Needs a number transfer (Box 1)";
     else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
@@ -842,6 +850,28 @@ function offersFor(g, c){
     var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
     return {o:o, ok:!why, why:why, credit:credit, expired:!!o.expired};
   });
+}
+/* Best available offer per group, chosen in order so the phones together never use more Picks than the
+   account has left after perks and hand-picked offers. Ties on credit go to the offer using fewer Picks. */
+function bestPlan(c){
+  var s = state, out = {}, left = Infinity;
+  if (c.fam === "tmix") {
+    left = picksFor(c.pid, c.n) - sum((s.perks || []).map(function(id){ var p = PERKS.filter(function(x){ return x.id === id; })[0]; return p ? ((p.loadedFree && c.pid === "loaded") ? 0 : p.cost) : 0; }));
+    s.groups.forEach(function(g){
+      if (g.dev.kind !== "new" || g.dev.offer === "best" || g.dev.offer === "full") return;
+      if (g.dev.offer === "custom") { left -= (+g.dev.customPicks || 0) * g.qty; return; }
+      var o = offerPool().filter(function(x){ return x.id === g.dev.offer; })[0];
+      if (o && o.picks) left -= o.picks * g.qty;
+    });
+  }
+  s.groups.forEach(function(g){
+    if (g.dev.kind !== "new" || g.dev.offer !== "best") return;
+    var ok = offersFor(g, c).filter(function(x){ return x.ok && !x.expired && (!x.o.picks || x.o.picks * g.qty <= left); });
+    ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
+    out[g.id] = ok[0] || null;
+    if (ok[0] && ok[0].o.picks) left -= ok[0].o.picks * g.qty;
+  });
+  return out;
 }
 function bestOffer(list){
   var ok = list.filter(function(x){ return x.ok && !x.expired; });
@@ -869,7 +899,7 @@ function devMath(g, c){
     if (cc > 0) off = {label:"Custom promo", credit:cc, picks: c.fam === "tmix" ? (+g.dev.customPicks || 0) : 0, custom:true};
   } else if (g.dev.offer !== "full" && g.dev.kind === "new") {
     var list = offersFor(g, c), pick = null;
-    if (g.dev.offer === "best") pick = bestOffer(list);
+    if (g.dev.offer === "best") pick = bestPlan(c)[g.id] || null;
     else {
       pick = list.filter(function(x){ return x.o.id === g.dev.offer; })[0] || null;
       if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.toLowerCase() + "."; pick = null; }
@@ -1443,7 +1473,7 @@ function devCalc(g, q){
   }
   if (d.warn) h += '<p class="info warn">' + esc(d.warn) + '</p>';
   var list = g.dev.kind === "new" ? offersFor(g, c) : [];
-  var best = bestOffer(list);
+  var best = g.dev.kind === "new" ? bestPlan(c)[g.id] || null : null;
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
   h += '<div><h4>Apply a promotion?</h4><div class="radios">';
   if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / 36) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);

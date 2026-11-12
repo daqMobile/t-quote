@@ -9,7 +9,8 @@
    "Added moto g stylus (2026) to the T-Mix Android new line, any-phone and Motorola offers, and REVVL 8 Pro to the T-Mix Android new line and any-phone offers",
    "Added iPhone 17 to the 3-Pick trade-in (any condition), which T-Mobile's iPhone 17 page shows",
    "moto g (2026) price $269.99 to $229.99 per T-Mobile's product page (the Motorola deals page fine print still shows $269.99)",
-   "Confirmed 32 other device prices on T-Mobile pages; no other price changes"
+   "Confirmed 32 other device prices on T-Mobile pages; no other price changes",
+   "T-Mix device offers now use the monthly-spend requirement from T-Mobile's terms ($55+ for 1 Pick, $75+ for 2, $95+ for 3) instead of plan names"
   ],
   "checkedAt": "2026-11-12T06:51:47-06:00",
   "sources": [
@@ -891,7 +892,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -923,7 +925,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -955,7 +958,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -987,11 +991,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
-   "detail": "New line with a number transfer on T-Mix More or Loaded. Holds 2 Picks per phone for 36 months.",
+   "detail": "New line with a number transfer on a $75+/mo T-Mix account. Holds 2 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
    "id": "tm2",
@@ -1005,6 +1010,7 @@
    "need": "port",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1013,11 +1019,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tm2t",
@@ -1032,6 +1039,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1040,11 +1048,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months.",
+   "detail": "New line with a number transfer on a $95+/mo T-Mix account. Holds 3 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
    "id": "tm3",
@@ -1057,6 +1066,8 @@
    "need": "port",
    "picks": 3,
    "plans": [
+    "standard",
+    "more",
     "loaded"
    ],
    "source": "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
@@ -1064,11 +1075,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 95
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone in any condition on T-Mix Loaded. Holds 3 Picks per phone.",
+   "detail": "Trade in an eligible phone in any condition on a $95+/mo T-Mix account. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tm3t",
@@ -1084,6 +1096,8 @@
    "need": "trade",
    "picks": 3,
    "plans": [
+    "standard",
+    "more",
     "loaded"
    ],
    "source": "https://www.t-mobile.com/offers/promotional-offer-details",
@@ -1091,7 +1105,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 95
   },
   {
    "dated": false,
@@ -1117,7 +1132,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -1170,7 +1186,8 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 45
   },
   {
    "dated": false,
@@ -1200,7 +1217,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -1230,11 +1248,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
-   "detail": "New voice line on T-Mix More or Loaded. No trade-in needed. Holds 2 Picks per phone.",
+   "detail": "New voice line on a $75+/mo T-Mix account. No trade-in needed. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmgal2n",
@@ -1245,6 +1264,7 @@
    "need": "newline",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1253,11 +1273,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmgal2t",
@@ -1268,6 +1289,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1276,11 +1298,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "New voice line on T-Mix Loaded. No trade-in needed. Holds 3 Picks per phone.",
+   "detail": "New voice line on a $95+/mo T-Mix account. No trade-in needed. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmgal3n",
@@ -1295,6 +1318,8 @@
    "need": "newline",
    "picks": 3,
    "plans": [
+    "standard",
+    "more",
     "loaded"
    ],
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
@@ -1302,11 +1327,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 95
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix Loaded. Holds 3 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $95+/mo T-Mix account. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmgal3t",
@@ -1321,6 +1347,8 @@
    "need": "trade",
    "picks": 3,
    "plans": [
+    "standard",
+    "more",
     "loaded"
    ],
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
@@ -1328,7 +1356,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 95
   },
   {
    "dated": false,
@@ -1358,7 +1387,8 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 45
   },
   {
    "dated": false,
@@ -1387,7 +1417,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -1439,7 +1470,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
@@ -1491,7 +1523,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 95
   },
   {
    "dated": false,
@@ -1543,7 +1576,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 115
   },
   {
    "dated": false,
@@ -1586,6 +1620,7 @@
    "need": "newline",
    "picks": 5,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1594,7 +1629,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 155
   },
   {
    "dated": false,
@@ -1637,6 +1673,7 @@
    "need": "none",
    "picks": 6,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1645,7 +1682,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 155
   },
   {
    "dated": false,
@@ -1688,6 +1726,7 @@
    "need": "none",
    "picks": 7,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1696,7 +1735,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 180
   },
   {
    "dated": false,
@@ -1721,7 +1761,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
@@ -1747,11 +1788,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
-   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmpx2n",
@@ -1764,6 +1806,7 @@
    "need": "newline",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1772,11 +1815,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmpx2t",
@@ -1788,6 +1832,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1796,7 +1841,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
@@ -1820,11 +1866,12 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 55
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmraz26t",
@@ -1835,6 +1882,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1843,11 +1891,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmraz2n",
@@ -1859,6 +1908,7 @@
    "need": "newline",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1867,11 +1917,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmraz2t",
@@ -1883,6 +1934,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1891,11 +1943,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "New voice line on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmrazf2n",
@@ -1906,6 +1959,7 @@
    "need": "newline",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1914,11 +1968,12 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   },
   {
    "dated": false,
-   "detail": "Trade in an eligible phone on T-Mix More or Loaded. Holds 2 Picks per phone.",
+   "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
    "id": "tmrazf2t",
@@ -1929,6 +1984,7 @@
    "need": "trade",
    "picks": 2,
    "plans": [
+    "standard",
     "more",
     "loaded"
    ],
@@ -1937,7 +1993,8 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-12",
+   "minMonthly": 75
   }
  ],
  "devices": [
