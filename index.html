@@ -751,7 +751,7 @@ function exampleState(){
   var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
   var c = newGroup("watch"); c.dev.model = "awse3";
-  return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
+  return {v:2, sv:3, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
     autopay:true, visa:false, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     set:{connect:35, employeePct:75, employeeHintPct:20}};
@@ -772,7 +772,10 @@ try {
   var raw = localStorage.getItem(KEY);
   if (raw) {
     var o = JSON.parse(raw);
-    if (o && o.v === 2 && Array.isArray(o.groups)) {
+    /* sv 3 (Nov 12, 2026): a quote kept from before then may have lines stuck on Upgrade from the Go5G bug,
+       so that one time the tool opens on a new quote instead. */
+    if (o && o.v === 2 && Array.isArray(o.groups) && o.sv !== 3) state = blankState();
+    else if (o && o.v === 2 && Array.isArray(o.groups)) {
       var d = exampleState();
       state = Object.assign(d, o);
       state.set = Object.assign(exampleState().set, o.set || {});
@@ -780,10 +783,26 @@ try {
       var mx = 0;
       state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; });
       gid = mx + 1;
+      normalizeState();
     }
   }
 } catch (e) {}
 state.discountsOpen = false;   // Plan discounts starts closed every time the tool opens
+/* A restored quote is checked before use: unknown plans or discounts fall back to defaults, and lines follow the plan
+   (Upgrade on Go5G / Essentials, back to Port or New otherwise). */
+function normalizeState(){
+  if (!TMIX[state.planNew] || TMIX[state.planNew].legacy) state.planNew = topPlan(TMIX);
+  if (!EXP[state.planExp]) state.planExp = topPlan(EXP);
+  if (state.exFam !== "exp" && state.exFam !== "tmix") state.exFam = "exp";
+  if (state.cust !== "new" && state.cust !== "existing") state.cust = "new";
+  if (state.planDiscount !== "none" && state.planDiscount !== "port" && !SEG[state.planDiscount]) state.planDiscount = "none";
+  if (state.cust === "existing" && state.planDiscount === "port") state.planDiscount = "none";
+  state.groups.forEach(function(g){
+    if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
+    if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
+  });
+  afterPlanChange();
+}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
 /* ================= Helpers ================= */
