@@ -2101,7 +2101,10 @@ function setPlan(val){
 }
 function afterPlanChange(){
   var c = ctxOf(state);
-  if (isLegacy(c)) state.groups.forEach(function(g){ g.lineType = "upgrade"; });
+  /* Go5G and Essentials quote upgrades only, so every line becomes an Upgrade. Each line remembers what it was,
+     and gets it back when the plan changes to one that can add lines. */
+  if (isLegacy(c)) state.groups.forEach(function(g){ if (g.ltBefore == null) g.ltBefore = g.lineType; g.lineType = "upgrade"; });
+  else state.groups.forEach(function(g){ if (g.ltBefore != null) { if (g.lineType === "upgrade") g.lineType = g.ltBefore; delete g.ltBefore; } });
   if (c.fam === "tmix" && state.planNew === "saver") state.groups.forEach(function(g){ if (g.dev.offer === "custom") g.dev.customPicks = 0; });
 }
 document.addEventListener("touchmove", function(e){
@@ -2219,7 +2222,7 @@ document.addEventListener("click", function(e){
     case "cust":
       if (state.cust === v) break;
       state.cust = v;
-      state.groups.forEach(function(x){ if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
+      state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
       state.autoEx = false;
       if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
