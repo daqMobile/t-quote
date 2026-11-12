@@ -124,6 +124,8 @@ button:disabled{cursor:not-allowed}
 .band select{border:0;border-radius:4px;background:var(--surface);color:var(--ink);padding:7px 10px;font-size:14px;max-width:100%;min-width:0}
 .bchip{font-size:12.5px;padding:4px 9px;border-radius:4px;background:rgba(255,255,255,.18);color:var(--band-ink);font-weight:500}
 .bchip.on{background:var(--badge);color:var(--badge-ink);font-weight:700}
+.bcheck{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:600;padding:5px 10px}
+.bcheck input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
 .dpanel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:14px;display:grid;gap:14px}
 @media (min-width:720px){.dpanel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
 /* Sizing: the discount panel and the Add Devices box are drawn smaller and the plan tiers and line cards
@@ -680,7 +682,11 @@ var HINT = {
 };
 var HINT_ORDER = ["rely","amplified","allin"];
 var HINT_VOICE = 20;
-var HINT_AP = 10;   // Home Internet AutoPay discount: $10/mo per line (Rely $50 w/ AutoPay, $60 without)
+var HINT_AP = 10;
+/* T-Mobile Visa (Capital One). The quote mentions it only when the box in the top bar is checked. */
+var VISA = {head:"5% back in T-Mobile Rewards", body:"on phones, devices and accessories from T-Mobile, plus 2% on everything else.",
+            ap:"Paying your bill with it on AutoPay keeps your AutoPay discount.", fine:"Subject to credit approval."};
+function visaLine(){ return "The T-Mobile Visa earns " + VISA.head + " " + VISA.body + (state.autopay ? " " + VISA.ap : "") + " " + VISA.fine; }   // Home Internet AutoPay discount: $10/mo per line (Rely $50 w/ AutoPay, $60 without)
 var TYPES = {
   phone:{label:"Smartphone",voice:true},
   basic:{label:"Basic Phone",voice:true},
@@ -728,7 +734,7 @@ function exampleState(){
   var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
   var c = newGroup("watch"); c.dev.model = "awse3";
   return {v:2, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
-    autopay:true, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
+    autopay:true, visa:false, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     set:{connect:35, employeePct:75, employeeHintPct:20}};
 }
@@ -1121,6 +1127,8 @@ function renderStage(q){
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
       '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa</option>' +
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
+    '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
+      '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
     '<span class="bchip' + (discounts.length && q.pc && q.pc.portSave ? " on" : "") + '">' + (q.pc && q.pc.portSave ? esc(discounts[0]) : "No additional discounts applied") + '</span></div>';
 
   /* Promotion status sits at the very bottom, out of the way. */
@@ -1273,6 +1281,8 @@ function reviewBody(q){
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
     (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '');
+  if (s.visa) h += '<div class="rule"></div><div class="rsec">T-Mobile Visa</div><div class="rr"><span class="l">' + esc(VISA.head) +
+    '<small>Phones, devices and accessories from T-Mobile · 2% on everything else</small></span><span class="a">5%</span></div>';
   if (c.fam === "tmix") {
     h += '<div class="rule"></div><div class="rsec">Picks · ' + q.used + ' of ' + q.budget + '</div>';
     state.groups.forEach(function(g, i){ var d = devMath(g, c); if (d.offer && d.offer.picks) h += '<div class="rr"><span class="l">' + esc((g.name || TYPES[g.type].label) + " " + (i+1)) + ' phone offer</span><span class="a">' + d.offer.picks * g.qty + '</span></div>'; });
@@ -1856,6 +1866,7 @@ function mailBits(q, m){
     taxNote: "Plus taxes and fees",
     W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
+    visa: !!state.visa,
     fine: "This is an estimate using pricing as of " + dateStr() + ". Taxes and fees aren't included because they can change. Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed."
   };
 }
@@ -1875,6 +1886,7 @@ function emailText(q, m){
   sec("DUE TODAY", b.T);
   sec("ONE-TIME BILL CREDITS", b.ONE);
   if (b.perks.length) out.push("", "INCLUDED WITH YOUR PICKS", b.perks.join(", "));
+  if (b.visa) out.push("", "T-MOBILE VISA", visaLine());
   out.push("", b.fine);
   if (b.sig) out.push("", b.sig);
   if (b.id) out.push("", "Ref. " + b.id);
@@ -1912,6 +1924,10 @@ function emailHtml(q, m){
       sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) +
     '</table>' +
     (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
+    (b.visa ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin-top:20px;border:1px solid ' + LINE + ';border-left:4px solid ' + ACC + ';border-radius:8px"><tr><td style="padding:14px 16px;font-size:14px">' +
+        '<div style="' + CAP + '">T-MOBILE VISA</div>' +
+        '<div style="margin-top:4px"><b style="color:' + ACC + '">' + esc(VISA.head) + '</b> ' + esc(VISA.body) + (state.autopay ? " " + esc(VISA.ap) : "") + '</div>' +
+        '<div style="font-size:12px;color:' + MUT + ';margin-top:4px">' + esc(VISA.fine) + '</div></td></tr></table>' : '') +
     '<p style="margin:22px 0 0;font-size:12px;line-height:1.45;color:' + MUT + '">' + esc(b.fine) + '</p>' +
     (b.sig ? '<p style="margin:20px 0 0">' + esc(b.sig).replace(/\n/g, "<br>") + '</p>' : '') +
     (b.id ? '<p style="margin:18px 0 0;font-size:10px;color:#A3ACB4">Ref. ' + esc(b.id) + '</p>' : '') +
@@ -1995,6 +2011,7 @@ function quoteText(){
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
   out.push(pad("Total due today", fmt(q.today)) + "  + tax");
   if (q.ONE.length) { out.push(""); out.push("ONE-TIME BILL CREDITS"); q.ONE.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); }
+  if (state.visa) out.push("", "T-MOBILE VISA: " + VISA.head + " " + VISA.body);
   if (c.fam === "tmix" && q.budget) out.push("", "PICKS " + q.used + " of " + q.budget + (q.perkRows.length ? ": " + q.perkRows.map(function(p){ return p.name; }).join(", ") : ""));
   out.push(""); out.push("Estimate only. Pricing as of " + ASOF + "; final price set at purchase.");
   return out.join("\n");
