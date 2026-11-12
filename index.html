@@ -799,16 +799,17 @@ function ctxOf(s){
   if (S && S.max && S.max[pid]) mx = Math.min(mx, S.max[pid]);
   return {fam:fam, pid:pid, ex:ex, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, upVoice:upVoice, E:E, n:E + newVoice, max:mx};
 }
-/* Plan value for pickers: an existing account's T-Mix plan is "tmix:<id>" so it can't be mistaken for Experience More. */
-function planVal(c, id, fam){ return c.ex && fam === "tmix" ? "tmix:" + id : id; }
+/* Plan value for pickers. A bare id means the quote's own kind of plan (T-Mix for new customers, Experience or older for existing).
+   Otherwise it's prefixed, so T-Mix More and Experience More can't be mistaken: "tmix:<id>" on an existing account, "exp:<id>" on a new quote. */
+function planVal(c, id, fam){ return fam === "tmix" ? (c.ex ? "tmix:" + id : id) : (c.ex ? id : "exp:" + id); }
 function curPlanVal(c){ return planVal(c, c.pid, c.fam); }
 /* Plan options for a dropdown: new customers pick a T-Mix tier; existing accounts pick the plan they're on now. */
 function planOptions(c){
   function opt(id, fam){ var v = planVal(c, id, fam); return '<option value="' + v + '"' + (v === curPlanVal(c) ? " selected" : "") + '>' + planName(fam, id) + '</option>'; }
   if (!c.ex) return TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("");
-  return '<optgroup label="Experience">' + EXP_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>' +
-    '<optgroup label="T-Mix · accounts opened since Nov 5">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
-    '<optgroup label="Older plans · upgrades only">' + LEGACY_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>';
+  return '<optgroup label="T-Mix">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
+    '<optgroup label="Retired · Experience">' + EXP_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>' +
+    '<optgroup label="Retired · upgrades only">' + LEGACY_ORDER.map(function(id){ return opt(id, "exp"); }).join("") + '</optgroup>';
 }
 /* Upgrades are only for existing accounts, so choosing Upgrade on a new-customer quote turns it into one.
    The account keeps the T-Mix plan that was on screen; the rep changes Their current plan if it differs. */
@@ -1377,23 +1378,23 @@ function editBody(g, q){
   if (T0.voice) {
     var n = Math.max(c.n, 1);
     /* New customers pick a T-Mix tier. Existing accounts pick the plan they're on now: Experience, T-Mix or an older plan. */
-    /* Current plans: T-Mix tiers for new customers; Experience and T-Mix for existing accounts. Older plans: retired plans an
-       existing customer may still be on, for upgrade quotes. */
+    /* Current: the T-Mix tiers sold today. Retired: plans no longer sold to new customers that an existing account may
+       still be on - Experience (can still price added lines), then Go5G and Essentials (upgrade quotes only). */
     var legTab = (ui.planTab || "current") === "legacy";
-    var opts = legTab ? LEGACY_ORDER.map(function(id){ return ["exp", id]; })
-             : (c.ex ? EXP_ORDER.map(function(id){ return ["exp", id]; }).concat(TMIX_ORDER.map(function(id){ return ["tmix", id]; })) : TMIX_ORDER.map(function(id){ return ["tmix", id]; }));
+    var opts = legTab ? EXP_ORDER.concat(LEGACY_ORDER).map(function(id){ return ["exp", id]; })
+             : TMIX_ORDER.map(function(id){ return ["tmix", id]; });
     b1 += '<div><h4>' + (c.ex ? "Their current plan" : "Choose plan") + '</h4>' +
       '<div class="seg" role="group" aria-label="Plan list" style="flex:none;align-self:flex-start;margin:2px 0 8px">' +
         '<button data-act="plantab" data-v="current" aria-pressed="' + !legTab + '">Current</button>' +
-        '<button data-act="plantab" data-v="legacy" aria-pressed="' + legTab + '">Legacy / retired</button></div>' +
-      '<p class="info">' + I.info + (legTab ? "Older plans quote upgrades only: no added plan charge, and only device offers that name the plan. Picking one makes this an existing-account quote."
+        '<button data-act="plantab" data-v="legacy" aria-pressed="' + legTab + '">Retired</button></div>' +
+      '<p class="info">' + I.info + (legTab ? "No longer offered to new customers. Experience can still price added lines; Go5G and Essentials quote upgrades only. Picking one makes this an existing-account quote."
         : (c.ex ? "Prices are per phone line at the account's " + n + "-line total, with the lines on this quote." : "Prices below reflect discounts applied and the total number of phone lines on the quote.")) + '</p><div class="radios">' +
       opts.map(function(fi){
         var fam = fi[0], id = fi[1], v = planVal(c, id, fam), rid = "pl-" + g.id + "-" + v.replace(":", "-");
         var pc = fam === "tmix" ? planCalc("tmix", id, n, state.autopay, !c.ex && state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false);
         var P = (fam === "tmix" ? TMIX : EXP)[id];
         var pk = fam === "tmix" ? picksFor(id, n) : null;
-        var tag = c.ex && fam === "tmix" ? ' <span class="why">· T-Mix account</span>' : "";
+        var tag = "";
         if (P.legacy) return radio("plan-" + g.id, rid, v, curPlanVal(c), P.full, "Upgrades only · no added plan charge", false, "__plan");
         return radio("plan-" + g.id, rid, v, curPlanVal(c), pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full + tag : P.full + ' <span class="why">· ' + (fam === "tmix" ? planNA(id, segOf(state), false) : "up to " + P.max + " lines") + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
@@ -2050,12 +2051,11 @@ function setPath(path, val){
 function setPlan(val){
   val = String(val);
   if (val.indexOf("tmix:") === 0) { state.planNew = val.slice(5); if (state.cust === "existing") state.exFam = "tmix"; }
-  else if (LEGACY[val]) {   // older plans are only for existing accounts, quoting upgrades
-    if (state.cust !== "existing") { state.cust = "existing"; state.planDiscount = "none"; }
-    state.planExp = val; state.exFam = "exp";
+  else if (val.indexOf("exp:") === 0 || state.cust === "existing") {   // retired plans (Experience, Go5G, Essentials) are only for existing accounts
+    if (state.cust !== "existing") { state.cust = "existing"; state.planDiscount = "none"; state.autoEx = false; }
+    state.planExp = val.replace(/^exp:/, ""); state.exFam = "exp";
   }
-  else if (state.cust === "new") state.planNew = val;
-  else { state.planExp = val; state.exFam = "exp"; }
+  else state.planNew = val;
   afterPlanChange();
 }
 function afterPlanChange(){
@@ -2211,7 +2211,7 @@ document.addEventListener("click", function(e){
       dropGroup(); break;
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
-    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.planTab = isLegacy(ctxOf(state)) ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
+    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : "best"; } break;
     case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
     case "mfr": ui.mfr = v; break;
