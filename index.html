@@ -480,6 +480,8 @@ var SEG = {
   senior:    {label:"55+", ap:{saver:[30,60], standard:[50,75], more:[65,120], loaded:[85,150]}, addl:{}, max:{saver:2, standard:2, more:2, loaded:2},
               exp:{beyond:[85,130], more:[70,100]}, expAddl:{}, expMax:{beyond:2, more:2},
               hint:"The account holder must be 55 or older. Up to 2 phone lines."},
+  workperks: {label:"Work Perks", pct:true, fixedPct:15, maxLines:5,
+              hint:"Work Perks: 15% off the Experience More or Beyond plan charge, after AutoPay, on up to the first 5 phone lines. The customer's employer must be on T-Mobile's Work Perks list, and they verify within 30 days. Doesn't combine with Military or 55+, and isn't offered on T-Mix."},
   employee:  {label:"Employee", pct:true,
               hint:"Employee pricing: a percentage off every wireless line (75%) and off Home Internet (20%). Change the percentages in Settings."}
 };
@@ -539,7 +541,10 @@ function planCalc(fam, id, n, autopay, portOn, seg){
   var promo = fam === "tmix" ? p.port[n] : undefined;
   var usePort = !!portOn && promo != null && promo < base;
   var price = usePort ? promo : base;
-  var empSave = S && S.pct ? round2(price * empPct() / 100) : 0;
+  var empSave = 0;
+  if (S && S.fixedPct) {
+    if (fam === "exp" && autopay) empSave = round2((n > S.maxLines ? planCalc(fam, id, S.maxLines, true, false, null).price : price) * S.fixedPct / 100);
+  } else if (S && S.pct) empSave = round2(price * empPct() / 100);
   price -= empSave;
   var noAp = autopay ? 0 : (fam === "tmix" ? 10 * Math.min(n,12) : 5 * Math.min(n,8));
   return {base:base, price:price, portSave: usePort ? base - promo : 0, empSave:empSave, noAp:noAp, total: price + noAp, est:est};
@@ -953,6 +958,10 @@ function compute(s){
   var W = [], T = [], ONE = [], notes = [], groupsOut = {}, empConn = 0, addNote = "";
   var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
+  if (seg === "workperks" && c.fam === "exp") {
+    if (s.autopay) P = Object.assign({}, P, {full: P.full + " w/ Work Perks"});
+    else notes.push({t:"warn", m:"Work Perks needs AutoPay, so it isn't applied."});
+  }
   var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
   var portOn = c.fam === "tmix" && !c.ex && s.planDiscount === "port" && allPort;
   if (c.fam === "tmix" && !c.ex && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
@@ -1125,7 +1134,12 @@ function acctFields(c, pfx){
 /* One option under Apply a plan discount, greyed out when the current plan or line count doesn't qualify. */
 function segOpt(v, label){
   var s = state, c = ctxOf(s), S = SEG[v], why = "", ok = true, St = S.pct ? null : segTable(S, c.fam);
-  if (S.pct) why = " · " + empPct() + "% off lines";
+  if (S.fixedPct) {
+    if (c.fam !== "exp") { ok = false; why = " (Experience More or Beyond only)"; }
+    else if (!s.autopay) { ok = false; why = " (needs AutoPay)"; }
+    else why = " · " + S.fixedPct + "% off up to " + S.maxLines + " lines";
+  }
+  else if (S.pct) why = " · " + empPct() + "% off lines";
   else if (!St.ap[c.pid]) { ok = false; why = " (not on " + planName(c.fam, c.pid) + ")"; }
   else if (St.max[c.pid] && c.n > St.max[c.pid]) { ok = false; why = " (max " + St.max[c.pid] + " phone lines)"; }
   return '<option value="' + v + '"' + (s.planDiscount === v ? " selected" : (ok ? "" : " disabled")) + '>' + label + why + '</option>';
@@ -1162,7 +1176,7 @@ function renderStage(q){
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
         (!c.ex ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
-        (!isLegacy(c) ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("employee", "Employee pricing") : '') +
+        (!isLegacy(c) ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("workperks", "Work Perks") + segOpt("employee", "Employee pricing") : '') +
       '</select></div>' +
       '<p class="fhint">' + (isLegacy(c) ? "Go5G and Essentials quotes are upgrades only and add no plan charge, so a plan discount doesn't change the quote."
           : segOf(s) ? esc(SEG[s.planDiscount].hint) + (c.ex ? " On an existing account, pick the discount it already has so added lines are priced on it." : "")
