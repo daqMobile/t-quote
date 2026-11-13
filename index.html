@@ -1728,10 +1728,10 @@ function editBody(g, q){
     var tagsHere = {};
     pool.forEach(function(m){ AO.forEach(function(o){ if ((o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1) tagsHere[o.tag] = 1; }); });
     var mfrsHere = MFRS.filter(function(f){ return pool.some(function(m){ return m.mfr === f; }); });
-    var mf = mfrsHere.indexOf(ui.mfr) > -1 ? ui.mfr : mfrsHere[0];
+    var mf = ui.mfr === "" ? "" : (mfrsHere.indexOf(ui.mfr) > -1 ? ui.mfr : mfrsHere[0]);
     b2 += '<div><h4 class="muted" style="font-weight:500">Filter by promotion (optional):</h4><div class="chips">' + Object.keys(TAGS).filter(function(t){ return tagsHere[t]; }).map(function(t){ return '<button class="chip" data-act="tagf" data-v="' + t + '" aria-pressed="' + (ui.tagFilter === t) + '">' + TAGS[t] + '</button>'; }).join("") + '</div></div>';
     if (mfrsHere.length > 1) b2 += '<div><h4 class="muted" style="font-weight:500">Filter by popular manufacturer (optional):</h4><div class="chips">' + mfrsHere.map(function(f){ return '<button class="chip" data-act="mfr" data-v="' + f + '" aria-pressed="' + (mf === f) + '">' + f + '</button>'; }).join("") + '</div></div>';
-    var shown = pool.filter(function(m){ return m.mfr === mf || mfrsHere.length < 2; }).filter(function(m){
+    var shown = pool.filter(function(m){ return !mf || m.mfr === mf || mfrsHere.length < 2; }).filter(function(m){
       if (!ui.tagFilter) return true;
       return AO.some(function(o){ return o.tag === ui.tagFilter && (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
     });
@@ -1744,7 +1744,7 @@ function editBody(g, q){
         '<span class="mval' + (cur ? "" : " ph") + '">' + (cur ? esc(cur.name) : "Choose a model") + '</span>' +
         (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : fmt(cur.price)) + '</span>' : '') +
         '<svg class="mchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>' +
-      (mOpen ? '<div class="mlist" id="ml-' + g.id + '" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf) + '</div>' +
+      (mOpen ? '<div class="mlist" id="ml-' + g.id + '" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf || "All manufacturers") + '</div>' +
       (shown.length ? shown.map(function(m){
         var has = hasOffer(m);
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
@@ -2554,7 +2554,9 @@ document.addEventListener("click", function(e){
       if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = false; }
       break;
     }
-    case "mfr": ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
+    /* Manufacturer filter: tapping the highlighted one unselects it (all manufacturers); tapping another selects it.
+       Either way the model list stays as it is (closed unless it was open). */
+    case "mfr": ui.mfr = b.getAttribute("aria-pressed") === "true" ? "" : v; break;
     case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "";
       var npi = p360Info(g); if (npi && (npi.tier || npi.likely) && g.p360 !== "0" && g.p360 !== "emp") g.p360 = npi.tier || npi.likely;
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
