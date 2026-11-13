@@ -1324,7 +1324,7 @@ function renderStage(q){
   }
 
   var order = c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER);
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? "existing account · " + c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
       var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s))
              : (LEGACY[id] ? legacyRef(id, Math.max(c.n,1), s.autopay) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s)));
