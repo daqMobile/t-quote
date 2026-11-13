@@ -1583,6 +1583,13 @@ function box(n, title, body){ return '<section class="box"><div class="boxh"><sp
    is an "AAL"; "new line with a number transfer" reads "New line with a Port". Review and the email keep T-Mobile's wording. */
 function offerWords(text, o){
   var t = String(text || "").replace(/\bswitcher\b/g, "Switcher").replace(/\bnew line with a number transfer\b/gi, function(m){ return (m.charAt(0) === "N" ? "N" : "n") + "ew line with a Port"; });
+  t = t.replace(/\bnew lines with number transfers\b/gi, function(m){ return (m.charAt(0) === "N" ? "N" : "n") + "ew lines with Ports"; });
+  if (o && (o.need === "port" || o.need === "port4") && text === o.label && !/\bSwitcher\b/.test(t)) {
+    /* Port offers always say "Switcher" in their name. */
+    if (/\bnew line\b/i.test(t)) t = t.replace(/\bnew line\b/i, "Switcher");
+    else if (/\boffer\b/.test(t)) t = t.replace(/\boffer\b/, "Switcher offer");
+    else t = t + " · Switcher";
+  }
   if (o && o.need !== "port" && o.need !== "port4")
     t = t.replace(/\ba new (voice )?line\b/gi, function(m){ return (m.charAt(0) === "A" ? "An" : "an") + " AAL"; })
          .replace(/\bnew (voice )?line\b/gi, "AAL");
