@@ -1608,7 +1608,7 @@ function p360Opts(g){
 function p360Hint(g){
   var pi = p360Info(g);
   if (!pi) return "Monthly price depends on the device tier. Pick a device to see its tier.";
-  if (pi.tier) return esc(pi.name.replace(/\s+\d+(GB|TB)\b.*$/, "")) + " is Tier " + pi.tier + " on T-Mobile's Protection 360 tier list.";
+  if (pi.tier) return esc(pi.name.replace(/\s+\d+(GB|TB)\b.*$/, "")) + " is Protection 360 Tier " + pi.tier + ".";
   return esc(pi.name.replace(/\s+\d+(GB|TB)\b.*$/, "")) + " isn't on T-Mobile's tier list yet" + (pi.likely ? ", likely Tier " + pi.likely : "") + ". Check the tier in the store system.";
 }
 function box(n, title, body){ return '<section class="box"><div class="boxh"><span class="num">' + n + '</span>' + title + '</div><div class="boxb">' + body + '</div></section>'; }
