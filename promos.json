@@ -1,23 +1,24 @@
 {
  "meta": {
   "changes": [
-   "Morning hand-off not used: it was yesterday's file (checked Nov 12, 06:51), not today's",
-   "T-Mobile's offer pages returned 403; marked all 59 running offers as not confirmed today (still active, last verified Nov 12)",
-   "No ended or new offers found in Android Police, WhistleOut, TmoNews or Tom's Guide coverage (holiday lineup from Nov 5 still listed)",
-   "No device or price changes"
+   "T-Mobile's offer terms page loaded this run; confirmed all 62 running offers (all were marked unconfirmed earlier today) and set them verified today",
+   "SyncUP DRIVE on Us confirmed on its device page for the first time ($96 via 24 credits)",
+   "T-Mix iPhone trade-in offers (2 and 3 Picks) and the 4-line iPhone 17e offer confirmed on the iPhone deals page and holiday newsroom post",
+   "No ended or new offers; no device or price changes"
   ],
-  "checkedAt": "2026-11-13T08:51:06-06:00",
+  "checkedAt": "2026-11-13T10:16:34-06:00",
   "sources": [
-   "https://www.androidpolice.com/best-t-mobile-deals-of-the-month/",
-   "https://www.whistleout.com/CellPhones/News/T-Mobile-Cell-Phone-Deals",
-   "https://www.tmonews.com/2026/11/t-mobiles-holiday-deals-are-here-iphone-18-pro-on-us-four-lines-for-25-and-more/",
-   "https://www.tomsguide.com/deals/best-cell-phone-deals"
+   "https://www.t-mobile.com/offers/promotional-offer-details",
+   "https://www.t-mobile.com/offers/apple-iphone-deals",
+   "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
+   "https://www.t-mobile.com/devices/family-devices",
+   "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car"
   ],
-  "summary": "T-Mobile's offer pages refused this check and no news from the last two days confirms or ends any offer, so the 59 running offers stay active but are marked unconfirmed; no devices or prices changed."
+  "summary": "62 offers active, none ended or added: T-Mobile's offer terms and deal pages confirmed every running offer today; no device or price changes."
  },
  "offers": [
   {
-   "dated": true,
+   "dated": false,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -34,10 +35,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line with a number transfer on Experience Beyond or Go5G Next. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -59,10 +60,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone in any condition on Experience Beyond or Go5G Next.",
    "ends": null,
    "fam": "exp",
@@ -84,10 +85,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Essentials or higher ($60+/mo with AutoPay). No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -116,10 +117,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 350,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone and add a new line on Essentials or higher ($60+/mo with AutoPay).",
    "ends": null,
    "fam": "exp",
@@ -148,10 +149,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 830,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line with a number transfer on Experience More, Go5G Plus or higher.",
    "ends": null,
    "fam": "exp",
@@ -175,10 +176,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience More, Go5G Plus or higher.",
    "ends": null,
    "fam": "exp",
@@ -202,10 +203,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on most plans ($60+/mo with AutoPay). No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -226,10 +227,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300.99,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience More, Go5G Plus or higher. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -250,10 +251,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience More, Go5G Plus or higher.",
    "ends": null,
    "fam": "exp",
@@ -274,10 +275,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience Beyond or Go5G Next. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -301,10 +302,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience Beyond or Go5G Next.",
    "ends": null,
    "fam": "exp",
@@ -328,10 +329,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on most plans ($60+/mo with AutoPay).",
    "ends": null,
    "fam": "exp",
@@ -357,10 +358,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on most plans ($60+/mo with AutoPay). No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -386,10 +387,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 600,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience Beyond or Go5G Next ($100+/mo with AutoPay).",
    "ends": null,
    "fam": "exp",
@@ -410,10 +411,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience More or Beyond, Go5G Plus or Go5G Next.",
    "ends": null,
    "fam": "exp",
@@ -436,10 +437,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on Experience More or Beyond.",
    "ends": null,
    "fam": "exp",
@@ -459,10 +460,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience More or Beyond, Go5G Plus or Go5G Next. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -484,10 +485,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience More, Go5G Plus or higher.",
    "ends": null,
    "fam": "exp",
@@ -508,7 +509,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -556,7 +557,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay; the same $430 credit takes Galaxy Watch Ultra2 to $269.99.",
    "ends": null,
    "fam": "any",
@@ -574,10 +575,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 430,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New tablet line on a $25+/mo tablet plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -594,7 +595,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -620,7 +621,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience More or Beyond, Go5G Plus or Go5G Next. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -642,7 +643,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -689,7 +690,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
    "ends": null,
    "fam": "any",
@@ -706,7 +707,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 500,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -732,7 +733,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line on Experience Beyond. No trade-in needed.",
    "ends": null,
    "fam": "exp",
@@ -751,7 +752,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -823,7 +824,7 @@
    "verified": null
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New SyncUP DRIVE line on the SyncUP DRIVE Unlimited plan (6GB+ high-speed data). Free via 24 monthly bill credits on a 24-month payment plan. Well-qualified customers; no lines cancelled in the last 90 days.",
    "ends": null,
    "fam": "any",
@@ -841,7 +842,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 96,
-   "verified": null
+   "verified": "2026-11-13"
   },
   {
    "dated": false,
@@ -888,7 +889,7 @@
    "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone.",
    "ends": null,
    "fam": "tmix",
@@ -907,10 +908,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -940,10 +941,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line with a number transfer on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -973,10 +974,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1006,10 +1007,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone and add a new voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1039,10 +1040,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line with a number transfer on a $75+/mo T-Mix account. Holds 2 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
@@ -1067,10 +1068,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1096,10 +1097,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New line with a number transfer on a $95+/mo T-Mix account. Holds 3 Picks per phone for 36 months.",
    "ends": null,
    "fam": "tmix",
@@ -1123,10 +1124,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone in any condition on a $95+/mo T-Mix account. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1153,10 +1154,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1180,10 +1181,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in any phone in any condition on a $45+/mo T-Mix plan, Saver included. No Picks needed.",
    "ends": null,
    "fam": "tmix",
@@ -1234,10 +1235,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1265,10 +1266,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1296,10 +1297,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $75+/mo T-Mix account. No trade-in needed. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1321,10 +1322,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1346,10 +1347,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $95+/mo T-Mix account. No trade-in needed. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1375,10 +1376,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $95+/mo T-Mix account. Holds 3 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1404,10 +1405,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in any phone in any condition on a $45+/mo T-Mix plan, Saver included. No Picks needed.",
    "ends": null,
    "fam": "tmix",
@@ -1435,10 +1436,10 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1465,10 +1466,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 2 Picks on a $75+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1518,10 +1519,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 3 Picks on a $95+/mo T-Mix account; no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1571,10 +1572,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 4 Picks on a $115+/mo T-Mix account (e.g. Standard with 4 lines or More with 2); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1624,10 +1625,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $155+/mo T-Mix account using 5 Picks; no trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1677,10 +1678,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 6 Picks on a $155+/mo T-Mix account (e.g. More with 3 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1730,10 +1731,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Use 7 Picks on a $180+/mo T-Mix account (e.g. More with 4 lines); no new line or trade-in needed, and the Picks stay on the phone for the 36-month term.",
    "ends": null,
    "fam": "tmix",
@@ -1783,10 +1784,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1809,10 +1810,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $55+/mo T-Mix plan. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1836,10 +1837,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1863,10 +1864,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1889,10 +1890,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
    "ends": null,
    "fam": "tmix",
@@ -1914,10 +1915,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1939,10 +1940,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1965,10 +1966,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -1991,10 +1992,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "New voice line on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -2016,10 +2017,10 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
-   "dated": true,
+   "dated": false,
    "detail": "Trade in an eligible phone on a $75+/mo T-Mix account. Holds 2 Picks per phone.",
    "ends": null,
    "fam": "tmix",
@@ -2041,7 +2042,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   }
  ],
  "devices": [
@@ -2087,7 +2088,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-13"
   },
   {
    "fam": "17e",
