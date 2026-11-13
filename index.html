@@ -1763,7 +1763,7 @@ function devCalc(g, q){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
     h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
-      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\bPORT\b/, '<span class="wk">PORT</span>') + '</span>'), !x.ok, k);
+      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k);
   });
   if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
   h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
