@@ -310,6 +310,7 @@ html.locked,html.locked body{overflow:hidden}
 .money::before{content:"$";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 .money .tin{padding-left:23px}
 .inl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .mdrop{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--muted);border-radius:3px;background:var(--surface);text-align:left;font-size:15px;font-weight:500;cursor:pointer}
 .mdrop .mval{flex:1;min-width:0}
 .mdrop .mval.ph{color:var(--muted);font-weight:400}
@@ -1685,7 +1686,7 @@ function editBody(g, q){
     function hasOffer(m){ return AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; }); }
     var cur = g.dev.model ? model(g.dev.model) : null;
     var mOpen = !!(ui.modelOpen && ui.modelOpen[g.id]);
-    b2 += '<div><h4>Choose model</h4><button class="mdrop" data-act="mopen" data-g="' + g.id + '" aria-expanded="' + mOpen + '" aria-controls="ml-' + g.id + '">' +
+    b2 += '<div><div class="mhead"><h4>Choose model</h4>' + (cur ? '<button class="linkbtn" data-act="model" data-g="' + g.id + '" data-v="">Remove</button>' : '') + '</div><button class="mdrop" data-act="mopen" data-g="' + g.id + '" aria-expanded="' + mOpen + '" aria-controls="ml-' + g.id + '">' +
         '<span class="mval' + (cur ? "" : " ph") + '">' + (cur ? esc(cur.name) : "Choose a model") + '</span>' +
         (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : fmt(cur.price)) + '</span>' : '') +
         '<svg class="mchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>' +
@@ -1740,7 +1741,6 @@ function devCalc(g, q){
   if (g.dev.kind === "new" && !g.dev.model) return '<p class="info">' + I.info + 'Choose a model to see pricing and promotions.</p>';
   if (!d.retail) return g.dev.kind === "custom" ? '<p class="info">' + I.info + 'Enter the full retail price.</p>' : '';
   var h = '<div class="devsel">';
-  if (g.dev.kind === "new") h += '<div class="dsname"><span>' + esc(d.name) + (offersFor(g, c).length ? ' - Offer Available' : '') + '</span><button class="linkbtn" data-act="model" data-g="' + g.id + '" data-v="">Remove</button></div>';
   var promoPrice = Math.max(0, d.retail - d.credit);
   h += '<div class="prices"><span>Full Retail Price: ' + (d.credit ? '<s>' + fmt(d.retail) + '</s>' : fmt(d.retail)) + '</span>' + (d.credit ? '<span>Promo Price: <b>' + fmt(promoPrice) + '</b></span>' : '') + '</div>';
   if (g.pay.method === "full") h += '<div class="brk"><div class="r tot"><span>Due today (paid in full)</span><span>' + fmt(d.retail) + '</span></div></div>';
