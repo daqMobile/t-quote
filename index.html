@@ -333,6 +333,7 @@ html.locked,html.locked body{overflow:hidden}
 .ebar span{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:5px}
 .ebar i{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
 .estat{font-size:14px;margin-top:8px}
+.radio .pk{font-weight:600}
 .erules{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .fields .full{grid-column:1/-1}
@@ -1567,6 +1568,8 @@ function feesBody(){
 
 /* ----- Edit options: numbered boxes ----- */
 function box(n, title, body){ return '<section class="box"><div class="boxh"><span class="num">' + n + '</span>' + title + '</div><div class="boxb">' + body + '</div></section>'; }
+/* Offer label with its Picks requirement ("2 Picks", "no Picks") set a little bolder. */
+function pickLabel(label){ return esc(label).replace(/(\b\d+ Picks?\b|\bno Picks\b)/gi, '<span class="pk">$1</span>'); }
 function radio(name, id, val, cur, label, sub, dis, k){
   return '<label class="radio' + (dis ? " dis" : "") + '" for="' + id + '"><input type="radio" id="' + id + '" name="' + name + '" value="' + val + '" data-k="' + k + '" data-t="str"' + (String(cur) === String(val) ? " checked" : "") + (dis ? " disabled" : "") + '><span>' + label + (sub ? '<small>' + sub + '</small>' : '') + '</span></label>';
 }
@@ -1736,11 +1739,11 @@ function devCalc(g, q){
   if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
   h += '<div><h4>Apply a promotion?</h4><div class="radios">';
-  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
+  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(best.o.label) + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
-    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, esc(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
+    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
       "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k);
   });
   if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
