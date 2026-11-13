@@ -894,20 +894,26 @@ function offersFor(g, c){
   if (g.dev.kind !== "new") return [];
   var m = model(g.dev.model); if (!m) return [];
   return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.models || []).indexOf(m.fam) > -1 && (!o.expired || g.dev.offer === o.id); }).map(function(o){
-    var why = "";
+    /* planOk: the offer works on the plan chosen (its plan list, the account's monthly plan total, and enough Picks on
+       the plan). Offers that fail it are left out of the promotion list unless already chosen. */
+    var why = "", planOk = false;
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
-    else if (!c.autopay) why = "Needs AutoPay";
-    else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type (Box 1)";
-    else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
-    else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
-    else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
-    else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
-    else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
-    else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
-    else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
+    else if (c.fam === "tmix" && o.picks && o.picks > picksFor(c.pid, c.n)) why = "Needs " + o.picks + " Picks; " + planName("tmix", c.pid) + " has " + picksFor(c.pid, c.n) + " at " + c.n + " line" + (c.n > 1 ? "s" : "");
+    else planOk = true;
+    if (planOk) {
+      if (!c.autopay) why = "Needs AutoPay";
+      else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type (Box 1)";
+      else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
+      else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
+      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
+      else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
+      else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
+      else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
+    }
     var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
-    return {o:o, ok:!why, why:why, credit:credit, expired:!!o.expired};
+    return {o:o, ok:!why, planOk:planOk, why:why, credit:credit, expired:!!o.expired};
   });
 }
 /* Best available offer per group, chosen in order so the phones together never use more Picks than the
@@ -1561,7 +1567,8 @@ function devCalc(g, q){
       '<p class="info">' + I.info + 'Device costs only. Excludes down payment and line credits.' + (d.offer && d.offer.picks ? ' Uses ' + d.offer.picks + ' Pick' + (d.offer.picks > 1 ? 's' : '') + ' per line.' : '') + '</p>';
   }
   if (d.warn) h += '<p class="info warn">' + esc(d.warn) + '</p>';
-  var list = g.dev.kind === "new" ? offersFor(g, c) : [];
+  var all = g.dev.kind === "new" ? offersFor(g, c) : [];
+  var list = all.filter(function(x){ return x.planOk || x.o.id === g.dev.offer; }), hidden = all.length - list.length;
   /* What Best available offer would pick for this device, shown even while another option (or none) is chosen. */
   var best = null;
   if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
@@ -1574,6 +1581,7 @@ function devCalc(g, q){
     h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, esc(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / 36) + "/mo credit)",
       "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k);
   });
+  if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
   h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
   h += radio(nm, nm + "-full", "full", g.dev.offer, "Full Retail Price", "", false, k);
   h += '</div>';
