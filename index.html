@@ -1812,17 +1812,22 @@ function devCalc(g, q){
   var best = null;
   if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
-  h += '<div><h4>Apply a promotion?</h4><div class="radios">';
-  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
+  /* The offer list can be hidden (shown by default each time Edit Options opens). Hidden, it shows only the chosen offer. */
+  var offHidden = !!(ui.offersHidden && ui.offersHidden[g.id]), items = [];
+  h += '<div><div class="mhead"><h4>Apply a promotion?</h4><button class="linkbtn" data-act="offtog" data-g="' + g.id + '" aria-expanded="' + !offHidden + '">' + (offHidden ? "Show offers" : "Hide offers") + '</button></div><div class="radios">';
+  function keep(v, html){ items.push({v:v, html:html}); return ""; }
+  if (g.dev.kind === "new") h += keep("best", radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k));
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
-    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
-      "Details: " + esc(offerWords(x.o.detail, x.o)) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k);
+    h += keep(x.o.id, radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
+      "Details: " + esc(offerWords(x.o.detail, x.o)) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k));
   });
-  if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
-  h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
-  h += radio(nm, nm + "-full", "full", g.dev.offer, "Full Retail Price", "", false, k);
+  if (hidden) items.push({v:"__hidden", html:'<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>'});
+  keep("custom", radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k));
+  keep("full", radio(nm, nm + "-full", "full", g.dev.offer, "Full Retail Price", "", false, k));
+  var showItems = offHidden ? items.filter(function(it){ return it.v === g.dev.offer; }) : items;
+  h += showItems.map(function(it){ return it.html; }).join("") + (offHidden && !showItems.length ? '<p class="info" style="margin:0">No promotion chosen yet.</p>' : '');
   h += '</div>';
   if (g.dev.offer === "custom") h += '<div class="subpanel" style="margin-top:8px"><div class="fields"><div class="f"><label for="cc2-' + g.id + '">Total promo credit</label><span class="money"><input class="tin" id="cc2-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.dev.customCredit" data-t="num" value="' + (g.dev.customCredit || "") + '"></span></div>' +
     (c.fam === "tmix" ? '<div class="f"><label for="cpk-' + g.id + '">Picks it holds per line</label><select id="cpk-' + g.id + '" data-k="g.' + g.id + '.dev.customPicks" data-t="num">' + [0,1,2,3].map(function(v){ return '<option value="' + v + '"' + ((+g.dev.customPicks||0) === v ? " selected" : "") + '>' + v + '</option>'; }).join("") + '</select></div>' : '') +
@@ -2542,7 +2547,7 @@ document.addEventListener("click", function(e){
       dropGroup(); break;
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
-    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.modelOpen = {}; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
+    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.modelOpen = {}; ui.offersHidden = {}; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
     case "tagf": {
       /* A promotion filter the chosen model doesn't fit removes that model (and its offer); the model list stays closed. */
@@ -2562,6 +2567,7 @@ document.addEventListener("click", function(e){
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
     case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !ui.modelOpen[g.id]; } break;
     case "pay": if (g) g.pay.method = v; break;
+    case "offtog": if (g) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[g.id] = !ui.offersHidden[g.id]; } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
