@@ -329,6 +329,11 @@ html.locked,html.locked body{overflow:hidden}
 .preview{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:12px 14px;display:flex;justify-content:space-between;gap:12px;font-size:14.5px}
 .preview i{color:var(--muted);font-size:13px;display:block;text-align:right}
 .subpanel{background:var(--sunk);border-radius:3px;padding:14px;display:flex;flex-direction:column;gap:14px;margin-left:30px}
+.ebar{position:relative;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.ebar span{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:5px}
+.ebar i{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
+.estat{font-size:14px;margin-top:8px}
+.erules{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .fields .full{grid-column:1/-1}
 .f{display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -760,6 +765,7 @@ function newGroup(type, cust){
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0},
     p360:"0",
+    early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
     pay:{method:"eip", term: t === "syncDrive" ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
     cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watchPlus" : (CPLANS[t] ? CPLANS[t][0].id : null))
@@ -819,6 +825,7 @@ function normalizeState(){
   state.groups.forEach(function(g){
     if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
+    if (g.lineType !== "upgrade" || !TYPES[g.type] || !TYPES[g.type].voice) earlyOf(g).on = false;
   });
   afterPlanChange();
 }
@@ -966,6 +973,43 @@ function bestOffer(list){
   ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
   return ok[0] || null;
 }
+/* ---------- Early upgrades ----------
+   JUMP! (part of Protection 360; JUMP! 2.0 since Aug 31, 2026): once the current phone is 50% paid on its payment plan,
+   turn it in and T-Mobile covers what's left, up to half of its original cost. If less than half is paid, the customer
+   pays it down to 50% first. No limit on how often.
+   Yearly Upgrade (included with Go5G Next and Experience Beyond, incl. Military / First Responder / 55 versions): phone
+   bought on a payment plan with an eligible offer, at least 6 months in and 50% paid; T-Mobile pays the remaining balance.
+   Not combinable with JUMP!. Both: phone in good working order; current on payments; the old phone's promo credits end;
+   the turned-in phone satisfies the upgrade and isn't valued separately as a trade-in.
+   Sources: t-mobile.com/benefits/jump-phone-upgrade, /support/plans-features/updates-to-the-jump!-program,
+   /support/plans-features/upgrade-ready-every-year (Nov 13, 2026). */
+function earlyOf(g){ if (!g.early) g.early = {on:false, prog:"jump", cost:0, bal:0, months:0, pay:0}; return g.early; }
+function isEarly(g){ return g.lineType === "upgrade" && !!(g.early && g.early.on) && !!TYPES[g.type] && TYPES[g.type].voice; }
+function yearlyPlanOk(c){ return c.ex && c.fam === "exp" && (c.pid === "go5gnext" || c.pid === "beyond"); }
+function earlyCalc(g, c){
+  var e = earlyOf(g), cost = num(e.cost), bal = num(e.bal);
+  if (cost && bal > cost) bal = cost;
+  var r = {prog: e.prog === "yearly" ? "yearly" : "jump", cost:cost, bal:bal, half:0, pct:0, paydown:0, covered:0, issues:[], ready:false, yearlyOk:yearlyPlanOk(c)};
+  r.name = r.prog === "yearly" ? "Yearly Upgrade" : "JUMP!";
+  if (r.prog === "yearly" && !r.yearlyOk) r.issues.push({t:"bad", m:"Yearly Upgrade comes with Go5G Next or Experience Beyond. " + planName(c.fam, c.pid) + " doesn't include it, so use JUMP! with Protection 360."});
+  if (r.prog === "yearly" && num(e.months) && num(e.months) < 6) r.issues.push({t:"bad", m:"Yearly Upgrade needs at least 6 months on the current phone's payment plan (" + num(e.months) + " so far)."});
+  if (!cost) { r.issues.push({t:"warn", m:"enter the current phone's full price and remaining balance (Box 1) to check early-upgrade eligibility."}); return r; }
+  r.half = round2(cost / 2);
+  r.pct = Math.max(0, Math.min(100, (cost - bal) / cost * 100));
+  r.paydown = round2(Math.max(0, bal - r.half));
+  r.covered = round2(Math.min(bal, r.half));
+  r.ready = true;
+  return r;
+}
+function earlyStatus(g, c){
+  var r = earlyCalc(g, c);
+  if (!r.ready) return '<p class="info">' + I.info + 'Enter the current phone\'s full price and remaining balance to check eligibility.</p>';
+  var pct = Math.round(r.pct);
+  return '<div class="ebar" role="img" aria-label="' + pct + '% paid"><span style="width:' + r.pct.toFixed(1) + '%"></span><i></i></div>' +
+    '<div class="estat"><b>' + pct + '% paid</b>' + (r.paydown ? ' · pay down <b>' + fmt(r.paydown) + '</b> today to reach 50%' : ' · eligible now') +
+    (r.covered ? ' · T-Mobile covers the remaining <b>' + fmt(r.covered) + '</b>' : ' · nothing left to cover') + '</div>';
+}
+
 /* Bill credits run 36 months unless the offer says otherwise: SyncUP DRIVE pays out over 24, and offers marked "term"
    follow the device's finance term (24 or 36). */
 function offerMonths(o, g){ return o && o.months === 24 ? 24 : (o && o.months === "term" ? (+g.pay.term === 24 ? 24 : 36) : 36); }
@@ -1081,6 +1125,16 @@ function compute(s){
       }
       if (!okByod) notes.push({t:"warn", m:out.warn});
       if (alone && !cp.byod) notes.push({t:"warn", m:"Tablet lines cost $" + TAB_NO_VOICE + " more per line without a phone line on the account. Adding a phone line brings them back to the add-on price."});
+    }
+    if (isEarly(g)) {
+      var ec = earlyCalc(g, c), ep = num(earlyOf(g).pay);
+      ec.issues.forEach(function(x){ notes.push({t:x.t, m:label + ": " + x.m}); });
+      if (ec.ready) {
+        if (ec.paydown) T.push({l:label + " · pay down current phone to 50%", a:ec.paydown * q, sub:ec.name + " early upgrade"});
+        notes.push({t:"info", m:label + ": " + ec.name + " early upgrade. Current phone " + Math.round(ec.pct) + "% paid" + (ec.paydown ? ", so " + fmt(ec.paydown) + " is due today to reach 50%" : "") + ". T-Mobile covers the remaining " + fmt(ec.covered) + (q > 1 ? " per phone" : "") + " when it's turned in."});
+      }
+      if (ep) { out.lines.push({l:"Current phone payment ends", a:-ep, c:"cr", sub:ec.name}); W.push({l:label + " · current phone payment ends", a:-ep * q, c:"credit", sub:ec.name + " covers the rest of the current phone"}); }
+      if (ec.prog === "jump" && g.p360 === "0") notes.push({t:"info", m:label + ": to JUMP! again later, the new phone needs Protection 360 (Box 3)."});
     }
     var d = devMath(g, c);
     if (g.dev.kind === "new" && d.retail && !g.dev.offer && g.pay.method !== "full") notes.push({t:"warn", m:label + ": no promotion chosen yet. Pick one in Edit options, or Full Retail Price."});
@@ -1286,7 +1340,7 @@ function card(g, i, q){
   }
   var planLines = o.lines.filter(function(x){ return x.l === "Plan" || (!T0.voice && cplanOf(g).name === x.l); });
   var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
-  var lt = g.lineType === "upgrade" ? "Upgrade" : (g.lineType === "port" ? "Port" : "New");
+  var lt = g.lineType === "upgrade" ? (isEarly(g) ? "Early upgrade · " + earlyCalc(g, c).name : "Upgrade") : (g.lineType === "port" ? "Port" : "New");
   return '<article class="card' + (ui.popIn === g.id ? ' popin' : '') + '" data-gid="' + g.id + '"><div class="chead"><div class="ctitle"><span>' + esc(g.name || T0.label) + '</span><button class="x" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>' +
     '<div class="cdev"><div class="devico">' + svgIcon(g.type) + '<span class="badge">' + (i+1) + '</span></div>' +
     '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
@@ -1476,6 +1530,31 @@ function box(n, title, body){ return '<section class="box"><div class="boxh"><sp
 function radio(name, id, val, cur, label, sub, dis, k){
   return '<label class="radio' + (dis ? " dis" : "") + '" for="' + id + '"><input type="radio" id="' + id + '" name="' + name + '" value="' + val + '" data-k="' + k + '" data-t="str"' + (String(cur) === String(val) ? " checked" : "") + (dis ? " disabled" : "") + '><span>' + label + (sub ? '<small>' + sub + '</small>' : '') + '</span></label>';
 }
+function earlyPanel(g, c){
+  if (!isEarly(g)) return "";
+  var e = earlyOf(g), r = earlyCalc(g, c), id = g.id;
+  function money(k, label, v, opt){ return '<div class="f"><label for="ea-' + k + '-' + id + '">' + label + (opt ? ' <span class="muted" style="font-weight:400">(optional)</span>' : '') + '</label><span class="money"><input class="tin" id="ea-' + k + '-' + id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + id + '.early.' + k + '" data-t="num" value="' + (v || "") + '"></span></div>'; }
+  var rules = r.prog === "yearly"
+    ? ["Included with Go5G Next and Experience Beyond, including their Military, First Responder and 55 versions.",
+       "Current phone bought on a payment plan with an eligible offer, at least 6 months ago, and 50% paid. T-Mobile pays the remaining balance.",
+       "Can't be combined with JUMP!."]
+    : ["Comes with Protection 360 on the current phone. No extra fee.",
+       "Current phone 50% paid on its payment plan. If it isn't, the customer pays it down to 50% first. T-Mobile covers what's left, up to half of the phone's original price.",
+       "No limit on how often (JUMP! 2.0). Keep Protection 360 on the new phone to JUMP! again."];
+  rules = rules.concat(["Turn in the current phone in good working order, factory reset, with Find My and other locks off.",
+    "Account current on device and service payments.",
+    "Promo credits still on the current phone stop. The new phone can get today's offers on a new payment plan.",
+    "The turned-in phone covers the early upgrade and can't also count as a trade-in for an offer."]);
+  return '<div class="subpanel" style="margin-top:10px"><div><h4 style="margin:0 0 8px">Early upgrade program</h4><div class="seg" role="group" aria-label="Early upgrade program" style="flex:none;align-self:flex-start">' +
+      '<button data-act="earlyprog" data-g="' + id + '" data-v="jump" aria-pressed="' + (r.prog === "jump") + '">JUMP!</button>' +
+      '<button data-act="earlyprog" data-g="' + id + '" data-v="yearly" aria-pressed="' + (r.prog === "yearly") + '"' + (r.yearlyOk || r.prog === "yearly" ? "" : " disabled") + '>Yearly Upgrade</button></div>' +
+      (r.yearlyOk ? "" : '<p class="fhint">Yearly Upgrade comes with Go5G Next and Experience Beyond only.</p>') + '</div>' +
+    '<div class="fields">' + money("cost", "Current phone's full price", e.cost) + money("bal", "Remaining balance", e.bal) +
+      (r.prog === "yearly" ? '<div class="f"><label for="ea-months-' + id + '">Months on its payment plan</label><input class="tin" id="ea-months-' + id + '" type="number" inputmode="numeric" min="0" step="1" data-k="g.' + id + '.early.months" data-t="num" value="' + (e.months || "") + '"></div>' : '') +
+      money("pay", "Current phone's monthly payment after credits", e.pay, true) + '</div>' +
+    '<div id="earlyst">' + earlyStatus(g, c) + '</div>' +
+    '<ul class="erules">' + rules.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></div>';
+}
 function editBody(g, q){
   var c = q.c, T0 = TYPES[g.type], b = "";
   /* Box 1: Plan */
@@ -1504,11 +1583,13 @@ function editBody(g, q){
         return radio("plan-" + g.id, rid, v, curPlanVal(c), pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full + tag : P.full + ' <span class="why">· ' + planNA(id, segOf(state), false, fam) + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
+    var ltCur = isEarly(g) ? "early" : g.lineType;
     b1 += '<div><h4>Line type</h4><div class="radios">' +
       radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "New line · customer keeps their number from another carrier", isLegacy(c), "g." + g.id + ".lineType") +
       radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New line · new number", isLegacy(c), "g." + g.id + ".lineType") +
-      radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a line they already have · no added plan charge", false, "g." + g.id + ".lineType") +
-      '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
+      radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", ltCur, "Upgrade", "New device on a line they already have · no added plan charge", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-early", "early", ltCur, "Early upgrade", "JUMP! or Yearly Upgrade · current phone at least 50% paid, turned in · no added plan charge", false, "g." + g.id + ".lineType") +
+      '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade or Early upgrade makes this an existing-account quote.</p>') + earlyPanel(g, c) + '</div>';
     if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
     if (c.fam === "tmix") b1 += picksBlock(q);
   } else {
@@ -1550,7 +1631,7 @@ function editBody(g, q){
         var has = AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
       }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div></div>';
-    if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small></span></label>';
+    if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
   }
   if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
   b += box(2, "Device", b2);
@@ -2148,6 +2229,8 @@ function renderLive(){
     if (g && dc && !dc.contains(document.activeElement)) dc.innerHTML = devCalc(g, q);
     else if (g && dc) { var nodes = dc.querySelectorAll(".brk, .prices"); var tmp = document.createElement("div"); tmp.innerHTML = devCalc(g, q); var nn = tmp.querySelectorAll(".brk, .prices"); for (var i = 0; i < nodes.length && i < nn.length; i++) nodes[i].innerHTML = nn[i].innerHTML; }
     if (g && cp) cp.innerHTML = creditPreview(g);
+    var es = $("#earlyst");
+    if (g && es) es.innerHTML = earlyStatus(g, q.c);
   }
   save();
 }
@@ -2160,7 +2243,10 @@ function setPath(path, val){
   else o = state;
   for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]];
   o[parts[parts.length-1]] = val;
-  if (parts[parts.length-1] === "lineType") { if (val === "upgrade") makeExisting(); else maybeBackToNew(); }
+  if (parts[parts.length-1] === "lineType") {
+    if (val === "early") { o.lineType = "upgrade"; earlyOf(o).on = true; makeExisting(); }
+    else { earlyOf(o).on = false; if (val === "upgrade") makeExisting(); else maybeBackToNew(); }
+  }
 }
 /* "tmix:<id>" picks T-Mix for an existing account; a plain id is a T-Mix tier for a new customer,
    or Experience / an older plan for an existing account. */
@@ -2299,7 +2385,7 @@ document.addEventListener("click", function(e){
     case "cust":
       if (state.cust === v) break;
       state.cust = v;
-      state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
+      state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new") earlyOf(x).on = false; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
       state.autoEx = false;
       if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
@@ -2340,6 +2426,7 @@ document.addEventListener("click", function(e){
     case "mfr": ui.mfr = v; break;
     case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = ""; } break;
     case "pay": if (g) g.pay.method = v; break;
+    case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
