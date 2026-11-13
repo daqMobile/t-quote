@@ -1247,7 +1247,8 @@ function compute(s){
     if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
     if (seg === "employee") H.push({l:"Employee pricing", a:-round2(hp.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
     if (s.hint.voice && !voiceOk) notes.push({t:"warn", m:"The Home Internet voice line discount needs a phone line on the account."});
-    if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
+    if (seg === "employee") T.push({l:"Home Internet connection charge", a:0, sub:"waived with employee pricing"});
+    else if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
   }
 
   if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
@@ -1445,7 +1446,7 @@ function renderInternet(q){
     }).join("") + '</div>' +
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
       '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Voice line discount ($' + HINT_VOICE + '/mo)<br><small class="muted">Needs a T-Mobile phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
-      '<label class="check" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect ? " checked" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')</span></label>' +
+      '<label class="check' + (segOf(s) === "employee" ? " dis" : "") + '" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect && segOf(s) !== "employee" ? " checked" : "") + (segOf(s) === "employee" ? " disabled" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')' + (segOf(s) === "employee" ? '<br><small class="muted">Waived with employee pricing.</small>' : '') + '</span></label>' +
     '</div><p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>';
 }
 
