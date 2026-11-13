@@ -526,12 +526,30 @@ var EXP_ORDER = ["beyond","more"];
 /* Legacy plans an existing account may still be on (T-Mobile moved Simple Choice, ONE, Magenta and Sprint plans to
    Experience in 2026; Go5G plans stayed). Upgrades only: the tool doesn't add lines on them, so they carry no pricing.
    Device offers name the legacy plans they accept; the daily promo check records those ids in each offer's plans. */
+/* ref: published account totals with AutoPay for 1..N phone lines, shown for reference only (what the account already
+   pays; quotes on these plans add no plan charge). Go5G family (third line free): Android Police (Nov 2024), PhoneArena,
+   bestphoneplans.net (Jan 2025); Go5G prices weren't raised in the 2025 or June 2026 legacy increases (9to5Mac, 9to5Google).
+   Lines past the table use refAdd per line, and Essentials at 4+ lines is an estimate (sources differ by $5),
+   so those show as "≈". Customers who joined at other times or with discounts can pay differently. */
 var LEGACY = {
-  go5gnext:   {name:"Go5G Next", full:"Go5G Next", max:12, legacy:true},
-  go5gplus:   {name:"Go5G Plus", full:"Go5G Plus", max:12, legacy:true},
-  go5g:       {name:"Go5G", full:"Go5G", max:12, legacy:true},
-  essentials: {name:"Essentials", full:"Essentials", max:12, legacy:true}
+  go5gnext:   {name:"Go5G Next", full:"Go5G Next", max:12, legacy:true, ref:[100,170,180,225], refAdd:45},
+  go5gplus:   {name:"Go5G Plus", full:"Go5G Plus", max:12, legacy:true, ref:[90,150,150,185,220], refAdd:35},
+  go5g:       {name:"Go5G", full:"Go5G", max:12, legacy:true, ref:[75,130,130,155,180], refAdd:25},
+  essentials: {name:"Essentials", full:"Essentials", max:12, legacy:true, ref:[60,90,90,100,125], refAdd:25, refEstFrom:4}
 };
+function legacyRef(id, n, autopay){
+  var p = LEGACY[id]; if (!p || !p.ref || !(n >= 1)) return null;
+  var t = p.ref, total = n <= t.length ? t[n-1] : t[t.length-1] + (n - t.length) * p.refAdd;
+  if (!autopay) total += 5 * Math.min(n, 8);
+  return {total:total, per:total / n, est: n > t.length || (p.refEstFrom && n >= p.refEstFrom)};
+}
+/* What the account's current plan costs per phone line now, for the "Plan · no change" row on upgrade lines. */
+function currentPlanRef(c){
+  if (!c.ex || !(c.E >= 1)) return null;
+  if (isLegacy(c)) return legacyRef(c.pid, c.E, state.autopay);
+  var pc = planCalc(c.fam, c.pid, c.E, state.autopay, false, segOf(state));
+  return pc ? {total:pc.total, per:pc.total / c.E, est:!!pc.est} : null;
+}
 var LEGACY_ORDER = ["go5gnext","go5gplus","go5g","essentials"];
 Object.keys(LEGACY).forEach(function(k){ EXP[k] = LEGACY[k]; });
 function isLegacy(c){ return c.fam === "exp" && !!(EXP[c.pid] && EXP[c.pid].legacy); }
@@ -1346,13 +1364,17 @@ function card(g, i, q){
     '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
     '<div class="cbody"><button class="editbtn" data-act="edit" data-v="' + g.id + '">Edit options</button>' + planSel +
     '<div class="cost"><span class="h">Monthly cost</span>' +
-      (planLines.length ? planLines.map(costRow).join("") : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Existing line, no plan change" : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
+      (planLines.length ? planLines.map(costRow).join("") : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Plan · no change" + planRefTxt(c) : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
       '<small>' + lt + '</small></div>' +
     '<div class="cost"><span class="h">' + esc(d.name) + '</span>' + (devLines.length ? devLines.map(costRow).join("") : '<div class="r"><span>Monthly cost</span><span>' + fmt(0) + '</span></div>') +
       (d.due ? '<small>' + fmt(d.due) + ' due today (paid in full)</small>' : '') +
       '<div class="r tot"><span>Per line</span><span>' + fmt(o.unit) + (g.qty > 1 ? ' · ×' + g.qty + ' = ' + fmt(o.unit * g.qty) : '') + '</span></div></div>' +
     (o.warn ? '<span class="cwarn">' + esc(o.warn) + '</span>' : '') +
     '</div></article>';
+}
+function planRefTxt(c){
+  var r = currentPlanRef(c);
+  return r ? ' <small>· ' + esc(planName(c.fam, c.pid)) + ' stays ' + (r.est ? "≈" : "") + fmt(r.per) + '/line at ' + c.E + ' line' + (c.E > 1 ? "s" : "") + (isLegacy(c) ? " (published price)" : "") + '</small>' : '';
 }
 function costRow(x){ return '<div class="r' + (x.c === "cr" ? " cr" : "") + '"><span>' + esc(x.l) + (x.sub ? ' <small>· ' + esc(x.sub) + '</small>' : '') + '</span><span>' + fmt(x.a) + '</span></div>'; }
 function listRow(g, i, q){
@@ -1579,7 +1601,9 @@ function editBody(g, q){
         var P = (fam === "tmix" ? TMIX : EXP)[id];
         var pk = fam === "tmix" ? picksFor(id, n) : null;
         var tag = "";
-        if (P.legacy) return radio("plan-" + g.id, rid, v, curPlanVal(c), P.full, "Upgrades only · no added plan charge", false, "__plan");
+        if (P.legacy) { var lr = legacyRef(id, n, state.autopay);
+          return radio("plan-" + g.id, rid, v, curPlanVal(c), lr ? '<b>' + (lr.est ? "≈" : "") + fmt(lr.per) + ' per phone line</b> - ' + P.full : P.full,
+            "Upgrades only · no added plan charge" + (lr ? " · published price at " + n + " line" + (n > 1 ? "s" : "") + "; confirm in the account" : ""), false, "__plan"); }
         return radio("plan-" + g.id, rid, v, curPlanVal(c), pc ? '<b>' + (pc.est ? "≈" : "") + fmt(pc.total / n) + ' per phone line</b> - ' + P.full + tag : P.full + ' <span class="why">· ' + planNA(id, segOf(state), false, fam) + '</span>',
           P.specs + (pk ? " · " + pk + " Pick" + (pk > 1 ? "s" : "") : (pk === 0 && P.specs.indexOf("no Picks") < 0 ? " · no Picks" : "")), !pc, "__plan");
       }).join("") + '</div></div>';
