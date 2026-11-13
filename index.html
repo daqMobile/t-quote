@@ -964,14 +964,14 @@ function offersFor(g, c){
     else planOk = true;
     if (planOk) {
       if (!c.autopay) why = "Needs AutoPay";
-      else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type (Box 1)";
-      else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line (Box 1)";
+      else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type";
+      else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line";
       else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
-      else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in (Box 2)";
-      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line (Box 1)" : "Needs a trade-in (Box 2)";
+      else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in";
+      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line" : "Needs a trade-in";
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
-      else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
-      else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
+      else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan";
+      else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan";
       else if (o.needVoice && c.n === 0) why = "Needs a phone line on the account";
       else if (o.maxPerAcct && sum(state.groups.filter(function(x){ return x.type === g.type && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; })) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
     }
