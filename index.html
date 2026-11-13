@@ -2488,7 +2488,16 @@ document.addEventListener("click", function(e){
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
     case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.modelOpen = {}; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
-    case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
+    case "tagf": {
+      /* A promotion filter the chosen model doesn't fit removes that model (and its offer); the model list stays closed. */
+      ui.tagFilter = ui.tagFilter === v ? null : v;
+      var tg = ui.edit && grp(ui.edit), tm = tg && tg.dev.model && model(tg.dev.model), tc = ctxOf(state);
+      if (tm && ui.tagFilter && !activeOffers().some(function(o){ return o.tag === ui.tagFilter && (o.fam === "any" || o.fam === tc.fam) && o.models.indexOf(tm.fam) > -1; })) {
+        tg.dev.model = null; tg.dev.offer = "";
+      }
+      if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = false; }
+      break;
+    }
     case "mfr": ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
     case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "";
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
