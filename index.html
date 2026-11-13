@@ -2633,6 +2633,16 @@ function findQuote(raw){
     renderAll(); window.scrollTo(0, 0);
   }, function(e){ go.disabled = false; go.textContent = "Open"; err.textContent = ghError(e); });
 }
+/* Tapping the promotion that's already chosen fires no change event, so fold the list here too. */
+document.addEventListener("click", function(e){
+  var el = e.target;
+  if (!el || el.type !== "radio" || !el.dataset || !el.dataset.k) return;
+  var om = /^g\.([^.]+)\.dev\.offer$/.exec(el.dataset.k), og = om && grp(om[1]);
+  if (!og || String(og.dev.offer) !== el.value || (ui.offersHidden && ui.offersHidden[og.id])) return;
+  ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[og.id] = true;
+  var id = el.id; renderAll();
+  var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});
+});
 document.addEventListener("click", function(e){
   var box = $("#qFind"); if (!box || box.hidden) return;
   if (e.target.closest && (e.target.closest("#qFind") || e.target.closest("#findBtn"))) return;
