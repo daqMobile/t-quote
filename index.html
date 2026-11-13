@@ -216,6 +216,11 @@ button:disabled{cursor:not-allowed}
 .handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
 .trayin{padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .traycount{font-size:13px;color:var(--muted)}
+.traytop{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%}
+.traytabs{flex:none}
+.traytabs button{padding:3px 14px;font-size:12.5px;line-height:1.3}
+.trayin:has(.traytop){padding-top:10px;gap:9px}
+.traytabs .tcount{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--badge);color:var(--badge-ink);font-size:11px;font-weight:700}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,190px));justify-content:center;gap:16px;width:100%}
 .tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:22px 8px 18px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--accent);font-size:16px;font-weight:500}
 /* Device outline with a small + in the middle of it */
@@ -588,7 +593,11 @@ var CPLANS = {
     {id:"tabUnl",name:"Tablet Unlimited",ap:20},
     {id:"tabPlus",name:"Tablet Unlimited Plus",ap:25},
     {id:"tabByod",name:"BYOD tablet line",ap:5,byod:true,plans:["loaded"]}
-  ]
+  ],
+  /* SyncUP lines (t-mobile.com/devices/family-devices and the SyncUP pages, Nov 13, 2026). AutoPay prices, +$5 without. */
+  syncKids:    [{id:"syncKids", name:"SyncUP KIDS watch line", ap:10, noVoice:10}],
+  syncTracker: [{id:"syncTracker", name:"SyncUP TRACKER line", ap:5}],
+  syncDrive:   [{id:"syncDrive", name:"SyncUP DRIVE line", ap:10, from:true}]
 };
 var MODELS = [
   {id:"duo-256",fam:"duo",mfr:"Apple",type:"phone",name:"iPhone Duo 256GB",price:1999.99},
@@ -617,7 +626,10 @@ var MODELS = [
   {id:"razrfold",fam:"razrfold",mfr:"Motorola",type:"phone",name:"razr fold 512GB",price:1699.99},
   {id:"razr26",fam:"razr26",mfr:"Motorola",type:"phone",name:"razr (2026) 256GB",price:769.99},
   {id:"ipada16",fam:"ipada16",mfr:"Apple",type:"tablet",name:"iPad (A16) 128GB",price:599.99},
-  {id:"awse3",fam:"awse3",mfr:"Apple",type:"watch",name:"Apple Watch SE 3 40mm",price:299.99}
+  {id:"awse3",fam:"awse3",mfr:"Apple",type:"watch",name:"Apple Watch SE 3 40mm",price:299.99},
+  {id:"synctracker2",fam:"synctracker2",mfr:"TCL",type:"syncTracker",name:"SyncUP TRACKER 2",price:54},
+  {id:"syncdrive",fam:"syncdrive",mfr:"T-Mobile",type:"syncDrive",name:"SyncUP DRIVE",price:96},
+  {id:"synckids2",fam:"synckids2",mfr:"T-Mobile",type:"syncKids",name:"SyncUP KIDS Watch 2 32GB",price:174}
 ];
 var MFRS = ["Apple","Samsung","Google","Motorola"];
 var IPH_PRO = ["duo","18pro","18promax"], IPH_ALL = ["duo","18pro","18promax","17"];
@@ -709,13 +721,20 @@ var TYPES = {
   phone:{label:"Smartphone",voice:true},
   basic:{label:"Basic Phone",voice:true},
   tablet:{label:"Tablet",voice:false},
-  watch:{label:"Wearable",voice:false}
+  watch:{label:"Wearable",voice:false},
+  syncKids:{label:"SyncUP KIDS Watch",short:"KIDS Watch",voice:false,sync:true},
+  syncTracker:{label:"SyncUP TRACKER",short:"TRACKER",voice:false,sync:true},
+  syncDrive:{label:"SyncUP DRIVE",short:"DRIVE",voice:false,sync:true}
 };
+var TRAY_TABS = {devices:["phone","tablet","watch","basic"], sync:["syncTracker","syncDrive","syncKids"]};
 var ICONS = {
   phone:'<rect x="12" y="4" width="16" height="32" rx="3"/><path d="M18 31h4"/>',
   basic:'<rect x="13" y="4" width="14" height="32" rx="3"/><rect x="16" y="8" width="8" height="7" rx="1"/><path d="M16.5 20h1M22.5 20h1M16.5 24h1M22.5 24h1M16.5 28h1M22.5 28h1"/>',
   tablet:'<rect x="5" y="7" width="30" height="26" rx="3"/><path d="M19 29h2"/>',
   watch:'<rect x="12" y="12" width="16" height="16" rx="4"/><path d="M15 12V5h10v7M15 28v7h10v-7"/>',
+  syncKids:'<rect x="11" y="11" width="18" height="18" rx="6"/><path d="M15 11V5h10v6M15 29v6h10v-6"/><path d="M16.8 21.8a4.4 4.4 0 0 0 6.4 0"/><path d="M17 17h.01M23 17h.01"/>',
+  syncTracker:'<rect x="7" y="7" width="26" height="26" rx="8"/><circle cx="27" cy="13" r="1.6"/><path d="M20 28.5s-5.5-5.6-5.5-9.6a5.5 5.5 0 0 1 11 0c0 4-5.5 9.6-5.5 9.6z"/><circle cx="20" cy="18.8" r="1.8"/>',
+  syncDrive:'<path d="M5 26v-6.5l4.5-7.5h21l4.5 7.5V26z"/><path d="M9 19.5h22"/><circle cx="12" cy="27.5" r="3"/><circle cx="28" cy="27.5" r="3"/>',
   home:'<path d="M6 19 20 8l14 11"/><path d="M10 16v17h20V16"/><path d="M16 25a6 6 0 0 1 8 0M18.5 28.5a2.2 2.2 0 0 1 3 0"/>'
 };
 function svgIcon(t, cls){ return '<svg class="' + (cls||"") + '" viewBox="0 0 40 40" aria-hidden="true">' + ICONS[t] + '</svg>'; }
@@ -741,9 +760,9 @@ function newGroup(type, cust){
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0},
     p360:"0",
-    pay:{method:"eip", term:36, connect:true, down:0},
+    pay:{method:"eip", term: t === "syncDrive" ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
-    cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watchPlus" : null)
+    cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watchPlus" : (CPLANS[t] ? CPLANS[t][0].id : null))
   };
 }
 function exampleState(){
@@ -825,7 +844,9 @@ function planName(fam, id){ return (fam === "tmix" ? TMIX[id] : EXP[id]).full; }
    Unlimited Plus $65 standalone). BYOD tablet lines need a T-Mix Loaded phone line, so they aren't offered alone. */
 var TAB_NO_VOICE = 40;
 function tabletAlone(type, c){ return type === "tablet" && c.n === 0; }
-function cplanPrice(p, type, c, autopay){ return p.ap + (autopay ? 0 : 5) + (tabletAlone(type, c) && !p.byod ? TAB_NO_VOICE : 0); }
+/* Lines that cost more with no phone line on the account: tablets, and SyncUP KIDS watches ($10 more without the voice line discount). */
+function noVoiceAdd(p, type, c){ return c.n > 0 || p.byod ? 0 : (type === "tablet" ? TAB_NO_VOICE : (p.noVoice || 0)); }
+function cplanPrice(p, type, c, autopay){ return p.ap + (autopay ? 0 : 5) + noVoiceAdd(p, type, c); }
 function cplanOf(g){ var list = CPLANS[g.type]; return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
 
 /* An existing account is on Experience, an older plan, or T-Mix (accounts opened since Nov 5, 2026).
@@ -911,6 +932,8 @@ function offersFor(g, c){
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
       else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan (Box 1)";
       else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan (Box 1)";
+      else if (o.needVoice && c.n === 0) why = "Needs a phone line on the account";
+      else if (o.maxPerAcct && sum(state.groups.filter(function(x){ return x.type === g.type && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; })) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
     }
     var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
     return {o:o, ok:!why, planOk:planOk, why:why, credit:credit, expired:!!o.expired};
@@ -943,6 +966,9 @@ function bestOffer(list){
   ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
   return ok[0] || null;
 }
+/* Bill credits run 36 months unless the offer says otherwise: SyncUP DRIVE pays out over 24, and offers marked "term"
+   follow the device's finance term (24 or 36). */
+function offerMonths(o, g){ return o && o.months === 24 ? 24 : (o && o.months === "term" ? (+g.pay.term === 24 ? 24 : 36) : 36); }
 /* Per-unit device math for a group */
 function devMath(g, c){
   var r = {retail:0, down:0, fin:0, term:36, eip:0, credit:0, cr:0, due:0, offer:null, name:"", warn:""};
@@ -970,11 +996,12 @@ function devMath(g, c){
       if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.toLowerCase() + "."; pick = null; }
     }
     if (pick) off = {label:pick.o.label + (pick.expired ? " (expired)" : ""), credit:Math.min(pick.credit, r.fin), picks:pick.o.picks, id:pick.o.id,
-                     dated:pick.o.dated, expired:pick.expired, verified:pick.o.verified, ends:pick.o.ends, base:pick.o.label};
+                     dated:pick.o.dated, expired:pick.expired, verified:pick.o.verified, ends:pick.o.ends, base:pick.o.label, months:offerMonths(pick.o, g), followsTerm:pick.o.months === "term"};
   }
-  r.term = off ? 36 : (+g.pay.term || 36);
+  if (off && !off.months) off.months = 36;
+  r.term = off ? off.months : (+g.pay.term || 36);
   r.eip = r.fin / r.term;
-  if (off) { r.offer = off; r.credit = off.credit; r.cr = off.credit / 36; }
+  if (off) { r.offer = off; r.credit = off.credit; r.cr = off.credit / off.months; }
   return r;
 }
 
@@ -1045,9 +1072,12 @@ function compute(s){
       if (cp.byod && (alone || cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
       if (cp.byod && g.dev.kind !== "existing") out.warn = (out.warn ? out.warn + " " : "") + "BYOD pricing needs the customer's own device.";
       if (g.lineType !== "upgrade") {
-        out.lines.push({l:cp.name, a:price, sub: alone && !cp.byod ? "No phone line · +$" + TAB_NO_VOICE : ""});
+        var nva = noVoiceAdd(cp, g.type, c);
+        out.lines.push({l:cp.name, a:price, sub: nva ? "No phone line · +$" + nva : (cp.from ? "Starting price" : "")});
         if (seg === "employee") empConn += price * q;
-        W.push({l:label + " · " + cp.name, a:price * q, sub: (q > 1 ? q + " × " + fmt(price) : "") + (alone && !cp.byod ? (q > 1 ? " · " : "") + "standalone price, no phone line" : "")});
+        W.push({l:label + " · " + cp.name, a:price * q, sub: (q > 1 ? q + " × " + fmt(price) : "") + (nva ? (q > 1 ? " · " : "") + "standalone price, no phone line" : "")});
+        if (g.type === "syncKids" && nva) notes.push({t:"warn", m:"SyncUP KIDS watch lines cost $" + nva + " more without a phone line on the account, and most watch features need a separate voice line and a compatible smartphone."});
+        if (g.type === "syncDrive") notes.push({t:"warn", m:label + ": T-Mobile lists SyncUP DRIVE service from $10/mo with AutoPay. The free-device offer needs the SyncUP DRIVE Unlimited plan (6GB+ high-speed data), so confirm that plan's price in the store system."});
       }
       if (!okByod) notes.push({t:"warn", m:out.warn});
       if (alone && !cp.byod) notes.push({t:"warn", m:"Tablet lines cost $" + TAB_NO_VOICE + " more per line without a phone line on the account. Adding a phone line brings them back to the add-on price."});
@@ -1062,7 +1092,7 @@ function compute(s){
     }
     if (d.cr) {
       out.lines.push({l:d.offer.label, a:-d.cr, c:"cr"});
-      W.push({l:label + " · " + d.offer.label, a:-d.cr * q, c:"credit", sub:fmt(d.credit) + " over 36 mo" + (d.offer.picks ? " · " + d.offer.picks * q + " Pick" + (d.offer.picks * q > 1 ? "s" : "") : "")});
+      W.push({l:label + " · " + d.offer.label, a:-d.cr * q, c:"credit", sub:fmt(d.credit) + " over " + d.offer.months + " mo" + (d.offer.picks ? " · " + d.offer.picks * q + " Pick" + (d.offer.picks * q > 1 ? "s" : "") : "")});
       promoPicks += (d.offer.picks || 0) * q;
       if (d.offer.expired) notes.push({t:"warn", m:d.offer.base + " has ended" + (d.offer.ends ? " (" + shortDate(d.offer.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
       else if (d.offer.dated) notes.push({t:"info", m:d.offer.base + " wasn't confirmed in the latest promo check" + (d.offer.verified ? " (last confirmed " + shortDate(d.offer.verified) + ")" : "") + ". Check that it's still running."});
@@ -1223,14 +1253,20 @@ function renderStage(q){
   if (!s.groups.length) h += '<div class="empty">Nothing on this quote yet. Add a smartphone, tablet or wearable from the tray below.</div>';
   else h += '<div class="cards' + (s.view === "list" ? " list" : "") + '">' + s.groups.map(function(g, i){ return s.view === "list" ? listRow(g, i, q) : card(g, i, q); }).join("") + '</div>';
 
-  var counts = {phone:0, basic:0, tablet:0, watch:0};
+  var counts = {};
+  Object.keys(TYPES).forEach(function(t){ counts[t] = 0; });
   s.groups.forEach(function(g){ counts[g.type] += g.qty; });
   var full = q.devices >= 20, voiceFull = c.newVoice >= c.max - c.E;
-  var tiles = ["phone","tablet","watch","basic"];
+  var ttab = ui.trayTab === "sync" ? "sync" : "devices", tiles = TRAY_TABS[ttab];
+  var nSync = sum(TRAY_TABS.sync.map(function(t){ return counts[t]; }));
   h += '<section class="tray' + (ui.trayOpen ? '' : ' shut') + '" aria-label="Add devices">' +
     '<button class="handle" data-act="tray" aria-expanded="' + ui.trayOpen + '">' + I.down + 'Add devices</button>' +
-    '<div class="trayin"' + (ui.trayOpen ? '' : ' aria-hidden="true"') + '><span class="traycount">' + q.devices + '/20 devices added</span>' +
-      '<div class="tiles">' + tiles.map(function(t){
+    '<div class="trayin"' + (ui.trayOpen ? '' : ' aria-hidden="true"') + '>' +
+      '<div class="traytop"><div class="seg traytabs" role="group" aria-label="Device group">' +
+        '<button data-act="traytab" data-v="devices" aria-pressed="' + (ttab === "devices") + '">Devices</button>' +
+        '<button data-act="traytab" data-v="sync" aria-pressed="' + (ttab === "sync") + '">SyncUP' + (nSync ? ' <span class="tcount">' + nSync + '</span>' : '') + '</button></div>' +
+      '<span class="traycount">' + q.devices + '/20 devices added</span></div>' +
+      '<div class="tiles' + (ttab === "sync" ? " three" : "") + '">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
         return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
       }).join("") + '</div>' +
@@ -1523,10 +1559,10 @@ function editBody(g, q){
   b += box(3, "Protection", '<div class="f"><label for="p3-' + g.id + '">Protection 360</label><select id="p3-' + g.id + '" data-k="g.' + g.id + '.p360" data-t="str">' + P360.map(function(o){ return '<option value="' + o.v + '"' + (g.p360 === o.v ? " selected" : "") + '>' + o.label + '</option>'; }).join("") + '</select></div><p class="info">' + I.info + 'Monthly price depends on the device tier. Check the tier in the store system.</p>');
 
   /* Box 4: Payment type */
-  var d = devMath(g, c), hasPromo = !!d.offer;
+  var d = devMath(g, c), hasPromo = !!d.offer, termLocked = hasPromo && !d.offer.followsTerm, shownTerm = hasPromo ? d.offer.months : (+g.pay.term === 24 ? 24 : 36);
   var b4 = '<div class="seg" role="group" aria-label="Payment type"><button data-act="pay" data-g="' + g.id + '" data-v="eip" aria-pressed="' + (g.pay.method === "eip") + '">T-Mobile Installment Plan</button><button data-act="pay" data-g="' + g.id + '" data-v="full" aria-pressed="' + (g.pay.method === "full") + '"' + (hasPromo ? " disabled" : "") + '>Pay in Full</button></div>';
   if (hasPromo) b4 += '<p class="info">* The applied promotion needs an installment plan. To pay in full, remove the promotion in Box 2.</p>';
-  if (g.pay.method === "eip" && g.dev.kind !== "existing") b4 += '<div class="fields"><div class="f"><label for="tm-' + g.id + '">Installment term</label><select id="tm-' + g.id + '" data-k="g.' + g.id + '.pay.term" data-t="num"' + (hasPromo ? " disabled" : "") + '><option value="36"' + (+g.pay.term === 36 || hasPromo ? " selected" : "") + '>36 months</option><option value="24"' + (+g.pay.term === 24 && !hasPromo ? " selected" : "") + '>24 months</option></select></div>' +
+  if (g.pay.method === "eip" && g.dev.kind !== "existing") b4 += '<div class="fields"><div class="f"><label for="tm-' + g.id + '">Installment term</label><select id="tm-' + g.id + '" data-k="g.' + g.id + '.pay.term" data-t="num"' + (termLocked ? " disabled" : "") + '><option value="36"' + (shownTerm === 36 ? " selected" : "") + '>36 months</option><option value="24"' + (shownTerm === 24 ? " selected" : "") + '>24 months</option></select></div>' +
     '<div class="f"><label for="dp-' + g.id + '">Down payment amount <span class="muted" style="font-weight:400">(optional)</span></label><span class="money"><input class="tin" id="dp-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.pay.down" data-t="num" value="' + (g.pay.down || "") + '"></span></div></div>';
   b4 += '<label class="check" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect ? " checked" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">Applies to new lines and upgrades. Uncheck only where it\'s waived.</small></span></label>';
   b += box(4, "Payment Type", b4);
@@ -1574,11 +1610,11 @@ function devCalc(g, q){
   if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
   h += '<div><h4>Apply a promotion?</h4><div class="radios">';
-  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / 36) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
+  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? best.o.label + " · up to " + fmt(best.credit) + " (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
-    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, esc(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / 36) + "/mo credit)",
+    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, esc(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to " + fmt0(x.credit) + " (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
       "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k);
   });
   if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
@@ -2272,6 +2308,7 @@ document.addEventListener("click", function(e){
     case "plan": { var cp0 = ctxOf(state); setPlan(cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v); break; }
     case "view": state.view = v; break;
     case "plantab": ui.planTab = v; break;
+    case "traytab": ui.trayTab = v; break;
     case "tray": {
       ui.trayOpen = !ui.trayOpen;
       var tr = document.querySelector(".tray");

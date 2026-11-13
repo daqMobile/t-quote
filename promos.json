@@ -824,6 +824,71 @@
   },
   {
    "dated": true,
+   "detail": "New SyncUP DRIVE line on the SyncUP DRIVE Unlimited plan (6GB+ high-speed data). Free via 24 monthly bill credits on a 24-month payment plan. Well-qualified customers; no lines cancelled in the last 90 days.",
+   "ends": null,
+   "fam": "any",
+   "id": "sudrive",
+   "label": "SyncUP DRIVE on Us",
+   "models": [
+    "syncdrive"
+   ],
+   "months": 24,
+   "need": "newline",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 96,
+   "verified": null
+  },
+  {
+   "dated": false,
+   "detail": "New SyncUP KIDS watch line ($10/mo plan with AutoPay) on an account with a phone line. Free via 24 or 36 monthly bill credits, matching the finance term. Well-qualified customers.",
+   "ends": null,
+   "fam": "any",
+   "id": "sukids2",
+   "label": "SyncUP KIDS Watch 2 on Us",
+   "models": [
+    "synckids2"
+   ],
+   "months": "term",
+   "need": "newline",
+   "needVoice": true,
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/devices/family-devices",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 174,
+   "verified": "2026-11-13"
+  },
+  {
+   "dated": false,
+   "detail": "New SyncUP TRACKER line ($5+/mo plan with AutoPay). Free via 24 or 36 monthly bill credits, matching the finance term. Max 12 per account. Tax on the full price due at sale.",
+   "ends": null,
+   "fam": "any",
+   "id": "sutrk2",
+   "label": "SyncUP TRACKER 2 on Us",
+   "maxPerAcct": 12,
+   "models": [
+    "synctracker2"
+   ],
+   "months": "term",
+   "need": "newline",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/devices/family-devices",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 54,
+   "verified": "2026-11-13"
+  },
+  {
+   "dated": true,
    "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone.",
    "ends": null,
    "fam": "tmix",
@@ -2452,6 +2517,39 @@
    "status": "active",
    "type": "phone",
    "verified": "2026-11-12"
+  },
+  {
+   "fam": "syncdrive",
+   "id": "syncdrive",
+   "mfr": "T-Mobile",
+   "name": "SyncUP DRIVE",
+   "price": 96,
+   "source": "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
+   "status": "active",
+   "type": "syncDrive",
+   "verified": "2026-11-13"
+  },
+  {
+   "fam": "synckids2",
+   "id": "synckids2",
+   "mfr": "T-Mobile",
+   "name": "SyncUP KIDS Watch 2 32GB",
+   "price": 174,
+   "source": "https://www.t-mobile.com/devices/family-devices",
+   "status": "active",
+   "type": "syncKids",
+   "verified": "2026-11-13"
+  },
+  {
+   "fam": "synctracker2",
+   "id": "synctracker2",
+   "mfr": "TCL",
+   "name": "SyncUP TRACKER 2",
+   "price": 54,
+   "source": "https://www.t-mobile.com/devices/family-devices",
+   "status": "active",
+   "type": "syncTracker",
+   "verified": "2026-11-13"
   }
  ]
 }
