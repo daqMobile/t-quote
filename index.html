@@ -1121,6 +1121,15 @@ function compute(s){
     }
   }
 
+  /* Upgrade lines on an existing account show what their line of the current plan costs (the account's per-line price
+     at its line count), so the quote reads as what these lines cost each month. Go5G and Essentials use published prices. */
+  var curRef = c.ex ? currentPlanRef(c) : null;
+  if (curRef && c.upVoice > 0) {
+    W.push({l:EXP[c.pid] && isLegacy(c) ? EXP[c.pid].full + " · " + c.upVoice + " upgrade line" + (c.upVoice > 1 ? "s" : "") : P.full + " · " + c.upVoice + " upgrade line" + (c.upVoice > 1 ? "s" : ""), a:curRef.per * c.upVoice,
+            sub:"current plan · " + (curRef.est ? "≈" : "") + fmt(curRef.per) + "/line at " + c.E + " line" + (c.E > 1 ? "s" : "") + (isLegacy(c) ? " (published price)" : "")});
+    if (isLegacy(c)) notes.push({t:"info", m:EXP[c.pid].full + " is priced at T-Mobile's published price for " + c.E + " line" + (c.E > 1 ? "s" : "") + ". Discounts and older sign-up prices can differ, so confirm the account's price."});
+  }
+
   var budget = c.fam === "tmix" && pc ? picksFor(c.pid, c.n) : 0;
   var promoPicks = 0, retailBuy = 0, cNew = 0, upg = 0;
   s.groups.forEach(function(g, gi){
@@ -1129,6 +1138,8 @@ function compute(s){
     /* Existing accounts: the plan line is what the new line adds, e.g. "adding 1 line: $130.00 for 2 → $155.00 for 3". */
     if (T0.voice && g.lineType !== "upgrade" && share) out.lines.push({l:"Plan", a:share,
       sub: c.ex && addNote ? "adding " + (c.newVoice === 1 ? "1 line" : c.newVoice + " lines, split") + ": " + addNote : c.n + " phone line price tier"});
+    else if (T0.voice && g.lineType === "upgrade" && curRef) out.lines.push({l:"Plan", a:curRef.per,
+      sub: planName(c.fam, c.pid) + " · " + c.E + " line" + (c.E > 1 ? "s" : "") + " on the account" + (isLegacy(c) ? " · published price" : "")});
     if (!T0.voice) {
       var cp = cplanOf(g), price = cplanPrice(cp, g.type, c, s.autopay), okByod = true, alone = tabletAlone(g.type, c);
       if (cp.byod && (alone || cp.plans.indexOf(c.pid) < 0)) { okByod = false; out.warn = cp.name + " needs " + cp.plans.map(function(p){ return TMIX[p] ? TMIX[p].full : EXP[p].full; }).join(" or ") + "."; }
@@ -1213,7 +1224,7 @@ function compute(s){
   if (s.hint.on) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
 
   var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
-  return {c:c, P:P, pc:pc, plan:plan, share:share, W:W, H:H, T:T, ONE:ONE, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
+  return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
           budget:budget, used:used, perkRows:perkRows, promoPicks:promoPicks, notes:notes, groups:groupsOut, devices:sum(s.groups.map(function(g){ return g.qty; }))};
 }
 
@@ -1312,10 +1323,11 @@ function renderStage(q){
     '</div>';
   }
 
-  var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? esc(EXP[c.pid].full) : "Experience")) + ' <small>' + (isLegacy(c) ? "upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
+  var order = c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER);
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? "existing account · " + c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
-      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s)) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s));
+      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s))
+             : (LEGACY[id] ? legacyRef(id, Math.max(c.n,1), s.autopay) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s)));
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
       return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : planNA(id, segOf(s), true, c.fam)) + '</button>';
     }).join("") + '</div>' +
@@ -1442,11 +1454,11 @@ function reviewBody(q){
   var s = state, c = q.c;
   var head = acctLine(c, q.P, " · ") || "No phone lines";
   var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
-    '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? " · added to current bill" : "") + '</div></div>' +
+    '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? (q.upShare ? " · the lines on this quote" : " · added to current bill") : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
     '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>' +
-    '<div class="rtotal"><span class="lbl">' + (c.ex ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
+    '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
     '<div class="rsub">plus taxes &amp; fees</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
@@ -2065,7 +2077,7 @@ function mailBits(q, m){
     sig: (m.sig || "").trim(),
     id: currentId(q),
     head: quoteHead(q),
-    monthLabel: c.ex ? "Added to your monthly bill" : "Estimated monthly",
+    monthLabel: c.ex && !q.upShare ? "Added to your monthly bill" : "Estimated monthly",
     taxNote: "Plus taxes and fees",
     W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
@@ -2209,7 +2221,7 @@ function quoteText(){
   out.push(dateStr() + " · " + (state.autopay ? "AutoPay" : "No AutoPay") + (state.loaded ? " · Quote ID " + state.loaded.id : ""));
   out.push(""); out.push("MONTHLY");
   q.W.concat(q.H).forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
-  out.push(pad(c.ex ? "Added monthly" : "Total monthly", fmt(q.monthly)) + "  + taxes & fees");
+  out.push(pad(c.ex && !q.upShare ? "Added monthly" : "Total monthly", fmt(q.monthly)) + "  + taxes & fees");
   out.push(""); out.push("DUE TODAY");
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
   out.push(pad("Total due today", fmt(q.today)) + "  + tax");
