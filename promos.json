@@ -5,7 +5,8 @@
    "SyncUP DRIVE on Us confirmed on its device page for the first time ($96 via 24 credits)",
    "T-Mix iPhone trade-in offers (2 and 3 Picks) and the 4-line iPhone 17e offer confirmed on the iPhone deals page and holiday newsroom post",
    "No ended or new offers; no device or price changes",
-   "Added 2 BYOD rebates from T-Mobile's bring-your-own-phone page: $200 On Us (new line with a Port, $60+/mo plan) and Keep & Switch phone payoff (new accounts, up to $800/line); both paid as a virtual prepaid Mastercard"
+   "Added 2 BYOD rebates from T-Mobile's bring-your-own-phone page: $200 On Us (new line with a Port, $60+/mo plan) and Keep & Switch phone payoff (new accounts, up to $800/line); both paid as a virtual prepaid Mastercard",
+   "Number-transfer pricing moved from Plan discounts to per-line offers: added T-Mix Saver Keep your number ($15/mo plan credit for 36 months, new account with a Port, 1 line per account); the iPhone 17e 4-line offer now carries its $3.75/mo per-line plan credit ($25/line on T-Mix Standard)"
   ],
   "checkedAt": "2026-11-13T10:16:34-06:00",
   "sources": [
@@ -871,6 +872,30 @@
   },
   {
    "dated": false,
+   "detail": "New account switching to T-Mix Saver with a Port: $15/mo off the plan for 36 months ($540). 1 discounted line per account; on a 2-line account, the first line only. Credits stop if they cancel or change plans.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "saver540",
+   "label": "Keep your number · T-Mix Saver",
+   "maxPerAcct": 1,
+   "models": [],
+   "need": "port",
+   "newAcct": true,
+   "pay": "plan",
+   "picks": 0,
+   "planMo": 15,
+   "plans": [
+    "saver"
+   ],
+   "source": "https://www.t-mobile.com/resources/bring-your-own-phone",
+   "starts": null,
+   "status": "active",
+   "tag": "plan",
+   "upTo": 540,
+   "verified": "2026-11-13"
+  },
+  {
+   "dated": false,
    "detail": "New SyncUP DRIVE line on the SyncUP DRIVE Unlimited plan (6GB+ high-speed data). Free via 24 monthly bill credits on a 24-month payment plan. Well-qualified customers; no lines cancelled in the last 90 days.",
    "ends": null,
    "fam": "any",
@@ -936,7 +961,7 @@
   },
   {
    "dated": false,
-   "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone.",
+   "detail": "Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone. The plan drops to $25/line ($3.75/mo plan credit per line for 36 months).",
    "ends": null,
    "fam": "tmix",
    "id": "tm17e",
@@ -946,6 +971,7 @@
    ],
    "need": "port4",
    "picks": 1,
+   "planMo": 3.75,
    "plans": [
     "standard"
    ],

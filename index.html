@@ -480,10 +480,10 @@ var ASOF = "Nov 9, 2026";
 /* ================= Pricing data ================= */
 /* T-Mix (new customers). AutoPay prices; +$10 per phone line without AutoPay. */
 var TMIX = {
-  loaded:   {name:"Loaded",   full:"T-Mix Loaded",   max:12, ap:[95,160,200,240,280],     addl:40, port:{},            specs:"Unlimited premium data · 250GB hotspot · 15GB international"},
-  more:     {name:"More",     full:"T-Mix More",     max:12, ap:[75,130,155,180,205],     addl:25, port:{},            specs:"Unlimited premium data · 60GB hotspot · 4K video"},
-  standard: {name:"Standard", full:"T-Mix Standard", max:6,  ap:[55,85,100,115,130,145], addl:15, port:{4:100,5:125}, specs:"50GB premium data · 480p video · 3G hotspot"},
-  saver:    {name:"Saver",    full:"T-Mix Saver",    max:2,  ap:[45,80],                  addl:0,  port:{1:30,2:65},   specs:"50GB premium data · 480p video · no Picks"}
+  loaded:   {name:"Loaded",   full:"T-Mix Loaded",   max:12, ap:[95,160,200,240,280],     addl:40, specs:"Unlimited premium data · 250GB hotspot · 15GB international"},
+  more:     {name:"More",     full:"T-Mix More",     max:12, ap:[75,130,155,180,205],     addl:25, specs:"Unlimited premium data · 60GB hotspot · 4K video"},
+  standard: {name:"Standard", full:"T-Mix Standard", max:6,  ap:[55,85,100,115,130,145], addl:15, specs:"50GB premium data · 480p video · 3G hotspot"},
+  saver:    {name:"Saver",    full:"T-Mix Saver",    max:2,  ap:[45,80],                  addl:0,  specs:"50GB premium data · 480p video · no Picks"}
 };
 var TMIX_ORDER = ["loaded","more","standard","saver"];
 /* New quotes start on the highest-priced plan of each family (today T-Mix Loaded and Experience Beyond),
@@ -579,16 +579,14 @@ function planCalc(fam, id, n, autopay, portOn, seg){
     est = fam === "exp" && n > t.length; portOn = false;
   } else if (fam === "tmix") { base = n <= p.ap.length ? p.ap[n-1] : p.ap[p.ap.length-1] + (n - p.ap.length) * p.addl; est = id !== "saver" && n >= 6; }
   else { base = n <= 5 ? p.ap[n-1] : p.ap[4] + p.addl.slice(0, n-5).reduce(function(a,b){ return a+b; }, 0); est = n >= 6; }
-  var promo = fam === "tmix" ? p.port[n] : undefined;
-  var usePort = !!portOn && promo != null && promo < base;
-  var price = usePort ? promo : base;
+  var price = base;
   var empSave = 0;
   if (S && S.fixedPct) {
     if (fam === "exp" && autopay) empSave = round2((n > S.maxLines ? planCalc(fam, id, S.maxLines, true, false, null).price : price) * S.fixedPct / 100);
   } else if (S && S.pct) empSave = round2(price * empPct() / 100);
   price -= empSave;
   var noAp = autopay ? 0 : (fam === "tmix" ? 10 * Math.min(n,12) : 5 * Math.min(n,8));
-  return {base:base, price:price, portSave: usePort ? base - promo : 0, empSave:empSave, noAp:noAp, total: price + noAp, est:est};
+  return {base:base, price:price, portSave:0, empSave:empSave, noAp:noAp, total: price + noAp, est:est};
 }
 function picksFor(id, n){
   if (!(n >= 1)) return 0;
@@ -692,8 +690,8 @@ var OFFERS = [
    detail:"New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months."},
   {id:"tm2",fam:"tmix",label:"iPhone offer · 2 Picks",upTo:930,picks:2,plans:["more","loaded"],need:"port",models:IPH_ALL,tag:"picks",
    detail:"New line with a number transfer on T-Mix More or Loaded. Holds 2 Picks per phone for 36 months."},
-  {id:"tm17e",fam:"tmix",label:"iPhone 17e on Us · 4 lines",upTo:0,picks:1,plans:["standard"],need:"port4",models:["17e"],tag:"onus",
-   detail:"Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone."},
+  {id:"tm17e",fam:"tmix",label:"iPhone 17e on Us · 4 lines",upTo:0,picks:1,plans:["standard"],need:"port4",models:["17e"],tag:"onus",planMo:3.75,
+   detail:"Four new lines with number transfers on T-Mix Standard. Holds 1 Pick per phone. The plan drops to $25/line ($3.75/mo plan credit per line for 36 months)."},
   {id:"ex1200t",fam:"exp",label:"iPhone trade-in offer",upTo:1200,picks:0,plans:["beyond"],need:"trade",models:IPH_PRO,tag:"trade",
    detail:"Trade in an eligible phone in any condition on Experience Beyond."},
   {id:"ex1200p",fam:"exp",label:"iPhone new line offer",upTo:1200,picks:0,plans:["beyond"],need:"port",models:IPH_PRO,tag:"newline",
@@ -728,6 +726,9 @@ var OFFERS = [
    detail:"New watch line on a $15+/mo watch plan with AutoPay."},
   {id:"ipad400",fam:"any",label:"iPad (A16) for $199",upTo:400,picks:0,plans:"any",need:"tab25",models:["ipada16"],tag:"newline",
    detail:"New tablet line on a $25+/mo tablet plan with AutoPay."},
+  /* Plan promotion: a monthly credit on the plan, chosen per line under New Device or BYOD. */
+  {id:"saver540",fam:"tmix",pay:"plan",label:"Keep your number · T-Mix Saver",upTo:540,planMo:15,picks:0,plans:["saver"],need:"port",newAcct:true,maxPerAcct:1,models:[],tag:"plan",
+   detail:"New account switching to T-Mix Saver with a Port: $15/mo off the plan for 36 months ($540). 1 discounted line per account; on a 2-line account, the first line only. Credits stop if they cancel or change plans."},
   /* BYOD rebates (Existing Device with BYOD checked): paid as a virtual prepaid Mastercard, not bill credits. */
   {id:"byod200",fam:"any",byod:true,pay:"card",label:"Your Phone, Your Number: $200 On Us",upTo:200,picks:0,plans:"any",need:"port",minMonthly:60,maxPerAcct:4,models:[],tag:"byod",
    detail:"Bring their own phone and number: new voice line with a Port from AT&T, Verizon or another eligible carrier, on a $60+/mo plan with AutoPay. Register within 30 days of activation; the card can take up to 14 weeks. Max 4 per account."},
@@ -737,7 +738,7 @@ var OFFERS = [
 /* Built-in copy of the offers and devices, used until the live data loads (or when it can't). */
 OFFERS.forEach(function(o){ o.status = "active"; o.starts = null; o.ends = null; o.verified = o.dated ? null : "2026-11-09";
   o.source = o.dated ? "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" : (o.fam === "tmix" || o.fam === "any" || o.id.indexOf("ex") === 0 ? "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" : "");
-  if (o.byod) { o.verified = "2026-11-13"; o.source = "https://www.t-mobile.com/resources/bring-your-own-phone"; } });
+  if (o.byod || o.pay === "plan") { o.verified = "2026-11-13"; o.source = "https://www.t-mobile.com/resources/bring-your-own-phone"; } });
 MODELS.forEach(function(m){ m.status = "active"; });
 var TRIGGER_ID = "trig_016HvyXxhoRMmKjMn8rTjGET";
 var live = {db:null, mcp:null, offers:null, devices:null, meta:null, state:"loading", checking:false, checkStarted:"", recent:null, recentErr:"", saving:false, saved:null, openErr:"", opening:false};
@@ -879,8 +880,7 @@ function normalizeState(){
   if (!EXP[state.planExp]) state.planExp = topPlan(EXP);
   if (state.exFam !== "exp" && state.exFam !== "tmix") state.exFam = "exp";
   if (state.cust !== "new" && state.cust !== "existing") state.cust = "new";
-  if (state.planDiscount !== "none" && state.planDiscount !== "port" && !SEG[state.planDiscount]) state.planDiscount = "none";
-  if (state.cust === "existing" && state.planDiscount === "port") state.planDiscount = "none";
+  if (state.planDiscount !== "none" && !SEG[state.planDiscount]) state.planDiscount = "none";   // "port" (number-transfer price) is a per-line offer now
   state.groups.forEach(function(g){
     if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
@@ -974,13 +974,51 @@ function acctLine(c, P, sep){
    "Qualifying credit and service ($X+/mo. w/AutoPay)" rather than a particular plan. */
 function acctMonthly(c){
   if (c.fam !== "tmix" || !c.n) return 0;
-  var pc = planCalc("tmix", c.pid, c.n, true, state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state));
+  var pc = planCalc("tmix", c.pid, c.n, true, false, segOf(state));
   return pc ? pc.price + (pc.empSave || 0) : 0;
+}
+/* ---------- Plan promotions ----------
+   Promotional credits on the plan (not the phone) are chosen per line under Apply a promotion, like phone offers, and
+   only apply when the line meets their terms (e.g. Requires PORT). Plan discounts in the top bar are only for
+   account-wide discounts (Military, First Responder, 55+, Work Perks, Employee).
+   - pay "plan": the whole offer is a monthly plan credit (planMo per line, for planMonths, default 36), e.g. T-Mix
+     Saver's Keep your number credit. Listed for every phone under New Device and under BYOD.
+   - planMo on a phone offer: a plan credit that comes with that phone offer (e.g. iPhone 17e on Us: 4 lines for
+     $25/line on T-Mix Standard), applied only while the phone offer itself applies. */
+function planMoOf(o){ return o ? (+o.planMo || (o.pay === "plan" && o.upTo ? round2(o.upTo / (+o.planMonths || 36)) : 0)) : 0; }
+function planMonthsOf(o){ return +o.planMonths || 36; }
+/* Lines on the account that have this plan promotion chosen, counting line g even if it isn't chosen there yet. */
+function planOfferCount(id, g){
+  var n = 0, self = false;
+  state.groups.forEach(function(x){ if ((x.dev.kind === "new" && x.dev.offer === id) || (isByod(x) && x.dev.byodOffer === id)) { n += x.qty; if (x === g) self = true; } });
+  return n + (self ? 0 : g.qty);
+}
+/* "(…)" after an offer's amount in the promotion lists. */
+function creditText(x, g){
+  var o = x.o, pm = planMoOf(o), pmo = planMonthsOf(o);
+  if (o.pay === "card") return "(virtual prepaid card)";
+  if (o.pay === "plan") return "(" + fmt(pm) + "/mo off the plan" + (pmo !== 36 ? " for " + pmo + " mo" : "") + ")";
+  var mo = offerMonths(o, g);
+  return "(" + fmt(x.credit / mo) + "/mo credit" + (mo !== 36 ? " for " + mo + " mo" : "") + (pm ? " + " + fmt(pm) + "/mo off the plan" : "") + ")";
+}
+/* The plan promotion that applies to a line: a pay "plan" offer chosen in either list, or the plan credit of the phone
+   offer that devMath applied. d is the line's devMath result. */
+function planPromoOf(g, c, d){
+  var x = null;
+  if (isByod(g)) x = byodPick(g, c);
+  else if (g.dev.kind === "new" && g.dev.offer && g.dev.offer !== "custom" && g.dev.offer !== "full") {
+    var list = offersFor(g, c), id = d && d.offer && d.offer.id ? d.offer.id : (g.dev.offer === "best" ? ((bestPlan(c)[g.id] || {}).o || {}).id : g.dev.offer);
+    x = list.filter(function(y){ return y.o.id === id; })[0] || null;
+    if (x && x.o.pay !== "plan" && !(d && d.offer && d.offer.id === x.o.id)) x = null;
+  }
+  return x && x.ok && planMoOf(x.o) > 0 ? x : null;
 }
 function offersFor(g, c){
   if (g.dev.kind !== "new") return [];
   var m = model(g.dev.model); if (!m) return [];
-  return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.models || []).indexOf(m.fam) > -1 && (!o.expired || g.dev.offer === o.id); }).map(function(o){
+  /* Plan promotions (pay "plan": a monthly credit on the line's plan, no phone needed) are listed for every phone. */
+  var voice = !!(TYPES[g.type] && TYPES[g.type].voice);
+  return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.pay === "plan" ? voice : (o.models || []).indexOf(m.fam) > -1) && (!o.expired || g.dev.offer === o.id); }).map(function(o){
     /* planOk: the offer works on the plan chosen (its plan list, the account's monthly plan total, and enough Picks on
        the plan). Offers that fail it are left out of the promotion list unless already chosen. */
     var why = "", planOk = false;
@@ -990,18 +1028,20 @@ function offersFor(g, c){
     else planOk = true;
     if (planOk) {
       if (!c.autopay) why = "Needs AutoPay";
+      else if (o.newAcct && c.ex) why = "New accounts only";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
       else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      else if (o.pay === "plan" && o.maxPerAcct && planOfferCount(o.id, g) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " line" + (o.maxPerAcct > 1 ? "s" : "") + " per account";
       else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in";
       else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
       else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan";
       else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan";
       else if (o.needVoice && c.n === 0) why = "Needs a phone line on the account";
-      else if (o.maxPerAcct && sum(state.groups.filter(function(x){ return x.type === g.type && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; })) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
+      else if (o.pay !== "plan" && o.maxPerAcct && sum(state.groups.filter(function(x){ return x.type === g.type && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; })) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
     }
-    var credit = o.upTo ? Math.min(o.upTo, m.price) : m.price;
+    var credit = o.pay === "plan" ? (o.upTo || 0) : (o.upTo ? Math.min(o.upTo, m.price) : m.price);
     return {o:o, ok:!why, planOk:planOk, why:why, credit:credit, expired:!!o.expired};
   });
 }
@@ -1041,17 +1081,19 @@ function isByod(g){ return !!g && g.dev.kind === "existing" && !!g.dev.byod; }
 function byodOffersFor(g, c){
   if (!isByod(g) || !TYPES[g.type] || !TYPES[g.type].voice) return [];
   var count = sum(state.groups.filter(function(x){ return isByod(x) && x.lineType !== "upgrade" && TYPES[x.type] && TYPES[x.type].voice; }).map(function(x){ return x.qty; }));
-  return offerPool().filter(function(o){ return o.byod && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
+  return offerPool().filter(function(o){ return (o.byod || o.pay === "plan") && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
     var why = "", planOk = false;
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
     else planOk = true;
     if (planOk) {
       if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      else if (o.pay === "plan" && !c.autopay) why = "Needs AutoPay";
       else if (o.newAcct && c.ex) why = "New accounts only";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
-      else if (o.maxPerAcct && count > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
+      else if (o.pay === "plan" && o.maxPerAcct && planOfferCount(o.id, g) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " line" + (o.maxPerAcct > 1 ? "s" : "") + " per account";
+      else if (o.pay !== "plan" && o.maxPerAcct && count > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
     }
     return {o:o, ok:!why, planOk:planOk, why:why, credit:o.upTo || 0, expired:!!o.expired};
   });
@@ -1115,7 +1157,8 @@ function devMath(g, c){
   if (!r.retail) return r;
   if (g.pay.method === "full") {
     r.due = r.retail;
-    if (g.dev.offer && g.dev.offer !== "full" && g.dev.offer !== "best") r.warn = "Promotions need the installment plan.";
+    var chosen = offerPool().filter(function(o){ return o.id === g.dev.offer; })[0];
+    if (g.dev.offer && g.dev.offer !== "full" && g.dev.offer !== "best" && !(chosen && chosen.pay === "plan")) r.warn = "Promotions need the installment plan.";
     return r;
   }
   r.down = Math.min(num(g.pay.down), r.retail);
@@ -1131,6 +1174,7 @@ function devMath(g, c){
       pick = list.filter(function(x){ return x.o.id === g.dev.offer; })[0] || null;
       if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.charAt(0).toLowerCase() + pick.why.slice(1) + "."; pick = null; }
     }
+    if (pick && pick.o.pay === "plan") pick = null;   // a plan promotion: no phone credit (compute applies it to the plan)
     if (pick) off = {label:pick.o.label + (pick.expired ? " (expired)" : ""), credit:Math.min(pick.credit, r.fin), picks:pick.o.picks, id:pick.o.id,
                      dated:pick.o.dated, expired:pick.expired, verified:pick.o.verified, ends:pick.o.ends, base:pick.o.label, months:offerMonths(pick.o, g), followsTerm:pick.o.months === "term"};
   }
@@ -1150,9 +1194,6 @@ function compute(s){
     if (s.autopay) P = Object.assign({}, P, {full: P.full + " w/ Work Perks"});
     else notes.push({t:"warn", m:"Work Perks needs AutoPay, so it isn't applied."});
   }
-  var allPort = c.newVoice > 0 && c.portVoice === c.newVoice;
-  var portOn = c.fam === "tmix" && !c.ex && s.planDiscount === "port" && allPort;
-  if (c.fam === "tmix" && !c.ex && s.planDiscount === "port" && !allPort) notes.push({t:"warn", m:"Number transfer pricing needs every new phone line to transfer a number."});
 
   var pc = null, plan = 0, share = 0;
   if (c.fam === "tmix" && c.ex) {
@@ -1169,13 +1210,12 @@ function compute(s){
     }
     if (ta && picksFor(c.pid, c.n)) notes.push({t:"info", m:"Picks shown are the account's total for " + c.n + " phone line" + (c.n === 1 ? "" : "s") + ". Picks the account already uses on perks or other promos count against them."});
   } else if (c.fam === "tmix") {
-    pc = planCalc("tmix", c.pid, c.n, s.autopay, portOn, seg);
+    pc = planCalc("tmix", c.pid, c.n, s.autopay, false, seg);
     if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."}); }
     else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
     else {
       plan = pc.total; share = pc.total / c.n;
       W.push({l:P.full + " · " + c.n + " line" + (c.n > 1 ? "s" : ""), a:pc.base, sub: s.autopay ? "AutoPay price" : ""});
-      if (pc.portSave) W.push({l:"Number transfer price", a:-pc.portSave, c:"credit"});
       if (pc.empSave) W.push({l:"Employee pricing · phone lines", a:-pc.empSave, sub: empPct() + "% off the plan", c:"credit"});
       if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
       if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
@@ -1205,7 +1245,7 @@ function compute(s){
   }
 
   var budget = c.fam === "tmix" && pc ? picksFor(c.pid, c.n) : 0;
-  var promoPicks = 0, retailBuy = 0, cNew = 0, upg = 0;
+  var promoPicks = 0, retailBuy = 0, cNew = 0, upg = 0, planUsed = {};
   s.groups.forEach(function(g, gi){
     var q = g.qty, T0 = TYPES[g.type], label = (g.name || T0.label) + (q > 1 ? " ×" + q : "");
     var out = {lines:[], unit:0, warn:""};
@@ -1259,11 +1299,25 @@ function compute(s){
       if (bp && !bp.ok) {
         var bw = bp.o.label + " doesn't apply: " + bp.why.charAt(0).toLowerCase() + bp.why.slice(1) + ".";
         out.warn = (out.warn ? out.warn + " " : "") + bw; notes.push({t:"warn", m:label + ": " + bw});
-      } else if (bp) {
+      } else if (bp && bp.o.pay !== "plan") {
         RB.push({l:label + " · " + bp.o.label + (bp.expired ? " (expired)" : ""), a:-bp.credit * q, c:"credit",
                  sub:"up to " + fmt0(bp.credit) + (q > 1 ? " per line" : "") + " · virtual prepaid Mastercard after the switch"});
         if (bp.expired) notes.push({t:"warn", m:bp.o.label + " has ended" + (bp.o.ends ? " (" + shortDate(bp.o.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
         else if (bp.o.dated) notes.push({t:"info", m:bp.o.label + " wasn't confirmed in the latest promo check" + (bp.o.verified ? " (last confirmed " + shortDate(bp.o.verified) + ")" : "") + ". Check that it's still running."});
+      }
+    }
+    /* Plan promotions: a monthly credit on the plan for this line, up to the offer's per-account line limit. */
+    var pp = planPromoOf(g, c, d);
+    if (pp) {
+      var po = pp.o, pmo = planMoOf(po), pmn = planMonthsOf(po), pmax = po.maxPerAcct || Infinity, pu = planUsed[po.id] || 0, pn = Math.max(0, Math.min(q, pmax - pu));
+      planUsed[po.id] = pu + q;
+      var pl = po.label + (po.pay === "plan" ? "" : " · plan credit") + (pp.expired ? " (expired)" : "");
+      if (pn < q) notes.push({t:"warn", m:label + ": " + po.label + " is limited to " + pmax + " line" + (pmax > 1 ? "s" : "") + " per account" + (pn ? ", so it's applied to " + pn + " of " + q + "." : ", so it isn't applied here.")});
+      if (pn) {
+        out.lines.push({l:pl, a:-round2(pmo * pn / q), c:"cr", sub:"for " + pmn + " months"});
+        W.push({l:label + " · " + pl, a:-pmo * pn, c:"credit", sub:(pn > 1 ? pn + " × " : "") + fmt(pmo) + "/mo for " + pmn + " mo"});
+        if (po.pay === "plan" && pp.expired) notes.push({t:"warn", m:po.label + " has ended" + (po.ends ? " (" + shortDate(po.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
+        else if (po.pay === "plan" && po.dated) notes.push({t:"info", m:po.label + " wasn't confirmed in the latest promo check" + (po.verified ? " (last confirmed " + shortDate(po.verified) + ")" : "") + ". Check that it's still running."});
       }
     }
     if (d.down) T.push({l:label + " down payment", a:d.down * q});
@@ -1310,7 +1364,6 @@ function compute(s){
   var used = sum(perkRows.map(function(p){ return p.eff; })) + promoPicks;
   if (c.fam === "tmix" && used > budget) notes.unshift({t:"bad", m: budget === 0 ? "This plan has no Picks, so perks and Pick-based phone offers can't apply." : "Picks over by " + (used - budget) + ". Drop a perk or offer, or move up a plan."});
   if (c.fam === "tmix" && c.pid === "loaded" && picksFor("loaded", c.n) && c.n >= 5) notes.push({t:"info", m:"Loaded Pick counts above 4 lines are an estimate."});
-  if (portOn && c.pid === "saver") notes.push({t:"info", m:"Saver's transfer price is paid as bill credits over 36 months."});
   if (s.hint.on) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
 
   var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
@@ -1377,9 +1430,6 @@ function renderStage(q){
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
     '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + (s.hint.on ? 1 : 0) + ')</button></div>';
-  var discounts = [];
-  if (q.pc && q.pc.portSave) discounts.push("Number transfer price −" + fmt0(q.pc.portSave));
-  if (!s.autopay) discounts.push("No AutoPay");
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
@@ -1387,14 +1437,13 @@ function renderStage(q){
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
     '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
-    '<span class="bchip' + (discounts.length && q.pc && q.pc.portSave ? " on" : "") + '">' + (q.pc && q.pc.portSave ? esc(discounts[0]) : "No additional discounts applied") + '</span></div>';
+    '<span class="bchip">No additional discounts applied</span></div>';
 
   /* Promotion status sits at the very bottom, out of the way. */
   var foot = '<div class="livefoot">' + liveLine() + '</div>';
   if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
 
   if (s.discountsOpen) {
-    var portAvail = !c.ex && TMIX[c.pid].port[c.n] != null;
     h += '<div class="dpanel">' +
       '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
         '<button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile · T-Mix</button>' +
@@ -1403,12 +1452,11 @@ function renderStage(q){
       '</div>' +
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
-        (!c.ex ? '<option value="port"' + (s.planDiscount === "port" ? " selected" : "") + (portAvail ? "" : " disabled") + '>Number transfer price' + (portAvail ? " · " + fmt0(TMIX[c.pid].port[c.n]) + "/mo for " + c.n + " line" + (c.n > 1 ? "s" : "") : " (not on " + TMIX[c.pid].name + " at " + c.n + " lines)") + '</option>' : '') +
         (!isLegacy(c) ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("workperks", "Work Perks") + segOpt("employee", "Employee pricing") : '') +
       '</select></div>' +
       '<p class="fhint">' + (isLegacy(c) ? "Go5G and Essentials quotes are upgrades only and add no plan charge, so a plan discount doesn't change the quote."
           : segOf(s) ? esc(SEG[s.planDiscount].hint) + (c.ex ? " On an existing account, pick the discount it already has so added lines are priced on it." : "")
-          : !c.ex ? "Transfer pricing: Saver $30 for 1 line or $65 for 2, Standard $100 for 4 or $125 for 5. Every new line must transfer a number."
+          : !c.ex ? "Account-wide discounts only. Number-transfer and other promotional credits are chosen per line under Apply a promotion in Edit Options."
           : "If the account already has Military, First Responder, 55+ or Employee pricing, pick it so added lines are priced on it. Use Line Credits in Edit Options for any other account credit.") + '</p></div>' +
     '</div>';
   }
@@ -1416,7 +1464,7 @@ function renderStage(q){
   var order = c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER);
   h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
-      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, !c.ex && s.planDiscount === "port", segOf(s))
+      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, false, segOf(s))
              : (LEGACY[id] ? legacyRef(id, Math.max(c.n,1), s.autopay) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s)));
       var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
       return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : planNA(id, segOf(s), true, c.fam)) + '</button>';
@@ -1573,7 +1621,7 @@ function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
   var rows = order.map(function(id){
-    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, !c.ex && s.planDiscount === "port" && c.portVoice === c.newVoice, segOf(s)) : planCalc("exp", id, n, s.autopay, false, segOf(s));
+    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, false, segOf(s)) : planCalc("exp", id, n, s.autopay, false, segOf(s));
     return {id:id, pc:pc, pk: c.fam === "tmix" ? picksFor(id, n) : null};
   });
   var max = Math.max.apply(null, rows.map(function(r){ return r.pc ? r.pc.total : 0; }));
@@ -1735,7 +1783,7 @@ function editBody(g, q){
         : (c.ex ? "Prices are per phone line at the account's " + n + "-line total, with the lines on this quote." : "Prices below reflect discounts applied and the total number of phone lines on the quote.")) + '</p><div class="radios">' +
       opts.map(function(fi){
         var fam = fi[0], id = fi[1], v = planVal(c, id, fam), rid = "pl-" + g.id + "-" + v.replace(":", "-");
-        var pc = fam === "tmix" ? planCalc("tmix", id, n, state.autopay, !c.ex && state.planDiscount === "port" && c.portVoice === c.newVoice, segOf(state)) : planCalc("exp", id, n, state.autopay, false, segOf(state));
+        var pc = fam === "tmix" ? planCalc("tmix", id, n, state.autopay, false, segOf(state)) : planCalc("exp", id, n, state.autopay, false, segOf(state));
         var P = (fam === "tmix" ? TMIX : EXP)[id];
         var pk = fam === "tmix" ? picksFor(id, n) : null;
         var tag = "";
@@ -1862,6 +1910,8 @@ function devCalc(g, q){
       '<p class="info">' + I.info + 'Device costs only. Excludes down payment and line credits.' + (d.offer && d.offer.picks ? ' Uses ' + d.offer.picks + ' Pick' + (d.offer.picks > 1 ? 's' : '') + ' per line.' : '') + '</p>';
   }
   if (d.warn) h += '<p class="info warn">' + esc(d.warn) + '</p>';
+  var ppr = planPromoOf(g, c, d);
+  if (ppr) h += '<p class="info">' + I.info + esc(ppr.o.label) + ': ' + fmt(planMoOf(ppr.o)) + '/mo off the plan for ' + planMonthsOf(ppr.o) + ' months. It lowers the plan, not this device price.</p>';
   var all = g.dev.kind === "new" ? offersFor(g, c) : [];
   var list = all.filter(function(x){ return x.planOk || x.o.id === g.dev.offer; }), hidden = all.length - list.length;
   /* What Best available offer would pick for this device, shown even while another option (or none) is chosen. */
@@ -1872,11 +1922,11 @@ function devCalc(g, q){
   var offHidden = !!(ui.offersHidden && ui.offersHidden[g.id]), items = [];
   h += '<div><div class="mhead"><h4>Apply a promotion?</h4><button class="linkbtn" data-act="offtog" data-g="' + g.id + '" aria-expanded="' + !offHidden + '">' + (offHidden ? "Show offers" : "Hide offers") + '</button></div><div class="radios">';
   function keep(v, html){ items.push({v:v, html:html}); return ""; }
-  if (g.dev.kind === "new") h += keep("best", radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k));
+  if (g.dev.kind === "new") h += keep("best", radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> " + creditText(best, g) : "Nothing qualifies right now. The quote uses full retail.", false, k));
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
-    h += keep(x.o.id, radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
+    h += keep(x.o.id, radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> " + creditText(x, g),
       "Details: " + esc(offerWords(x.o.detail, x.o)) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k));
   });
   if (hidden) items.push({v:"__hidden", html:'<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>'});
@@ -1902,11 +1952,11 @@ function byodList(g, q){
   var nm = "bo-" + g.id, k = "g." + g.id + ".dev.byodOffer";
   var offHidden = !!(ui.offersHidden && ui.offersHidden[g.id]), items = [];
   function keep(v, html){ items.push({v:v, html:html}); }
-  function card(x){ return " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (virtual prepaid card)"; }
+  function card(x){ return " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> " + creditText(x, g); }
   var h = '<div><div class="mhead"><h4>Apply a promotion?</h4><button class="linkbtn" data-act="offtog" data-g="' + g.id + '" aria-expanded="' + !offHidden + '">' + (offHidden ? "Show offers" : "Hide offers") + '</button></div>';
   if (bp && !bp.ok) h += '<p class="info warn">' + esc(bp.o.label + " doesn't apply: " + bp.why.charAt(0).toLowerCase() + bp.why.slice(1) + ".") + '</p>';
   h += '<div class="radios">';
-  keep("best", radio(nm, nm + "-best", "best", g.dev.byodOffer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (virtual prepaid card)" : "Nothing qualifies right now.", false, k));
+  keep("best", radio(nm, nm + "-best", "best", g.dev.byodOffer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> " + creditText(best, g) : "Nothing qualifies right now.", false, k));
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
@@ -1917,7 +1967,7 @@ function byodList(g, q){
   keep("none", radio(nm, nm + "-none", "none", g.dev.byodOffer, "No promotion", "", false, k));
   var showItems = offHidden ? items.filter(function(it){ return it.v === g.dev.byodOffer; }) : items;
   h += showItems.map(function(it){ return it.html; }).join("") + (offHidden && !showItems.length ? '<p class="info" style="margin:0">No promotion chosen yet.</p>' : '');
-  h += '</div><p class="info">' + I.info + 'Rebate cards come after the switch as a virtual prepaid Mastercard. They aren\'t bill credits, so the monthly total doesn\'t change.</p></div>';
+  h += '</div><p class="info">' + I.info + 'Rebate cards come after the switch as a virtual prepaid Mastercard and don\'t change the monthly total. Plan credits come off the monthly bill.</p></div>';
   return h;
 }
 function picksBlock(q, inBox){
@@ -2047,20 +2097,22 @@ function quoteDoc(id, note){
   var q = compute(state), applied = {}, offers = {}, devices = {}, pool = offerPool();
   state.groups.forEach(function(g){
     var d = devMath(g, q.c);
+    /* Snapshot each offer the quote uses, so the saved quote still finds it after it ends. */
+    function snap(o){
+      if (!o) return;
+      var x = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models || [], tag:o.tag || "",
+               status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
+      ["byod","pay","planMo","planMonths","newAcct","minMonthly","maxPerAcct","months","needVoice"].forEach(function(k){ if (o[k] != null && o[k] !== false && o[k] !== 0) x[k] = o[k]; });
+      offers[o.id] = x;
+    }
     if (d.offer && d.offer.id) {
       applied[g.id] = d.offer.id;
-      var o = pool.filter(function(x){ return x.id === d.offer.id; })[0];
-      if (o) offers[o.id] = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models, tag:o.tag || "",
-                             status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
+      snap(pool.filter(function(x){ return x.id === d.offer.id; })[0]);
     }
+    var pp = planPromoOf(g, q.c, d);
+    if (pp && pp.o.pay === "plan" && !isByod(g) && !applied[g.id]) { applied[g.id] = pp.o.id; snap(pp.o); }
     var bp = byodPick(g, q.c);
-    if (bp && bp.ok) {
-      applied[g.id + ".byod"] = bp.o.id;
-      var bo = bp.o;
-      offers[bo.id] = {id:bo.id, label:bo.label, detail:bo.detail || "", fam:bo.fam, upTo:bo.upTo, picks:0, plans:bo.plans, need:bo.need, models:[], tag:bo.tag || "byod",
-                       byod:true, pay:bo.pay || "card", newAcct:!!bo.newAcct, minMonthly:bo.minMonthly || 0, maxPerAcct:bo.maxPerAcct || 0,
-                       status:bo.status || "active", starts:bo.starts || null, ends:bo.ends || null, verified:bo.verified || null, source:bo.source || "", dated:!!bo.dated};
-    }
+    if (bp && bp.ok) { applied[g.id + ".byod"] = bp.o.id; snap(bp.o); }
     var m = g.dev.kind === "new" ? model(g.dev.model) : null;
     if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price};
   });
@@ -2130,6 +2182,7 @@ function applyQuote(d){
   s.set = Object.assign(exampleState().set, src.set || {});
   s.hint = Object.assign(exampleState().hint, src.hint || {});
   s.example = false;
+  if (s.planDiscount === "port") s.planDiscount = "none";   // older quotes: the number-transfer price is a per-line offer now
   s.loaded = {id:d.id, savedAt:d.savedAt, note:d.note || "", offers:d.offers || {}, devices:d.devices || {}, applied:d.applied || {}, monthly:d.monthly, today:d.today};
   s.groups.forEach(function(g){
     if (s.loaded.applied[g.id]) g.dev.offer = s.loaded.applied[g.id];
