@@ -2734,13 +2734,16 @@ function findQuote(raw){
     renderAll(); window.scrollTo(0, 0);
   }, function(e){ go.disabled = false; go.textContent = "Open"; err.textContent = ghError(e); });
 }
-/* Tapping the promotion that's already chosen fires no change event, so fold the list here too. */
+/* Tapping the promotion that's already chosen fires no change event, so handle it here: with the list open it folds
+   the list; with the list folded (only the chosen offer showing) it clears the choice and opens the list again. */
 document.addEventListener("click", function(e){
   var el = e.target;
   if (!el || el.type !== "radio" || !el.dataset || !el.dataset.k) return;
   var om = /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k), og = om && grp(om[1]);
-  if (!og || String(og.dev[om[2]]) !== el.value || (ui.offersHidden && ui.offersHidden[og.id])) return;
-  ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[og.id] = true;
+  if (!og || String(og.dev[om[2]]) !== el.value) return;
+  ui.offersHidden = ui.offersHidden || {};
+  if (ui.offersHidden[og.id]) { og.dev[om[2]] = ""; ui.offersHidden[og.id] = false; state.example = false; }
+  else ui.offersHidden[og.id] = true;
   var id = el.id; renderAll();
   var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});
 });
