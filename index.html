@@ -1679,11 +1679,11 @@ function editBody(g, q){
       if (!ui.tagFilter) return true;
       return AO.some(function(o){ return o.tag === ui.tagFilter && (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
     });
-    /* Choose model: a dropdown. It starts open while no model is chosen and closes once one is picked; the closed
-       box shows the model and whether an offer is available. Tap it to open the list again. */
+    /* Choose model: a dropdown, closed by default. The closed box shows the model (or "Choose a model") and whether an
+       offer is available; tap it to open the list. Picking a model closes it. */
     function hasOffer(m){ return AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; }); }
     var cur = g.dev.model ? model(g.dev.model) : null;
-    var mOpen = ui.modelOpen && ui.modelOpen[g.id] !== undefined ? ui.modelOpen[g.id] : !cur;
+    var mOpen = !!(ui.modelOpen && ui.modelOpen[g.id]);
     b2 += '<div><h4>Choose model</h4><button class="mdrop" data-act="mopen" data-g="' + g.id + '" aria-expanded="' + mOpen + '" aria-controls="ml-' + g.id + '">' +
         '<span class="mval' + (cur ? "" : " ph") + '">' + (cur ? esc(cur.name) : "Choose a model") + '</span>' +
         (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : fmt(cur.price)) + '</span>' : '') +
@@ -2492,7 +2492,7 @@ document.addEventListener("click", function(e){
     case "mfr": ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
     case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "";
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
-    case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; var mo = ui.modelOpen[g.id] !== undefined ? ui.modelOpen[g.id] : !g.dev.model; ui.modelOpen[g.id] = !mo; } break;
+    case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !ui.modelOpen[g.id]; } break;
     case "pay": if (g) g.pay.method = v; break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
