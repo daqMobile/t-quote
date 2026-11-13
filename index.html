@@ -241,6 +241,7 @@ button:disabled{cursor:not-allowed}
 .hplan .d{font-size:13px;color:var(--muted)}
 .panel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:16px}
 .check{display:flex;align-items:flex-start;gap:10px;font-size:14.5px}
+.check.dis{opacity:.5;filter:blur(.3px);cursor:not-allowed}
 .check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
 .switch{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;font-weight:600}
 .switch .knob{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s}
@@ -1225,12 +1226,14 @@ function compute(s){
     }
     if (g.credit.oneOn && num(g.credit.oneAmt)) ONE.push({l:label + " · one-time credit", a:-num(g.credit.oneAmt) * q, c:"credit"});
     if (g.lineType === "upgrade") upg += q; else if (!T0.voice) cNew += q;
-    if (g.pay.connect) out.connect = true;
+    if (g.pay.connect && segOf(s) !== "employee") out.connect = true;
     out.unit = sum(out.lines.map(function(x){ return x.a; }));
     groupsOut[g.id] = out;
   });
 
-  var conn = sum(s.groups.filter(function(g){ return g.pay.connect; }).map(function(g){ return g.qty; }));
+  /* Employee pricing waives the activation and upgrade (device connection) charges. */
+  var empWaive = segOf(s) === "employee";
+  var conn = empWaive ? 0 : sum(s.groups.filter(function(g){ return g.pay.connect; }).map(function(g){ return g.qty; }));
   /* Taxes and fees (sales tax, the regulatory & telco recovery fee, government surcharges) change, so quotes leave them out.
      Connection charges stay in Due today. */
 
@@ -1248,6 +1251,7 @@ function compute(s){
   }
 
   if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
+  else if (empWaive && s.groups.length) T.unshift({l:"Device connection charge", a:0, sub:"waived with employee pricing"});
 
   var perkRows = c.fam === "tmix" ? s.perks.map(function(id){ return PERKS.filter(function(p){ return p.id === id; })[0]; }).filter(Boolean)
     .map(function(p){ return {name:p.name, eff:(p.loadedFree && c.pid === "loaded") ? 0 : p.cost}; }) : [];
@@ -1762,7 +1766,8 @@ function editBody(g, q){
   if (hasPromo) b4 += '<p class="info">* The applied promotion needs an installment plan. To pay in full, remove the promotion in Box 2.</p>';
   if (g.pay.method === "eip" && g.dev.kind !== "existing") b4 += '<div class="fields"><div class="f"><label for="tm-' + g.id + '">Installment term</label><select id="tm-' + g.id + '" data-k="g.' + g.id + '.pay.term" data-t="num"' + (termLocked ? " disabled" : "") + '><option value="36"' + (shownTerm === 36 ? " selected" : "") + '>36 months</option><option value="24"' + (shownTerm === 24 ? " selected" : "") + '>24 months</option></select></div>' +
     '<div class="f"><label for="dp-' + g.id + '">Down payment amount <span class="muted" style="font-weight:400">(optional)</span></label><span class="money"><input class="tin" id="dp-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.pay.down" data-t="num" value="' + (g.pay.down || "") + '"></span></div></div>';
-  b4 += '<label class="check" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect ? " checked" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">Applies to new lines and upgrades. Uncheck only where it\'s waived.</small></span></label>';
+  var empW = segOf(state) === "employee";
+  b4 += '<label class="check' + (empW ? " dis" : "") + '" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect && !empW ? " checked" : "") + (empW ? " disabled" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">' + (empW ? "Waived with employee pricing." : "Applies to new lines and upgrades. Uncheck only where it\'s waived.") + '</small></span></label>';
   b += box(bn++, "Payment Type", b4);
 
   /* Box 5: Line credits */
