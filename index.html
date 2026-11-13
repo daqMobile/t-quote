@@ -1506,11 +1506,12 @@ function compareBody(q){
 function jobAid(){
   var steps = [
     ["Add the devices", "Use the Add Devices tray. Each card is a group of lines with the same setup. Use − and + on a card for more of the same phone."],
-    ["Box 1 · Plan", "Pick the plan and the line type. We assume the customer keeps their number, so number transfer is the default. Picks are set here for T-Mix accounts."],
+    ["Box 1 · Plan", "Pick the plan and the line type. We assume the customer keeps their number, so Port is the default."],
     ["Box 2 · Device", "Choose New, Existing (bring their own) or Custom. Pick the promotion first if you like, then the manufacturer and model. No promotion is chosen until you pick one: Best available offer, a specific offer, Custom promo or Full Retail Price. We assume they have a phone to trade in."],
     ["Box 3 · Protection", "Add Protection 360 at the device's tier."],
-    ["Box 4 · Payment type", "Keep the installment plan unless they're paying in full. Uncheck the connection charge only when it's waived. Add any down payment."],
-    ["Box 5 · Line credits", "Add a custom monthly credit (port-in, add-a-line or upgrade) and how many months it runs, or a one-time credit."],
+    ["Box 4 · Account Picks", "T-Mix phone lines only: choose the account's Picks. On other plans this box is skipped and the boxes after it move up one."],
+    ["Payment type", "Keep the installment plan unless they're paying in full. Uncheck the connection charge only when it's waived. Add any down payment."],
+    ["Line credits", "Add a custom monthly credit (port-in, add-a-line or upgrade) and how many months it runs, or a one-time credit."],
     ["Review and send", "Open Review and check that Picks aren't over. Save the quote, then email it or copy it into a text."]
   ];
   return '<div class="aid">' + steps.map(function(s, i){ return '<div class="step"><span class="num">' + (i+1) + '</span><div><h3>' + s[0] + '</h3><p>' + s[1] + '</p></div></div>'; }).join("") + '</div>';
@@ -1632,7 +1633,6 @@ function editBody(g, q){
       radio("lt-" + g.id, "lt-" + g.id + "-early", "early", ltCur, "Early upgrade", "JUMP! or Yearly Upgrade · current phone at least 50% paid, turned in · no added plan charge", false, "g." + g.id + ".lineType") +
       '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade or Early upgrade makes this an existing-account quote.</p>') + earlyPanel(g, c) + '</div>';
     if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
-    if (c.fam === "tmix") b1 += picksBlock(q);
   } else {
     b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + CPLANS[g.type].map(function(p){
       var dis = p.byod && (tabletAlone(g.type, c) || p.plans.indexOf(c.pid) < 0);
@@ -1680,14 +1680,18 @@ function editBody(g, q){
   /* Box 3: Protection */
   b += box(3, "Protection", '<div class="f"><label for="p3-' + g.id + '">Protection 360</label><select id="p3-' + g.id + '" data-k="g.' + g.id + '.p360" data-t="str">' + P360.map(function(o){ return '<option value="' + o.v + '"' + (g.p360 === o.v ? " selected" : "") + '>' + o.label + '</option>'; }).join("") + '</select></div><p class="info">' + I.info + 'Monthly price depends on the device tier. Check the tier in the store system.</p>');
 
-  /* Box 4: Payment type */
+  /* Account Picks (T-Mix phone lines): its own box between Protection and Payment type; later boxes number on from it. */
+  var bn = 4;
+  if (c.fam === "tmix" && T0.voice) b += box(bn++, "Account Picks", picksBlock(q, true));
+
+  /* Payment type */
   var d = devMath(g, c), hasPromo = !!d.offer, termLocked = hasPromo && !d.offer.followsTerm, shownTerm = hasPromo ? d.offer.months : (+g.pay.term === 24 ? 24 : 36);
   var b4 = '<div class="seg" role="group" aria-label="Payment type"><button data-act="pay" data-g="' + g.id + '" data-v="eip" aria-pressed="' + (g.pay.method === "eip") + '">T-Mobile Installment Plan</button><button data-act="pay" data-g="' + g.id + '" data-v="full" aria-pressed="' + (g.pay.method === "full") + '"' + (hasPromo ? " disabled" : "") + '>Pay in Full</button></div>';
   if (hasPromo) b4 += '<p class="info">* The applied promotion needs an installment plan. To pay in full, remove the promotion in Box 2.</p>';
   if (g.pay.method === "eip" && g.dev.kind !== "existing") b4 += '<div class="fields"><div class="f"><label for="tm-' + g.id + '">Installment term</label><select id="tm-' + g.id + '" data-k="g.' + g.id + '.pay.term" data-t="num"' + (termLocked ? " disabled" : "") + '><option value="36"' + (shownTerm === 36 ? " selected" : "") + '>36 months</option><option value="24"' + (shownTerm === 24 ? " selected" : "") + '>24 months</option></select></div>' +
     '<div class="f"><label for="dp-' + g.id + '">Down payment amount <span class="muted" style="font-weight:400">(optional)</span></label><span class="money"><input class="tin" id="dp-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.pay.down" data-t="num" value="' + (g.pay.down || "") + '"></span></div></div>';
   b4 += '<label class="check" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect ? " checked" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">Applies to new lines and upgrades. Uncheck only where it\'s waived.</small></span></label>';
-  b += box(4, "Payment Type", b4);
+  b += box(bn++, "Payment Type", b4);
 
   /* Box 5: Line credits */
   var cr = g.credit;
@@ -1702,7 +1706,7 @@ function editBody(g, q){
     '<div><h4>Quote preview</h4><p class="info" style="margin:0 0 8px">This is how the credit will look in the quote.</p><div id="crprev">' + creditPreview(g) + '</div></div></div>';
   b5 += '<label class="check" for="co-' + g.id + '"><input id="co-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.credit.oneOn" data-t="bool"' + (cr.oneOn ? " checked" : "") + '><span><b>Custom One-Time Credit</b></span></label>';
   if (cr.oneOn) b5 += '<div class="subpanel"><div><label class="flabel" for="coa-' + g.id + '">How much is the credit?</label><span class="money"><input class="tin sm" id="coa-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.credit.oneAmt" data-t="num" value="' + (cr.oneAmt || "") + '"></span></div></div>';
-  b += box(5, "Line Credits", b5);
+  b += box(bn++, "Line Credits", b5);
   return b;
 }
 function creditPreview(g){
@@ -1749,7 +1753,7 @@ function devCalc(g, q){
   h += '</div></div>';
   return h;
 }
-function picksBlock(q){
+function picksBlock(q, inBox){
   var s = state, budget = q.budget, used = q.used, total = Math.max(budget, used), cells = "";
   for (var k = 0; k < total; k++) cells += '<span class="cell ' + (k < Math.min(used, budget) ? "on" : (k >= budget ? "over" : "")) + '"></span>';
   var dis = budget === 0;
@@ -1757,7 +1761,7 @@ function picksBlock(q){
     if (p.loadedFree && q.c.pid === "loaded") return '<span class="pchip locked">' + p.name + ' <span class="pc">incl.</span></span>';
     return '<button class="pchip" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (s.perks.indexOf(p.id) > -1) + '"' + (dis ? " disabled" : "") + '>' + p.name + ' <span class="pc">' + p.cost + '</span></button>';
   }
-  return '<div><div class="picksrow"><h4 style="margin:0">Account Picks</h4><span><b>' + used + '</b> of ' + budget + ' used</span></div>' +
+  return '<div><div class="picksrow">' + (inBox ? '<span class="muted">Shared by every phone line on the account</span>' : '<h4 style="margin:0">Account Picks</h4>') + '<span><b>' + used + '</b> of ' + budget + ' used</span></div>' +
     (cells ? '<div class="meter" style="margin:8px 0 10px">' + cells + '</div>' : '<p class="info">This plan has no Picks.</p>') +
     '<div class="chips">' + PERKS.map(chip).join("") + '</div>' +
     '<p class="info" style="margin-top:8px">Picks belong to the whole account. Phone offers hold their Picks for the promo period. Partner Picks can be swapped in the quarterly Remix windows.</p></div>';
