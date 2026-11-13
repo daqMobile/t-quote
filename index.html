@@ -2554,7 +2554,8 @@ document.addEventListener("click", function(e){
       if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = false; }
       break;
     }
-    case "mfr": ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
+    case "mfr": if (b.getAttribute("aria-pressed") === "true") return;   // already the shown manufacturer: nothing to do
+      ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
     case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "";
       var npi = p360Info(g); if (npi && (npi.tier || npi.likely) && g.p360 !== "0" && g.p360 !== "emp") g.p360 = npi.tier || npi.likely;
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
