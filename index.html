@@ -310,6 +310,15 @@ html.locked,html.locked body{overflow:hidden}
 .money::before{content:"$";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 .money .tin{padding-left:23px}
 .inl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mdrop{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--muted);border-radius:3px;background:var(--surface);text-align:left;font-size:15px;font-weight:500;cursor:pointer}
+.mdrop .mval{flex:1;min-width:0}
+.mdrop .mval.ph{color:var(--muted);font-weight:400}
+.mdrop .mtag{font-size:12.5px;color:var(--muted);white-space:nowrap;font-weight:500}
+.mdrop .mtag.offer{color:var(--good);font-weight:600}
+.mdrop .mchev{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.mdrop[aria-expanded="true"]{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.mdrop[aria-expanded="true"] .mchev{transform:rotate(180deg)}
+.mdrop + .mlist{border-top:0;border-top-left-radius:0;border-top-right-radius:0}
 .mlist{max-height:250px;overflow:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
 .mlist .grp{position:sticky;top:0;padding:6px 12px;background:var(--sunk);font-weight:700;font-size:13px;border-bottom:1px solid var(--line)}
 .mlist button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:transparent;text-align:left;padding:7px 12px 7px 22px;font-size:14px}
@@ -1670,11 +1679,20 @@ function editBody(g, q){
       if (!ui.tagFilter) return true;
       return AO.some(function(o){ return o.tag === ui.tagFilter && (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
     });
-    b2 += '<div><h4>Choose model</h4><div class="mlist" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf) + '</div>' +
+    /* Choose model: a dropdown. It starts open while no model is chosen and closes once one is picked; the closed
+       box shows the model and whether an offer is available. Tap it to open the list again. */
+    function hasOffer(m){ return AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; }); }
+    var cur = g.dev.model ? model(g.dev.model) : null;
+    var mOpen = ui.modelOpen && ui.modelOpen[g.id] !== undefined ? ui.modelOpen[g.id] : !cur;
+    b2 += '<div><h4>Choose model</h4><button class="mdrop" data-act="mopen" data-g="' + g.id + '" aria-expanded="' + mOpen + '" aria-controls="ml-' + g.id + '">' +
+        '<span class="mval' + (cur ? "" : " ph") + '">' + (cur ? esc(cur.name) : "Choose a model") + '</span>' +
+        (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : fmt(cur.price)) + '</span>' : '') +
+        '<svg class="mchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>' +
+      (mOpen ? '<div class="mlist" id="ml-' + g.id + '" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf) + '</div>' +
       (shown.length ? shown.map(function(m){
-        var has = AO.some(function(o){ return (o.fam === "any" || o.fam === c.fam) && o.models.indexOf(m.fam) > -1; });
+        var has = hasOffer(m);
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
-      }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div></div>';
+      }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div>' : '') + '</div>';
     if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
   }
   if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
@@ -2468,11 +2486,13 @@ document.addEventListener("click", function(e){
       dropGroup(); break;
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
-    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
+    case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.modelOpen = {}; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
     case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
-    case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; break;
-    case "mfr": ui.mfr = v; break;
-    case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = ""; } break;
+    case "tagf": ui.tagFilter = ui.tagFilter === v ? null : v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
+    case "mfr": ui.mfr = v; if (ui.edit) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[ui.edit] = true; } break;
+    case "model": if (g) { if (v && g.dev.model === v) v = ""; g.dev.model = v || null; if (!v) g.dev.offer = "";
+      ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
+    case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; var mo = ui.modelOpen[g.id] !== undefined ? ui.modelOpen[g.id] : !g.dev.model; ui.modelOpen[g.id] = !mo; } break;
     case "pay": if (g) g.pay.method = v; break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
