@@ -774,11 +774,16 @@ var I = {
 
 /* ================= State ================= */
 var gid = 1;
-function newGroup(type, cust){
+/* A new line starts as Port (phones) or New, except on an existing account whose current plan is Go5G or Essentials
+   (upgrades only). "st" is the quote it's being added to; a fresh quote (Start New, the example) passes null so it
+   never inherits the previous quote's account. */
+function newGroup(type, st){
   var t = type;
+  if (st === undefined || typeof st !== "object") st = typeof state === "undefined" ? null : state;
+  var upOnly = !!(st && st.cust === "existing" && st.exFam !== "tmix" && EXP[st.planExp] && EXP[st.planExp].legacy);
   return {
     id:"g" + (gid++), type:t, qty:1, name:"",
-    lineType: (state && state.cust === "existing" && EXP[state.planExp] && EXP[state.planExp].legacy) ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
+    lineType: upOnly ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
     /* No device is picked for a new line until the rep chooses one. */
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0},
@@ -791,9 +796,9 @@ function newGroup(type, cust){
 }
 function exampleState(){
   gid = 1;
-  var a = newGroup("phone"); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
-  var b = newGroup("phone"); b.dev.model = "s26"; b.lineType = "new";
-  var c = newGroup("watch"); c.dev.model = "awse3";
+  var a = newGroup("phone", null); a.qty = 2; a.dev.model = "17-256"; a.p360 = "5";
+  var b = newGroup("phone", null); b.dev.model = "s26"; b.lineType = "new";
+  var c = newGroup("watch", null); c.dev.model = "awse3";
   return {v:2, sv:3, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
     autopay:true, visa:false, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
@@ -802,7 +807,7 @@ function exampleState(){
 function blankState(){
   var s = exampleState();
   gid = 1;
-  s.example = false; s.groups = [newGroup("phone")]; s.perks = []; s.planDiscount = "none"; s.cust = "new";
+  s.example = false; s.groups = [newGroup("phone", null)]; s.perks = []; s.planDiscount = "none"; s.cust = "new";
   s.planNew = topPlan(TMIX); s.planExp = topPlan(EXP); s.exFam = "exp";
   s.hint = {on:false, plan:"amplified", voice:true, connect:true};
   return s;
