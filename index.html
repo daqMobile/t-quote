@@ -1579,6 +1579,15 @@ function feesBody(){
 
 /* ----- Edit options: numbered boxes ----- */
 function box(n, title, body){ return '<section class="box"><div class="boxh"><span class="num">' + n + '</span>' + title + '</div><div class="boxb">' + body + '</div></section>'; }
+/* Store wording for offers in Edit Options: "Switcher" capitalized; a new line that doesn't need a number transfer
+   is an "AAL"; "new line with a number transfer" reads "New line with a Port". Review and the email keep T-Mobile's wording. */
+function offerWords(text, o){
+  var t = String(text || "").replace(/\bswitcher\b/g, "Switcher").replace(/\bnew line with a number transfer\b/gi, function(m){ return (m.charAt(0) === "N" ? "N" : "n") + "ew line with a Port"; });
+  if (o && o.need !== "port" && o.need !== "port4")
+    t = t.replace(/\ba new (voice )?line\b/gi, function(m){ return (m.charAt(0) === "A" ? "An" : "an") + " AAL"; })
+         .replace(/\bnew (voice )?line\b/gi, "AAL");
+  return t;
+}
 /* Offer label with its Picks requirement ("2 Picks", "no Picks") set a little bolder. */
 function pickLabel(label){ return esc(label).replace(/(\b\d+ Picks?\b|\bno Picks\b)/gi, '<span class="pk">$1</span>'); }
 function radio(name, id, val, cur, label, sub, dis, k){
@@ -1758,12 +1767,12 @@ function devCalc(g, q){
   if (g.dev.kind === "new") { var was = g.dev.offer; g.dev.offer = "best"; best = bestPlan(c)[g.id] || null; g.dev.offer = was; }
   var nm = "of-" + g.id, k = "g." + g.id + ".dev.offer";
   h += '<div><h4>Apply a promotion?</h4><div class="radios">';
-  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(best.o.label) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
+  if (g.dev.kind === "new") h += radio(nm, nm + "-best", "best", g.dev.offer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (" + fmt(best.credit / offerMonths(best.o, g)) + "/mo credit)" : "Nothing qualifies right now. The quote uses full retail.", false, k);
   list.forEach(function(x){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
-    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
-      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k);
+    h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
+      "Details: " + esc(offerWords(x.o.detail, x.o)) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k);
   });
   if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
   h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
