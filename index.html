@@ -727,11 +727,17 @@ var OFFERS = [
   {id:"awse3",fam:"any",label:"Apple Watch SE 3 on Us",upTo:300,picks:0,plans:"any",need:"watch15",models:["awse3"],tag:"onus",
    detail:"New watch line on a $15+/mo watch plan with AutoPay."},
   {id:"ipad400",fam:"any",label:"iPad (A16) for $199",upTo:400,picks:0,plans:"any",need:"tab25",models:["ipada16"],tag:"newline",
-   detail:"New tablet line on a $25+/mo tablet plan with AutoPay."}
+   detail:"New tablet line on a $25+/mo tablet plan with AutoPay."},
+  /* BYOD rebates (Existing Device with BYOD checked): paid as a virtual prepaid Mastercard, not bill credits. */
+  {id:"byod200",fam:"any",byod:true,pay:"card",label:"Your Phone, Your Number: $200 On Us",upTo:200,picks:0,plans:"any",need:"port",minMonthly:60,maxPerAcct:4,models:[],tag:"byod",
+   detail:"Bring their own phone and number: new voice line with a Port from AT&T, Verizon or another eligible carrier, on a $60+/mo plan with AutoPay. Register within 30 days of activation; the card can take up to 14 weeks. Max 4 per account."},
+  {id:"keepswitch",fam:"any",byod:true,pay:"card",label:"Keep & Switch phone payoff",upTo:800,picks:0,plans:"any",need:"port",newAcct:true,maxPerAcct:4,models:[],tag:"byod",
+   detail:"New account switching with a Port and keeping their phone. Pays off the old phone's remaining balance (incl. lease buyout), up to $800 per line. Unlock the phone before porting; send proof of balance and 90+ days in good standing within 30 days of the Port. Up to 4 lines."}
 ];
 /* Built-in copy of the offers and devices, used until the live data loads (or when it can't). */
 OFFERS.forEach(function(o){ o.status = "active"; o.starts = null; o.ends = null; o.verified = o.dated ? null : "2026-11-09";
-  o.source = o.dated ? "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" : (o.fam === "tmix" || o.fam === "any" || o.id.indexOf("ex") === 0 ? "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" : ""); });
+  o.source = o.dated ? "https://www.androidcentral.com/phones/t-mobile/best-t-mobile-deals-of-the-month" : (o.fam === "tmix" || o.fam === "any" || o.id.indexOf("ex") === 0 ? "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix" : "");
+  if (o.byod) { o.verified = "2026-11-13"; o.source = "https://www.t-mobile.com/resources/bring-your-own-phone"; } });
 MODELS.forEach(function(m){ m.status = "active"; });
 var TRIGGER_ID = "trig_016HvyXxhoRMmKjMn8rTjGET";
 var live = {db:null, mcp:null, offers:null, devices:null, meta:null, state:"loading", checking:false, checkStarted:"", recent:null, recentErr:"", saving:false, saved:null, openErr:"", opening:false};
@@ -816,7 +822,7 @@ function newGroup(type, st){
     lineType: upOnly ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
     /* No device is picked for a new line until the rep chooses one. */
     dev:{kind: t === "basic" ? "custom" : "new", model: null,
-         customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0},
+         customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0, byod:false, byodOffer:""},
     p360:"0",
     early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
     pay:{method:"eip", term: t === "syncDrive" ? 24 : 36, connect:true, down:0},
@@ -944,7 +950,7 @@ function makeExisting(){
   state.cust = "existing"; if (state.planDiscount === "port") state.planDiscount = "none"; state.autoEx = true;
   state.existingLines = Math.max(1, ctxOf(state).upVoice);
   state.exFam = "tmix";
-  state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
+  state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; if (x.dev.byodOffer !== "best" && x.dev.byodOffer !== "none") x.dev.byodOffer = ""; });
   var c = ctxOf(state);
   toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
 }
@@ -1026,6 +1032,39 @@ function bestOffer(list){
   ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
   return ok[0] || null;
 }
+/* ---------- BYOD offers ----------
+   Existing Device with BYOD checked: the customer brings their own phone and number. These offers pay out as a virtual
+   prepaid Mastercard after the switch, not as bill credits, so they're listed under Rebate cards and don't change the
+   monthly total. Same plan rules as phone offers: an offer for another plan or a higher plan total is left out of the
+   list unless it's already chosen; one that fits the plan but not this line is shown greyed out with the reason. */
+function isByod(g){ return !!g && g.dev.kind === "existing" && !!g.dev.byod; }
+function byodOffersFor(g, c){
+  if (!isByod(g) || !TYPES[g.type] || !TYPES[g.type].voice) return [];
+  var count = sum(state.groups.filter(function(x){ return isByod(x) && x.lineType !== "upgrade" && TYPES[x.type] && TYPES[x.type].voice; }).map(function(x){ return x.qty; }));
+  return offerPool().filter(function(o){ return o.byod && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
+    var why = "", planOk = false;
+    if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
+    else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
+    else planOk = true;
+    if (planOk) {
+      if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      else if (o.newAcct && c.ex) why = "New accounts only";
+      else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
+      else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
+      else if (o.maxPerAcct && count > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
+    }
+    return {o:o, ok:!why, planOk:planOk, why:why, credit:o.upTo || 0, expired:!!o.expired};
+  });
+}
+/* The BYOD offer on a line: the chosen one (even if it no longer applies, so the quote can say why) or, for Best
+   available offer, the largest one that applies. */
+function byodPick(g, c){
+  var v = isByod(g) ? g.dev.byodOffer : "";
+  if (!v || v === "none") return null;
+  var list = byodOffersFor(g, c);
+  if (v === "best") return bestOffer(list);
+  return list.filter(function(x){ return x.o.id === v; })[0] || null;
+}
 /* ---------- Early upgrades ----------
    JUMP! (part of Protection 360; JUMP! 2.0 since Aug 31, 2026): once the current phone is 50% paid on its payment plan,
    turn it in and T-Mobile covers what's left, up to half of its original cost. If less than half is paid, the customer
@@ -1069,7 +1108,7 @@ function offerMonths(o, g){ return o && o.months === 24 ? 24 : (o && o.months ==
 /* Per-unit device math for a group */
 function devMath(g, c){
   var r = {retail:0, down:0, fin:0, term:36, eip:0, credit:0, cr:0, due:0, offer:null, name:"", warn:""};
-  if (g.dev.kind === "existing") { r.name = "Customer's own device"; return r; }
+  if (g.dev.kind === "existing") { r.name = "Customer's own device" + (g.dev.byod ? " · BYOD" : ""); return r; }
   var m = g.dev.kind === "new" ? model(g.dev.model) : null;
   r.retail = g.dev.kind === "new" ? (m ? m.price : 0) : num(g.dev.customPrice);
   r.name = g.dev.kind === "new" ? (m ? m.name : "No device chosen") : (g.dev.customName || "Custom device");
@@ -1104,7 +1143,7 @@ function devMath(g, c){
 
 /* ================= Quote math ================= */
 function compute(s){
-  var W = [], T = [], ONE = [], notes = [], groupsOut = {}, empConn = 0, addNote = "";
+  var W = [], T = [], ONE = [], RB = [], notes = [], groupsOut = {}, empConn = 0, addNote = "";
   var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
   if (seg === "workperks" && c.fam === "exp") {
@@ -1215,6 +1254,18 @@ function compute(s){
       if (d.offer.expired) notes.push({t:"warn", m:d.offer.base + " has ended" + (d.offer.ends ? " (" + shortDate(d.offer.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
       else if (d.offer.dated) notes.push({t:"info", m:d.offer.base + " wasn't confirmed in the latest promo check" + (d.offer.verified ? " (last confirmed " + shortDate(d.offer.verified) + ")" : "") + ". Check that it's still running."});
     }
+    if (isByod(g)) {
+      var bp = byodPick(g, c);
+      if (bp && !bp.ok) {
+        var bw = bp.o.label + " doesn't apply: " + bp.why.charAt(0).toLowerCase() + bp.why.slice(1) + ".";
+        out.warn = (out.warn ? out.warn + " " : "") + bw; notes.push({t:"warn", m:label + ": " + bw});
+      } else if (bp) {
+        RB.push({l:label + " · " + bp.o.label + (bp.expired ? " (expired)" : ""), a:-bp.credit * q, c:"credit",
+                 sub:"up to " + fmt0(bp.credit) + (q > 1 ? " per line" : "") + " · virtual prepaid Mastercard after the switch"});
+        if (bp.expired) notes.push({t:"warn", m:bp.o.label + " has ended" + (bp.o.ends ? " (" + shortDate(bp.o.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
+        else if (bp.o.dated) notes.push({t:"info", m:bp.o.label + " wasn't confirmed in the latest promo check" + (bp.o.verified ? " (last confirmed " + shortDate(bp.o.verified) + ")" : "") + ". Check that it's still running."});
+      }
+    }
     if (d.down) T.push({l:label + " down payment", a:d.down * q});
     if (d.due) T.push({l:label + " · " + d.name + " paid in full", a:d.due * q});
     var pr = P360.filter(function(x){ return x.v === g.p360; })[0];
@@ -1263,7 +1314,7 @@ function compute(s){
   if (s.hint.on) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
 
   var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
-  return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
+  return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, RB:RB, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
           budget:budget, used:used, perkRows:perkRows, promoPicks:promoPicks, notes:notes, groups:groupsOut, devices:sum(s.groups.map(function(g){ return g.qty; }))};
 }
 
@@ -1501,7 +1552,8 @@ function reviewBody(q){
     '<div class="rsub">plus taxes &amp; fees</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
-    (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '');
+    (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '') +
+    (q.RB.length ? '<div class="rule"></div><div class="rsec">Rebate cards · not on the bill</div>' + q.RB.map(rrow).join("") : '');
   if (s.visa) h += '<div class="rule"></div><div class="rsec">T-Mobile Visa</div><div class="rr"><span class="l">' + esc(VISA.head) +
     '<small>Phones, devices and accessories from T-Mobile · 2% on everything else</small></span><span class="a">5%</span></div>';
   if (c.fam === "tmix") {
@@ -1717,7 +1769,11 @@ function editBody(g, q){
   var b2 = '<div class="f"><label for="gn-' + g.id + '">Device group name <span class="muted" style="font-weight:400">(optional) Max. 100 characters</span></label><input class="tin" id="gn-' + g.id + '" maxlength="100" data-k="g.' + g.id + '.name" data-t="str" value="' + esc(g.name) + '"></div>';
   b2 += '<div><h4>What type of device?</h4><div class="seg" role="group" aria-label="Device type">' +
     ["new","existing","custom"].map(function(k){ return '<button data-act="kind" data-g="' + g.id + '" data-v="' + k + '" aria-pressed="' + (g.dev.kind === k) + '"' + (k === "new" && g.type === "basic" ? " disabled" : "") + '>' + {new:"New Device",existing:"Existing Device",custom:"Custom Device"}[k] + '</button>'; }).join("") + '</div></div>';
-  if (g.dev.kind === "existing") b2 += '<p class="info">' + I.info + 'The customer keeps the phone they have. No device charges on this line.</p>';
+  if (g.dev.kind === "existing") {
+    b2 += '<p class="info">' + I.info + 'The customer keeps the phone they have. No device charges on this line.</p>' +
+      '<label class="check" for="by-' + g.id + '"><input id="by-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.byod" data-t="bool"' + (g.dev.byod ? " checked" : "") + '><span><b>BYOD</b><br><small class="muted">Bringing their own phone and number to T-Mobile</small></span></label>';
+    if (g.dev.byod) b2 += byodList(g, q);
+  }
   if (g.dev.kind === "custom") {
     b2 += '<div class="fields"><div class="f"><label for="cn-' + g.id + '">Device name</label><input class="tin" id="cn-' + g.id + '" data-k="g.' + g.id + '.dev.customName" data-t="str" value="' + esc(g.dev.customName) + '"></div>' +
       '<div class="f"><label for="cpz-' + g.id + '">Full retail price</label><span class="money"><input class="tin" id="cpz-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.dev.customPrice" data-t="num" value="' + (g.dev.customPrice || "") + '"></span></div></div>';
@@ -1833,6 +1889,35 @@ function devCalc(g, q){
     (c.fam === "tmix" ? '<div class="f"><label for="cpk-' + g.id + '">Picks it holds per line</label><select id="cpk-' + g.id + '" data-k="g.' + g.id + '.dev.customPicks" data-t="num">' + [0,1,2,3].map(function(v){ return '<option value="' + v + '"' + ((+g.dev.customPicks||0) === v ? " selected" : "") + '>' + v + '</option>'; }).join("") + '</select></div>' : '') +
     '</div><p class="info" style="margin:0">Spread as monthly bill credits over 36 months.</p></div>';
   h += '</div></div>';
+  return h;
+}
+/* BYOD promotions: laid out like the phone offers under New Device (Best available offer, each offer with its
+   details, hidden-offer count, Hide/Show offers), with "No offers available." when nothing fits the plan. */
+function byodList(g, q){
+  var c = q.c, all = byodOffersFor(g, c);
+  var list = all.filter(function(x){ return x.planOk || x.o.id === g.dev.byodOffer; }), hidden = all.length - list.length;
+  var hiddenNote = hidden ? '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>' : '';
+  if (!list.length) return '<div><h4>Apply a promotion?</h4><p class="info" style="margin:0 0 6px">' + I.info + 'No offers available.</p>' + hiddenNote + '</div>';
+  var best = bestOffer(all), bp = byodPick(g, c);
+  var nm = "bo-" + g.id, k = "g." + g.id + ".dev.byodOffer";
+  var offHidden = !!(ui.offersHidden && ui.offersHidden[g.id]), items = [];
+  function keep(v, html){ items.push({v:v, html:html}); }
+  function card(x){ return " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (virtual prepaid card)"; }
+  var h = '<div><div class="mhead"><h4>Apply a promotion?</h4><button class="linkbtn" data-act="offtog" data-g="' + g.id + '" aria-expanded="' + !offHidden + '">' + (offHidden ? "Show offers" : "Hide offers") + '</button></div>';
+  if (bp && !bp.ok) h += '<p class="info warn">' + esc(bp.o.label + " doesn't apply: " + bp.why.charAt(0).toLowerCase() + bp.why.slice(1) + ".") + '</p>';
+  h += '<div class="radios">';
+  keep("best", radio(nm, nm + "-best", "best", g.dev.byodOffer, "<b>Best available offer</b>", best ? pickLabel(offerWords(best.o.label, best.o)) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> (virtual prepaid card)" : "Nothing qualifies right now.", false, k));
+  list.forEach(function(x){
+    var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
+      : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
+    keep(x.o.id, radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.byodOffer, pickLabel(offerWords(x.o.label, x.o)) + (x.expired ? " (expired)" : "") + card(x),
+      "Details: " + esc(offerWords(x.o.detail, x.o)) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\b(PORT|AAL)\b/, '<span class="wk">$1</span>') + '</span>'), !x.ok, k));
+  });
+  if (hidden) items.push({v:"__hidden", html:hiddenNote});
+  keep("none", radio(nm, nm + "-none", "none", g.dev.byodOffer, "No promotion", "", false, k));
+  var showItems = offHidden ? items.filter(function(it){ return it.v === g.dev.byodOffer; }) : items;
+  h += showItems.map(function(it){ return it.html; }).join("") + (offHidden && !showItems.length ? '<p class="info" style="margin:0">No promotion chosen yet.</p>' : '');
+  h += '</div><p class="info">' + I.info + 'Rebate cards come after the switch as a virtual prepaid Mastercard. They aren\'t bill credits, so the monthly total doesn\'t change.</p></div>';
   return h;
 }
 function picksBlock(q, inBox){
@@ -1968,13 +2053,21 @@ function quoteDoc(id, note){
       if (o) offers[o.id] = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models, tag:o.tag || "",
                              status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
     }
+    var bp = byodPick(g, q.c);
+    if (bp && bp.ok) {
+      applied[g.id + ".byod"] = bp.o.id;
+      var bo = bp.o;
+      offers[bo.id] = {id:bo.id, label:bo.label, detail:bo.detail || "", fam:bo.fam, upTo:bo.upTo, picks:0, plans:bo.plans, need:bo.need, models:[], tag:bo.tag || "byod",
+                       byod:true, pay:bo.pay || "card", newAcct:!!bo.newAcct, minMonthly:bo.minMonthly || 0, maxPerAcct:bo.maxPerAcct || 0,
+                       status:bo.status || "active", starts:bo.starts || null, ends:bo.ends || null, verified:bo.verified || null, source:bo.source || "", dated:!!bo.dated};
+    }
     var m = g.dev.kind === "new" ? model(g.dev.model) : null;
     if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price};
   });
   var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
   var headline = acctLine(q.c, q.P, ", ");
   return {id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
-          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE}};
+          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE, RB:q.RB}};
 }
 function doSave(note){
   if (live.saving) return;
@@ -2041,6 +2134,8 @@ function applyQuote(d){
   s.groups.forEach(function(g){
     if (s.loaded.applied[g.id]) g.dev.offer = s.loaded.applied[g.id];
     else if (g.dev.offer === "best") g.dev.offer = "full";
+    if (s.loaded.applied[g.id + ".byod"]) g.dev.byodOffer = s.loaded.applied[g.id + ".byod"];
+    else if (g.dev.byodOffer === "best") g.dev.byodOffer = "none";
   });
   state = s;
   var mx = 0; state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; }); gid = mx + 1;
@@ -2170,10 +2265,11 @@ function mailBits(q, m){
     head: quoteHead(q),
     monthLabel: c.ex && !q.upShare ? "Added to your monthly bill" : "Estimated monthly",
     taxNote: "Plus taxes and fees",
-    W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE),
+    W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE), RB: emailRows(q.RB),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
     visa: !!state.visa,
-    fine: "This is an estimate using pricing as of " + dateStr() + ". Taxes and fees aren't included because they can change. Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed."
+    fine: "This is an estimate using pricing as of " + dateStr() + ". Taxes and fees aren't included because they can change. Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed." +
+      (q.RB.length ? " Rebate cards come as a virtual prepaid Mastercard after you switch; they aren't bill credits." : "")
   };
 }
 function emailText(q, m){
@@ -2191,6 +2287,7 @@ function emailText(q, m){
   sec("HOME INTERNET", b.H);
   sec("DUE TODAY", b.T);
   sec("ONE-TIME BILL CREDITS", b.ONE);
+  sec("REBATE CARDS (NOT ON THE BILL)", b.RB);
   if (b.perks.length) out.push("", "INCLUDED WITH YOUR PICKS", b.perks.join(", "));
   if (b.visa) out.push("", "T-MOBILE VISA", visaLine());
   out.push("", b.fine);
@@ -2227,7 +2324,7 @@ function emailHtml(q, m){
         '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
     '</td></tr></table>' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">' +
-      sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) +
+      sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) + sec("Rebate cards (not on the bill)", b.RB) +
     '</table>' +
     (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
     (b.visa ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin-top:20px;border:1px solid ' + LINE + ';border-left:4px solid ' + ACC + ';border-radius:8px"><tr><td style="padding:14px 16px;font-size:14px">' +
@@ -2317,6 +2414,7 @@ function quoteText(){
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
   out.push(pad("Total due today", fmt(q.today)) + "  + tax");
   if (q.ONE.length) { out.push(""); out.push("ONE-TIME BILL CREDITS"); q.ONE.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); }
+  if (q.RB.length) { out.push(""); out.push("REBATE CARDS (NOT ON THE BILL)"); q.RB.forEach(function(r){ out.push(pad(r.l, "up to " + fmt(-r.a))); }); }
   if (state.visa) out.push("", "T-MOBILE VISA: " + VISA.head + " " + VISA.body);
   if (c.fam === "tmix" && q.budget) out.push("", "PICKS " + q.used + " of " + q.budget + (q.perkRows.length ? ": " + q.perkRows.map(function(p){ return p.name; }).join(", ") : ""));
   out.push(""); out.push("Estimate only. Pricing as of " + ASOF + "; final price set at purchase.");
@@ -2499,7 +2597,7 @@ document.addEventListener("click", function(e){
     }
     case "openid": doOpen(v); return;
     case "reprice":
-      state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; });
+      state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; if (x.dev.byodOffer && x.dev.byodOffer !== "none") x.dev.byodOffer = "best"; });
       state.loaded = null; toast("Repriced with today's offers."); break;
     case "unload": state = blankState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
     case "close": ui.sheet = null; ui.edit = null; break;
@@ -2512,7 +2610,7 @@ document.addEventListener("click", function(e){
     case "cust":
       if (state.cust === v) break;
       state.cust = v;
-      state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new") earlyOf(x).on = false; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; });
+      state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new") earlyOf(x).on = false; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; if (x.dev.byodOffer !== "best" && x.dev.byodOffer !== "none") x.dev.byodOffer = ""; });
       state.autoEx = false;
       if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
@@ -2548,7 +2646,7 @@ document.addEventListener("click", function(e){
     }
     case "qty": if (g) g.qty = Math.max(1, Math.min(20, g.qty + (+v))); break;
     case "edit": ui.sheet = "edit"; ui.edit = v; ui.tagFilter = null; ui.modelOpen = {}; ui.offersHidden = {}; ui.planTab = ctxOf(state).fam === "exp" ? "legacy" : "current"; { var eg = grp(v), em = eg && model(eg.dev.model); if (em) ui.mfr = em.mfr; } break;
-    case "kind": if (g) { g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
+    case "kind": if (g) { if (g.dev.kind !== v && ui.offersHidden) ui.offersHidden[g.id] = false; g.dev.kind = v; if (v !== "new" && g.dev.offer !== "full") g.dev.offer = v === "custom" ? g.dev.offer : ""; } break;
     case "tagf": {
       /* A promotion filter the chosen model doesn't fit removes that model (and its offer); the model list stays closed. */
       ui.tagFilter = ui.tagFilter === v ? null : v;
@@ -2605,8 +2703,11 @@ document.addEventListener("change", function(e){
   setPath(el.dataset.k, val);
   if (el.dataset.k === "__plan") afterPlanChange();
   /* Choosing a promotion folds the offer list; "Show offers" opens it again. */
-  var om = el.type === "radio" && /^g\.([^.]+)\.dev\.offer$/.exec(el.dataset.k);
+  var om = el.type === "radio" && /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k);
   if (om) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[om[1]] = true; }
+  /* Turning BYOD on shows its offer list open. */
+  var bm = el.type === "checkbox" && el.checked && /^g\.([^.]+)\.dev\.byod$/.exec(el.dataset.k);
+  if (bm && ui.offersHidden) ui.offersHidden[bm[1]] = false;
   state.example = false;
   var id = el.id, wasSelect = el.tagName === "SELECT";
   renderAll();
@@ -2637,8 +2738,8 @@ function findQuote(raw){
 document.addEventListener("click", function(e){
   var el = e.target;
   if (!el || el.type !== "radio" || !el.dataset || !el.dataset.k) return;
-  var om = /^g\.([^.]+)\.dev\.offer$/.exec(el.dataset.k), og = om && grp(om[1]);
-  if (!og || String(og.dev.offer) !== el.value || (ui.offersHidden && ui.offersHidden[og.id])) return;
+  var om = /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k), og = om && grp(om[1]);
+  if (!og || String(og.dev[om[2]]) !== el.value || (ui.offersHidden && ui.offersHidden[og.id])) return;
   ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[og.id] = true;
   var id = el.id; renderAll();
   var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});

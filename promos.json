@@ -4,7 +4,8 @@
    "T-Mobile's offer terms page loaded this run; confirmed all 62 running offers (all were marked unconfirmed earlier today) and set them verified today",
    "SyncUP DRIVE on Us confirmed on its device page for the first time ($96 via 24 credits)",
    "T-Mix iPhone trade-in offers (2 and 3 Picks) and the 4-line iPhone 17e offer confirmed on the iPhone deals page and holiday newsroom post",
-   "No ended or new offers; no device or price changes"
+   "No ended or new offers; no device or price changes",
+   "Added 2 BYOD rebates from T-Mobile's bring-your-own-phone page: $200 On Us (new line with a Port, $60+/mo plan) and Keep & Switch phone payoff (new accounts, up to $800/line); both paid as a virtual prepaid Mastercard"
   ],
   "checkedAt": "2026-11-13T10:16:34-06:00",
   "sources": [
@@ -12,7 +13,8 @@
    "https://www.t-mobile.com/offers/apple-iphone-deals",
    "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
    "https://www.t-mobile.com/devices/family-devices",
-   "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car"
+   "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
+   "https://www.t-mobile.com/resources/bring-your-own-phone"
   ],
   "summary": "62 offers active, none ended or added: T-Mobile's offer terms and deal pages confirmed every running offer today; no device or price changes."
  },
@@ -2042,6 +2044,50 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
+   "verified": "2026-11-13"
+  },
+  {
+   "byod": true,
+   "pay": "card",
+   "dated": false,
+   "detail": "Bring their own phone and number: new voice line with a Port from AT&T, Verizon or another eligible carrier, on a $60+/mo plan with AutoPay. Register within 30 days of activation; the card can take up to 14 weeks. Max 4 per account.",
+   "ends": null,
+   "fam": "any",
+   "id": "byod200",
+   "label": "Your Phone, Your Number: $200 On Us",
+   "maxPerAcct": 4,
+   "minMonthly": 60,
+   "models": [],
+   "need": "port",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/resources/bring-your-own-phone",
+   "starts": null,
+   "status": "active",
+   "tag": "byod",
+   "upTo": 200,
+   "verified": "2026-11-13"
+  },
+  {
+   "byod": true,
+   "pay": "card",
+   "dated": false,
+   "detail": "New account switching with a Port and keeping their phone. Pays off the old phone's remaining balance (incl. lease buyout), up to $800 per line. Unlock the phone before porting; send proof of balance and 90+ days in good standing within 30 days of the Port. Up to 4 lines.",
+   "ends": null,
+   "fam": "any",
+   "id": "keepswitch",
+   "label": "Keep & Switch phone payoff",
+   "maxPerAcct": 4,
+   "models": [],
+   "need": "port",
+   "newAcct": true,
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/resources/bring-your-own-phone",
+   "starts": null,
+   "status": "active",
+   "tag": "byod",
+   "upTo": 800,
    "verified": "2026-11-13"
   }
  ],
