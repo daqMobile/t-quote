@@ -343,6 +343,7 @@ html.locked,html.locked body{overflow:hidden}
 .ebar i{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
 .estat{font-size:14px;margin-top:8px}
 .radio .pk{font-weight:560}
+.why .wk{font-weight:650}
 .erules{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .fields .full{grid-column:1/-1}
@@ -964,11 +965,11 @@ function offersFor(g, c){
     else planOk = true;
     if (planOk) {
       if (!c.autopay) why = "Needs AutoPay";
-      else if (o.need === "port" && g.lineType !== "port") why = "Needs Port as the line type";
-      else if (o.need === "newline" && g.lineType === "upgrade") why = "Needs a new line";
+      else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
+      else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
       else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
       else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in";
-      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Needs a new line" : "Needs a trade-in";
+      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
       else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan";
       else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan";
@@ -1070,7 +1071,7 @@ function devMath(g, c){
     if (g.dev.offer === "best") pick = bestPlan(c)[g.id] || null;
     else {
       pick = list.filter(function(x){ return x.o.id === g.dev.offer; })[0] || null;
-      if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.toLowerCase() + "."; pick = null; }
+      if (pick && !pick.ok) { r.warn = pick.o.label + " doesn't apply: " + pick.why.charAt(0).toLowerCase() + pick.why.slice(1) + "."; pick = null; }
     }
     if (pick) off = {label:pick.o.label + (pick.expired ? " (expired)" : ""), credit:Math.min(pick.credit, r.fin), picks:pick.o.picks, id:pick.o.id,
                      dated:pick.o.dated, expired:pick.expired, verified:pick.o.verified, ends:pick.o.ends, base:pick.o.label, months:offerMonths(pick.o, g), followsTerm:pick.o.months === "term"};
@@ -1762,7 +1763,7 @@ function devCalc(g, q){
     var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
       : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
     h += radio(nm, nm + "-" + x.o.id, x.o.id, g.dev.offer, pickLabel(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> (" + fmt(x.credit / offerMonths(x.o, g)) + "/mo credit" + (offerMonths(x.o, g) !== 36 ? " for " + offerMonths(x.o, g) + " mo" : "") + ")",
-      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k);
+      "Details: " + esc(x.o.detail) + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why).replace(/\bPORT\b/, '<span class="wk">PORT</span>') + '</span>'), !x.ok, k);
   });
   if (hidden) h += '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for other plans or a higher plan total ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>';
   h += radio(nm, nm + "-custom", "custom", g.dev.offer, "Custom promo", "Enter a credit from the store system", false, k);
