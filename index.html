@@ -620,13 +620,13 @@ var P360 = [
    Nov 13, 2026). A device that's on the list can only take its own tier (plus No protection or Employee pricing).
    Models not on the list yet (likely: our best guess from the same product line) keep every tier open. */
 var P360_TIER = {
-  "16":"5", "17":"5", "17e":"4", "17pro":"5", "17promax":"5", "air":"5", "duo":"6",
+  "16":"5", "17":"5", "17e":"4", "17pro":"5", "17promax":"5", "18pro":"5", "18promax":"5", "air":"5", "duo":"6",
   px10:"5", px10p:"5", px11:"5", px11p:"5", px11xl:"5", px11fold:"6",
-  motogstylus26:"2", razr26:"4", razrp26:"5", razrultra25:"5", razrfold:"6",
+  motog26:"2", motogstylus26:"2", razr26:"4", razrp26:"5", razrultra25:"5", razrfold:"6",
   s26:"5", s26p:"5", s26u:"5", s26fe:"4", flip8:"5", fold8:"6", fold8u:"6",
   revvl8pro:"2", ipada16:"4", awse3:"2", pxw5:"3", gw9:"3", gwu2:"4"
 };
-var P360_LIKELY = {"18pro":"5", "18promax":"5", motog26:"2"};
+var P360_LIKELY = {};   // iPhone 18 Pro / Pro Max (Tier 5) and moto g 2026 (Tier 2) confirmed by Nik, Nov 13, 2026
 function p360Info(g){
   var m = g.dev.kind === "new" && g.dev.model ? model(g.dev.model) : null;
   if (!m) return null;
