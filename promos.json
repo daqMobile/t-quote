@@ -1,23 +1,25 @@
 {
  "meta": {
   "changes": [
-   "Confirmed all 65 running offers on T-Mobile's offer terms page, holiday deals page, iPhone deals page and newsroom post; set them verified today",
-   "moto g (2026) 128GB full retail price $229.99 → $269.99 (per the holiday deals page fine print)",
-   "SyncUP TRACKER 2, KIDS Watch 2 and DRIVE offers and prices ($54, $174, $96) confirmed on their pages",
-   "BYOD rebates ($200 On Us, Keep & Switch up to $800) and T-Mix Saver Keep your number ($15/mo × 36) confirmed on the bring-your-own-phone page",
-   "No ended or new offers"
+   "Confirmed all 65 running offers on T-Mobile's offer terms page and deal pages; set them verified today",
+   "Added tmgal1p: Galaxy S26 up to $1,000 with a new line and number transfer on a $55+/mo T-Mix plan, 1 Pick (offer 261201, S123, from Nov 13)",
+   "Added exgal1000p: Galaxy S26 up to $1,000 with a new line and number transfer on a $60+/mo plan, max 4 (offer 261200, S116, from Nov 13)",
+   "Added tmraz4: 4 motorola razr (2026) on Us with 4 new lines on T-Mix Standard at $25/line and a number transfer ($3.75/mo plan credit per line)",
+   "Device prices unchanged; Galaxy A17 5G not added because T-Mobile's page shows no price"
   ],
-  "checkedAt": "2026-11-14T06:43:59-06:00",
+  "checkedAt": "2026-11-15T06:44:32-06:00",
   "sources": [
    "https://www.t-mobile.com/offers/promotional-offer-details",
    "https://www.t-mobile.com/offers/black-friday-deals",
+   "https://www.t-mobile.com/offers/samsung-phone-deals",
+   "https://www.t-mobile.com/offers/motorola-phone-deals",
    "https://www.t-mobile.com/offers/apple-iphone-deals",
    "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
    "https://www.t-mobile.com/devices/family-devices",
    "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
    "https://www.t-mobile.com/resources/bring-your-own-phone"
   ],
-  "summary": "65 offers active, none ended or added: T-Mobile's offer terms and deal pages confirmed every running offer today. One price change: moto g (2026) 128GB is now $269.99."
+  "summary": "68 offers active, none ended: 3 offers added (Galaxy S26 switcher offers on T-Mix and Experience, and 4 razr on Us with 4 lines on T-Mix Standard). No device price changes."
  },
  "offers": [
   {
@@ -38,7 +40,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "byod": true,
@@ -60,7 +62,7 @@
    "status": "active",
    "tag": "byod",
    "upTo": 200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -85,7 +87,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -110,7 +112,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -142,7 +144,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 350,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -174,7 +176,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 830,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -201,7 +203,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 930,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -228,7 +230,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 930,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -252,7 +254,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300.99,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -276,7 +278,31 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
+  },
+  {
+   "dated": false,
+   "detail": "New line with a number transfer on a $60+/mo plan with AutoPay. No trade-in needed. Max 4 per account.",
+   "ends": null,
+   "fam": "exp",
+   "id": "exgal1000p",
+   "label": "Galaxy S26 on Us · switcher",
+   "maxPerAcct": 4,
+   "models": [
+    "s26"
+   ],
+   "need": "port",
+   "picks": 0,
+   "plans": [
+    "more",
+    "beyond"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-13",
+   "status": "active",
+   "tag": "onus",
+   "upTo": 1000,
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -300,7 +326,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -327,7 +353,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -354,7 +380,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -383,7 +409,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 300,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -412,7 +438,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 600,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -436,7 +462,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -462,7 +488,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -485,7 +511,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -510,7 +536,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -534,7 +560,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -600,7 +626,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 430,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -620,7 +646,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "byod": true,
@@ -642,7 +668,7 @@
    "status": "active",
    "tag": "byod",
    "upTo": 800,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -690,7 +716,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -754,7 +780,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 500,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -799,7 +825,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -892,7 +918,7 @@
    "status": "active",
    "tag": "plan",
    "upTo": 540,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -913,7 +939,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 96,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -935,7 +961,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 174,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -957,7 +983,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 54,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -980,7 +1006,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1013,7 +1039,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1046,7 +1072,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1079,7 +1105,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1112,7 +1138,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1140,7 +1166,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1169,7 +1195,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1196,7 +1222,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1226,7 +1252,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1253,7 +1279,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1307,7 +1333,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1338,7 +1364,32 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
+  },
+  {
+   "dated": false,
+   "detail": "New voice line with a number transfer on a $55+/mo T-Mix plan. No trade-in needed. Holds 1 Pick.",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmgal1p",
+   "label": "Galaxy S26 switcher offer · 1 Pick",
+   "minMonthly": 55,
+   "models": [
+    "s26"
+   ],
+   "need": "port",
+   "picks": 1,
+   "plans": [
+    "standard",
+    "more",
+    "loaded"
+   ],
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-13",
+   "status": "active",
+   "tag": "picks",
+   "upTo": 1000,
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1369,7 +1420,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1394,7 +1445,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1419,7 +1470,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1448,7 +1499,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1477,7 +1528,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1508,7 +1559,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1538,7 +1589,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1591,7 +1642,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1644,7 +1695,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1697,7 +1748,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1750,7 +1801,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1803,7 +1854,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1856,7 +1907,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1882,7 +1933,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1909,7 +1960,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1936,7 +1987,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1962,7 +2013,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -1987,7 +2038,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -2012,7 +2063,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -2038,7 +2089,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -2064,7 +2115,30 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
+  },
+  {
+   "dated": false,
+   "detail": "Four new lines on T-Mix Standard with a number transfer. Holds 1 Pick per phone. The plan drops to $25/line ($3.75/mo plan credit per line for 36 months).",
+   "ends": null,
+   "fam": "tmix",
+   "id": "tmraz4",
+   "label": "razr (2026) on Us · 4 lines",
+   "models": [
+    "razr26"
+   ],
+   "need": "port4",
+   "picks": 1,
+   "planMo": 3.75,
+   "plans": [
+    "standard"
+   ],
+   "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "starts": null,
+   "status": "active",
+   "tag": "onus",
+   "upTo": 0,
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -2089,7 +2163,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "dated": false,
@@ -2114,7 +2188,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   }
  ],
  "devices": [
@@ -2127,7 +2201,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "17",
@@ -2138,7 +2212,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-17",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "17",
@@ -2160,7 +2234,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "17e",
@@ -2182,7 +2256,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "17promax",
@@ -2193,7 +2267,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "18pro",
@@ -2215,7 +2289,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "18pro",
@@ -2248,7 +2322,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "18promax",
@@ -2270,7 +2344,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "air",
@@ -2314,7 +2388,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "duo",
@@ -2336,7 +2410,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "fold8",
@@ -2347,7 +2421,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "fold8u",
@@ -2358,7 +2432,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "gw9",
@@ -2402,7 +2476,7 @@
    "source": "https://www.t-mobile.com/offers/black-friday-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "motogstylus26",
@@ -2413,7 +2487,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "px10",
@@ -2479,7 +2553,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "pxw5",
@@ -2501,7 +2575,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "razrfold",
@@ -2512,7 +2586,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "razrp26",
@@ -2523,7 +2597,7 @@
    "source": "https://www.t-mobile.com/offers/motorola-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "razrultra25",
@@ -2534,7 +2608,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "revvl8pro",
@@ -2556,7 +2630,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "s26fe",
@@ -2567,7 +2641,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "s26p",
@@ -2578,7 +2652,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "s26u",
@@ -2589,7 +2663,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-12"
+   "verified": "2026-11-15"
   },
   {
    "fam": "syncdrive",
@@ -2600,7 +2674,7 @@
    "source": "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
    "status": "active",
    "type": "syncDrive",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "synckids2",
@@ -2611,7 +2685,7 @@
    "source": "https://www.t-mobile.com/devices/family-devices",
    "status": "active",
    "type": "syncKids",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   },
   {
    "fam": "synctracker2",
@@ -2622,7 +2696,7 @@
    "source": "https://www.t-mobile.com/devices/family-devices",
    "status": "active",
    "type": "syncTracker",
-   "verified": "2026-11-14"
+   "verified": "2026-11-15"
   }
  ]
 }
