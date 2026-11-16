@@ -2,9 +2,11 @@
  "meta": {
   "changes": [
    "Confirmed all 68 running offers on T-Mobile's offer terms page, deal pages and BYOD/SyncUP pages; set them verified today",
-   "Confirmed 17 device prices unchanged (iPhone 18 Pro, 17e, 17, Duo, Galaxy S26+, Z Fold8, Pixel 11 Pro XL, razr, moto g, watches, iPad A16, SyncUP devices); set them verified today"
+   "Confirmed 17 device prices unchanged (iPhone 18 Pro, 17e, 17, Duo, Galaxy S26+, Z Fold8, Pixel 11 Pro XL, razr, moto g, watches, iPad A16, SyncUP devices); set them verified today",
+   "Added aws250: up to $250 off a second Apple Watch with 2+ new watch lines on a $10+/mo watch plan (offer 261124, S073, from Nov 5); uses the new watch2 requirement",
+   "Added Apple Watch Series 12 42mm ($499.99)"
   ],
-  "checkedAt": "2026-11-16T06:52:00-06:00",
+  "checkedAt": "2026-11-16T11:20:00-06:00",
   "sources": [
    "https://www.t-mobile.com/offers/promotional-offer-details",
    "https://www.t-mobile.com/offers/black-friday-deals",
@@ -13,9 +15,30 @@
    "https://www.t-mobile.com/devices/family-devices",
    "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car"
   ],
-  "summary": "68 offers active, none ended: all running offers confirmed on T-Mobile's terms and deal pages. No new offers and no device price changes."
+  "summary": "69 offers active, none ended: the Apple Watch second-watch offer was added. No device price changes."
  },
  "offers": [
+  {
+   "dated": false,
+   "detail": "Add 2 or more new watch lines on a $10+/mo watch plan with AutoPay. Up to $250 off the second, lower-priced Apple Watch (one credit per pair of new watch lines), over 36 monthly bill credits.",
+   "ends": null,
+   "fam": "any",
+   "id": "aws250",
+   "label": "Apple Watch · $250 off 2nd watch",
+   "models": [
+    "awse3",
+    "aws12"
+   ],
+   "need": "watch2",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2026-11-05",
+   "status": "active",
+   "tag": "newline",
+   "upTo": 250,
+   "verified": "2026-11-16"
+  },
   {
    "dated": false,
    "detail": "New watch line on a $15+/mo watch plan with AutoPay.",
@@ -2350,6 +2373,17 @@
    "status": "active",
    "type": "phone",
    "verified": "2026-11-09"
+  },
+  {
+   "fam": "aws12",
+   "id": "aws12",
+   "mfr": "Apple",
+   "name": "Apple Watch Series 12 42mm",
+   "price": 499.99,
+   "source": "https://www.t-mobile.com/offers",
+   "status": "active",
+   "type": "watch",
+   "verified": "2026-11-16"
   },
   {
    "fam": "awse3",

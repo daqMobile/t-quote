@@ -685,7 +685,9 @@ var MODELS = [
 ];
 var MFRS = ["Apple","Samsung","Google","Motorola"];
 var IPH_PRO = ["duo","18pro","18promax"], IPH_ALL = ["duo","18pro","18promax","17"];
-/* need: port | newline | trade | trade+newline | port4 | watch15 | tab25 | none.  upTo 0 = full retail. */
+/* need: port | newline | trade | trade+newline | port4 | watch15 | watch2 | tab25 | none.  upTo 0 = full retail.
+   watch2: a new watch line on a $10+ watch plan with 2+ new watch lines on the account; one credit per pair of new
+   watch lines, on the lower-priced watches (e.g. Apple Watch "up to $250 off a second watch"). */
 var OFFERS = [
   {id:"tm3",fam:"tmix",label:"iPhone offer · 3 Picks",upTo:1200,picks:3,plans:["loaded"],need:"port",models:IPH_PRO,tag:"picks",
    detail:"New line with a number transfer on T-Mix Loaded. Holds 3 Picks per phone for 36 months."},
@@ -1038,13 +1040,37 @@ function offersFor(g, c){
       else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
       else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan";
+      else if (o.need === "watch2" && (g.lineType === "upgrade" || cplanOf(g).ap < 10)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $10+ watch plan";
+      else if (o.need === "watch2" && newWatchLines() < 2) why = "Needs 2+ new watch lines on the account";
       else if (o.need === "tab25" && (g.lineType === "upgrade" || cplanOf(g).ap < 25)) why = g.lineType === "upgrade" ? "Needs a new tablet line" : "Needs a $25+ tablet plan";
       else if (o.needVoice && c.n === 0) why = "Needs a phone line on the account";
       else if (o.pay !== "plan" && o.maxPerAcct && sum(state.groups.filter(function(x){ return x.type === g.type && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; })) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " per account";
     }
     var credit = o.pay === "plan" ? (o.upTo || 0) : (o.upTo ? Math.min(o.upTo, m.price) : m.price);
+    if (o.need === "watch2" && !why) {
+      var share = watchPairShare(g, o);
+      if (!share) why = "Credit goes on the lower-priced watch";
+      else credit = credit * share;
+    }
     return {o:o, ok:!why, planOk:planOk, why:why, credit:credit, expired:!!o.expired};
   });
+}
+/* watch2 offers: new watch lines on the account, and the share of this group's watches that get the credit.
+   One credit per pair of new watch lines (2 lines: 1 credit, 4 lines: 2), on the lowest-priced eligible watches.
+   Credits are worked out per unit, so a group of 2 identical watches carries half the credit on each. */
+function newWatchLines(){
+  return sum(state.groups.filter(function(x){ return x.type === "watch" && x.lineType !== "upgrade"; }).map(function(x){ return x.qty; }));
+}
+function watchPairShare(g, o){
+  var units = [];
+  state.groups.forEach(function(x, gi){
+    if (x.type !== "watch" || x.lineType === "upgrade" || x.dev.kind !== "new") return;
+    var mm = model(x.dev.model); if (!mm || (o.models || []).indexOf(mm.fam) < 0) return;
+    for (var i = 0; i < x.qty; i++) units.push({id:x.id, price:mm.price, gi:gi});
+  });
+  units.sort(function(a,b){ return (a.price - b.price) || (a.gi - b.gi); });
+  var k = Math.floor(newWatchLines() / 2), mine = units.slice(0, k).filter(function(u){ return u.id === g.id; }).length;
+  return g.qty ? mine / g.qty : 0;
 }
 /* Best available offer per group, chosen in order so the phones together never use more Picks than the
    account has left after perks and hand-picked offers. Ties on credit go to the offer using fewer Picks. */
