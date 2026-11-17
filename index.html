@@ -332,6 +332,8 @@ html.locked,html.locked body{overflow:hidden}
 .dsname{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--muted);border-radius:3px;padding:9px 12px;font-weight:600}
 .prices{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
 .prices s{color:var(--muted)}
+.mtag s.was{color:var(--muted);font-weight:400;margin-right:2px}
+.prices .sale{color:var(--good)}
 .brk{border-left:3px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:3px;font-size:14px}
 .brk .r{display:flex;justify-content:space-between;gap:12px}
 .brk .r span:last-child{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -759,6 +761,7 @@ function offerPool(){
 }
 function activeOffers(){ return offerPool().filter(function(o){ return !o.expired; }); }
 function modelPool(){ return (live.devices || MODELS).filter(function(m){ return m.status !== "retired"; }); }
+function priceTag(m){ return m.fullPrice ? '<s class="was">' + fmt(m.fullPrice) + '</s> ' + fmt(m.price) : fmt(m.price); }
 function shortDate(s){ try { var p = String(s).slice(0,10).split("-"); return new Date(+p[0], +p[1]-1, +p[2]).toLocaleDateString("en-US",{month:"short",day:"numeric"}); } catch (e) { return s; } }
 function whenStr(iso){
   try { var d = new Date(iso), now = new Date();
@@ -1360,6 +1363,7 @@ function compute(s){
     if (g.dev.kind === "new" && d.retail && !g.dev.offer && g.pay.method !== "full") notes.push({t:"warn", m:label + ": no promotion chosen yet. Pick one in Edit options, or Full Retail Price."});
     if (d.warn) { out.warn = (out.warn ? out.warn + " " : "") + d.warn; notes.push({t:"warn", m:label + ": " + d.warn}); }
     var pm = g.dev.kind === "new" && g.dev.model ? model(g.dev.model) : null;
+    if (pm && pm.fullPrice) notes.push({t:"info", m:label + ": the " + pm.name + " is on a limited-time sale at " + fmt(pm.price) + " (regular " + fmt(pm.fullPrice) + "). The quote uses the sale price."});
     if (pm && pm.dated) notes.push({t:"info", m:label + ": the " + pm.name + " price wasn't confirmed in the latest promo check" + (pm.verified ? " (last confirmed " + shortDate(pm.verified) + ")" : "") + ". Check the price before quoting."});
     if (d.retail) retailBuy += d.retail * q;
     if (d.eip) {
@@ -1998,12 +2002,12 @@ function editBody(g, q){
     var mOpen = !!(ui.modelOpen && ui.modelOpen[g.id]);
     b2 += '<div><div class="mhead"><h4>Choose model</h4>' + (cur ? '<button class="linkbtn" data-act="model" data-g="' + g.id + '" data-v="">Remove</button>' : '') + '</div><button class="mdrop" data-act="mopen" data-g="' + g.id + '" aria-expanded="' + mOpen + '" aria-controls="ml-' + g.id + '">' +
         '<span class="mval' + (cur ? "" : " ph") + '">' + (cur ? esc(cur.name) : "Choose a model") + '</span>' +
-        (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : fmt(cur.price)) + '</span>' : '') +
+        (cur ? '<span class="mtag' + (hasOffer(cur) ? " offer" : "") + '">' + (hasOffer(cur) ? "Offer available" : priceTag(cur)) + '</span>' : '') +
         '<svg class="mchev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>' +
       (mOpen ? '<div class="mlist" id="ml-' + g.id + '" role="listbox" aria-label="Models"><div class="grp">Newest · ' + esc(mf || "All manufacturers") + '</div>' +
       (shown.length ? shown.map(function(m){
         var has = hasOffer(m);
-        return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
+        return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : priceTag(m)) + '</span></button>';
       }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div>' : '') + '</div>';
     if (cur && (cur.dated || cur.verified)) b2 += '<p class="mtag" style="margin:6px 0 0;white-space:normal">' + (cur.dated ? '<span class="why" style="color:var(--warn);font-weight:600">Price not confirmed in the latest check</span>' + (cur.verified ? " · last confirmed " + shortDate(cur.verified) : "") : "Price confirmed " + shortDate(cur.verified)) + '</p>';
     if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
@@ -2053,8 +2057,9 @@ function devCalc(g, q){
   if (g.dev.kind === "new" && !g.dev.model) return '<p class="info">' + I.info + 'Choose a model to see pricing and promotions.</p>';
   if (!d.retail) return g.dev.kind === "custom" ? '<p class="info">' + I.info + 'Enter the full retail price.</p>' : '';
   var h = '<div class="devsel">';
-  var promoPrice = Math.max(0, d.retail - d.credit);
-  h += '<div class="prices"><span>Full Retail Price: ' + (d.credit ? '<s>' + fmt(d.retail) + '</s>' : fmt(d.retail)) + '</span>' + (d.credit ? '<span>Promo Price: <b>' + fmt(promoPrice) + '</b></span>' : '') + '</div>';
+  var promoPrice = Math.max(0, d.retail - d.credit), sm = g.dev.kind === "new" ? model(g.dev.model) : null;
+  if (sm && sm.fullPrice) h += '<div class="prices"><span>Full Retail Price: <s>' + fmt(sm.fullPrice) + '</s> <b class="sale">' + fmt(d.retail) + ' sale</b></span>' + (d.credit ? '<span>Promo Price: <b>' + fmt(promoPrice) + '</b></span>' : '') + '</div>';
+  else h += '<div class="prices"><span>Full Retail Price: ' + (d.credit ? '<s>' + fmt(d.retail) + '</s>' : fmt(d.retail)) + '</span>' + (d.credit ? '<span>Promo Price: <b>' + fmt(promoPrice) + '</b></span>' : '') + '</div>';
   if (g.pay.method === "full") h += '<div class="brk"><div class="r tot"><span>Due today (paid in full)</span><span>' + fmt(d.retail) + '</span></div></div>';
   else {
     h += '<div class="brk"><div class="r"><span>Full retail monthly installments</span><span>' + fmt(d.eip) + '</span></div>' +
@@ -2269,7 +2274,7 @@ function quoteDoc(id, note){
     var bp = byodPick(g, q.c);
     if (bp && bp.ok) { applied[g.id + ".byod"] = bp.o.id; snap(bp.o); }
     var m = g.dev.kind === "new" ? model(g.dev.model) : null;
-    if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price};
+    if (m) devices[m.id] = {id:m.id, fam:m.fam, mfr:m.mfr, type:m.type, name:m.name, price:m.price, fullPrice:m.fullPrice || null};
   });
   var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
   var headline = acctLine(q.c, q.P, ", ");
@@ -2385,6 +2390,9 @@ function startLive(){
   }).then(function(d){
     var offers = (d.offers || []).filter(function(o){ return o && o.label && Array.isArray(o.models); });
     var devices = (d.devices || []).filter(function(m){ return m && m.name && typeof m.price === "number"; });
+    /* A limited-time sale: price is T-Mobile's full retail price and salePrice what the customer pays today.
+       Quotes use the sale price; fullPrice keeps the regular price to show crossed out. */
+    devices.forEach(function(m){ if (typeof m.salePrice === "number" && m.salePrice > 0 && m.salePrice < m.price) { m.fullPrice = m.price; m.price = m.salePrice; } });
     live.offers = offers.length ? offers : null;
     live.devices = devices.length ? devices : null;
     live.meta = d.meta || null;
