@@ -202,6 +202,12 @@ button:disabled{cursor:not-allowed}
 .popin{animation:popIn .25s cubic-bezier(.2,.8,.3,1) both}
 .popout{animation:popOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
+/* Compare plans and Card details slide in when they open (only on open, not on every redraw). */
+@keyframes drawerIn{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
+@keyframes scrimIn{from{opacity:0}to{opacity:1}}
+.drawer.slidein{animation:drawerIn .3s cubic-bezier(.2,.8,.3,1) both}
+.scrim.fadein{animation:scrimIn .25s ease-out both}
+@media (prefers-reduced-motion:reduce){.drawer.slidein,.scrim.fadein{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
 .lrow{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 44px 10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
 .lrow .devico{width:44px;height:46px}
@@ -1846,6 +1852,8 @@ function renderSheet(q){
   var root = $("#sheetRoot"), s = ui.sheet;
   /* While a panel is open, the page behind it doesn't scroll; only the panel does. */
   document.documentElement.classList.toggle("locked", !!s);
+  var opening = s && s !== ui.lastSheet;
+  ui.lastSheet = s || null;
   if (!s) { root.innerHTML = ""; return; }
   var prev = $("#dbody"), st = prev ? prev.scrollTop : 0;
   var html = "";
@@ -1874,6 +1882,10 @@ function renderSheet(q){
       '<button class="linkbtn danger" data-act="remove" data-v="' + g.id + '">Remove group</button><button class="pbtn" data-act="close">Done</button>', "wide");
   }
   root.innerHTML = html;
+  if (opening && (s === "compare" || s === "hcompare" || s === "visa")) {
+    var dr = root.querySelector(".drawer"), sc = root.querySelector(".scrim");
+    if (dr) dr.classList.add("slidein"); if (sc) sc.classList.add("fadein");
+  }
   var nb = $("#dbody"); if (nb && prev) nb.scrollTop = st;
 }
 
