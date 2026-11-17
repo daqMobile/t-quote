@@ -1934,10 +1934,10 @@ function visaBody(q){
     '<p class="fhint">Issued by Capital One, N.A. Terms change; confirm on t-mobile.com/card. From T-Mobile\'s card and Dining Rewards pages, checked ' + shortDate(V.asof) + '.</p></div>';
   return h;
 }
-/* Compare plans (Home Internet): every feature of Rely, Amplified and All-In in one table. Rows that differ are bold;
-   "Differences only" hides the rest. The plan on the quote is highlighted, and Choose puts a plan on the quote. */
+/* Compare plans (Home Internet): every feature of Rely, Amplified and All-In in one table. Rows that differ are bold,
+   the plan on the quote is highlighted, and Choose puts a plan on the quote. */
 function hintCompareBody(q){
-  var s = state, hi = s.hint, diffOnly = !!ui.hcmpDiff, voiceOk = q.c.ex || q.c.newVoice > 0;
+  var s = state, hi = s.hint, diffOnly = false, voiceOk = q.c.ex || q.c.newVoice > 0;
   function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
   function cell(x){ return x === true ? '<span class="yes">✓ Included</span>' : x === false ? '<span class="no">—</span>' : esc(x); }
   var price = [
@@ -1961,15 +1961,13 @@ function hintCompareBody(q){
     return '<th scope="col" class="' + (on ? "cur" : "") + '"><span class="pn">' + p.name + '</span><span class="pp">' + fmt0(now) + '<small> /mo</small></span><span class="muted" style="font-size:12px;font-weight:500;display:block">on this quote</span><span style="font-size:12.5px;font-weight:500;display:block;margin-top:6px">' + esc(p.d) + '</span>' +
       (on ? '<span class="obtn" style="display:inline-block;margin-top:8px;font-size:11.5px;padding:7px 12px;border-color:transparent">✓ On quote</span>' : '<button class="obtn" data-act="hplan" data-v="' + id + '">Choose</button>') + '</th>';
   }).join("") + '</tr>';
-  return '<div class="qrow" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div class="seg sm" role="group" aria-label="Show">' +
-      '<button data-act="hcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="hcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
-      '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>' +
+  return '<p class="fhint" style="margin-top:0">Bold rows differ between plans.</p>' +
     '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
     '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Gateway: return it undamaged or pay up to $370. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
 }
-/* Compare plans (Wireless): every plan type in one panel, a tab each. The phone tabs keep the plan-charge bars for the
-   quote's line count (tap to switch plans); every tab has a feature table where rows that differ are bold and
-   "Differences only" hides the rest. Plans on the quote are highlighted. */
+/* Compare plans (Wireless): every plan type in one panel, a tab each, as a feature table. Rows that differ are bold,
+   plans on the quote are highlighted, and on the T-Mix and Retired tabs the price row shows each plan's charge at the
+   quote's line count against the current plan, with Choose to switch. */
 var CMP_TABS = [["voice","T-Mix"],["retired","Retired"],["tablet","Tablet"],["watch","Watch"],["sync","SyncUP"]];
 function featTable(cols, rows, diffOnly){
   function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
@@ -1991,7 +1989,7 @@ function featTable(cols, rows, diffOnly){
   return '<div class="hcwrap" style="margin-top:12px"><table class="hcmp many" style="min-width:' + (180 + cols.length * 132) + 'px"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
 }
 function planCompareBody(q){
-  var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired"), diffOnly = !!ui.pcmpDiff;
+  var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired");
   var D = PLAN_CMP[tab], cols, rows = [];
   var onQuote = function(type, id){ return s.groups.some(function(g){ return g.type === type && cplanOf(g).id === id; }); };
   var lines = n + " line" + (n > 1 ? "s" : "");
@@ -2032,10 +2030,8 @@ function planCompareBody(q){
   rows = rows.concat(D.rows);
   var h = '<div class="seg" role="tablist" aria-label="Plan type" style="width:100%">' + CMP_TABS.map(function(t){
       return '<button role="tab" data-act="cmptab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join("") + '</div>';
-  h += '<div class="qrow" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px"><div class="seg sm" role="group" aria-label="Show">' +
-      '<button data-act="pcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="pcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
-      '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>';
-  h += featTable(cols, rows, diffOnly);
+  h += '<p class="fhint" style="margin-top:14px">Bold rows differ between plans.</p>';
+  h += featTable(cols, rows, false);
   if (cols.length > 4) h += '<p class="fhint" style="margin-top:6px">Swipe the table sideways to see all ' + cols.length + ' plans.</p>';
   h += '<p class="fhint">' + esc(D.fine.replace("{tabnv}", TAB_NO_VOICE)) + ' From T-Mobile\'s plan pages, checked ' + shortDate(PLAN_CMP_ASOF) + '.</p>';
   return h;
@@ -3137,9 +3133,7 @@ document.addEventListener("click", function(e){
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
-    case "hcmpdiff": ui.hcmpDiff = v === "diff"; break;
     case "cmptab": ui.cmpTab = v; break;
-    case "pcmpdiff": ui.pcmpDiff = v === "diff"; break;
     case "awayon": state.away.on = !state.away.on; if (state.away.on && ui.offersHidden) ui.offersHidden.away = false; break;
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
