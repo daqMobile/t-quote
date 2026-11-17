@@ -202,16 +202,16 @@ button:disabled{cursor:not-allowed}
 .popin{animation:popIn .25s cubic-bezier(.2,.8,.3,1) both}
 .popout{animation:popOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
-/* Compare plans and Card details slide in when they open and back out, a little quicker, when they close
-   (only on open and close, not on every redraw). */
+/* Review, Compare plans and Card details slide in when they open and back out, twice as fast, when they close
+   (only when opened from the page and when closed, not on every redraw or when moving between panels). */
 @keyframes drawerIn{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
 @keyframes drawerOut{from{transform:none;opacity:1}to{transform:translateX(36px);opacity:0}}
 @keyframes scrimIn{from{opacity:0}to{opacity:1}}
 @keyframes scrimOut{from{opacity:1}to{opacity:0}}
 .drawer.slidein{animation:drawerIn .3s cubic-bezier(.2,.8,.3,1) both}
 .scrim.fadein{animation:scrimIn .25s ease-out both}
-.drawer.slideout{animation:drawerOut .2s cubic-bezier(.4,0,1,1) both;pointer-events:none}
-.scrim.fadeout{animation:scrimOut .2s ease-in both;pointer-events:none}
+.drawer.slideout{animation:drawerOut .1s cubic-bezier(.4,0,1,1) both;pointer-events:none}
+.scrim.fadeout{animation:scrimOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.drawer.slidein,.scrim.fadein,.drawer.slideout,.scrim.fadeout{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
 .lrow{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 44px 10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
@@ -1857,17 +1857,17 @@ function renderSheet(q){
   var root = $("#sheetRoot"), s = ui.sheet;
   /* While a panel is open, the page behind it doesn't scroll; only the panel does. */
   document.documentElement.classList.toggle("locked", !!s);
-  var SLIDE = ["compare","hcompare","visa"], opening = s && s !== ui.lastSheet, closingFrom = s ? null : ui.lastSheet;
+  var SLIDE = ["review","compare","hcompare","visa"], opening = s && !ui.lastSheet, closingFrom = s ? null : ui.lastSheet;
   ui.lastSheet = s || null;
   if (!s) {
     if (ui.closing) return;   // already sliding out; the timer clears it
     var od = root.querySelector(".drawer"), osc = root.querySelector(".scrim");
     var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (od && SLIDE.indexOf(closingFrom) > -1 && !calm) {
+    if (od && (SLIDE.indexOf(closingFrom) > -1 || closingFrom === "email" || closingFrom === "save") && !calm) {   // Email and Save are Review's own panels
       od.classList.remove("slidein"); od.classList.add("slideout");
       if (osc) { osc.classList.remove("fadein"); osc.classList.add("fadeout"); }
       ui.closing = true;
-      ui.closeT = setTimeout(function(){ ui.closing = false; if (!ui.sheet) root.innerHTML = ""; }, 200);
+      ui.closeT = setTimeout(function(){ ui.closing = false; if (!ui.sheet) root.innerHTML = ""; }, 100);
       return;
     }
     root.innerHTML = ""; return;
@@ -1900,7 +1900,7 @@ function renderSheet(q){
       '<button class="linkbtn danger" data-act="remove" data-v="' + g.id + '">Remove group</button><button class="pbtn" data-act="close">Done</button>', "wide");
   }
   root.innerHTML = html;
-  if (opening && (s === "compare" || s === "hcompare" || s === "visa")) {
+  if (opening && SLIDE.indexOf(s) > -1) {
     var dr = root.querySelector(".drawer"), sc = root.querySelector(".scrim");
     if (dr) dr.classList.add("slidein"); if (sc) sc.classList.add("fadein");
   }
