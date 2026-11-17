@@ -1359,6 +1359,8 @@ function compute(s){
     var d = devMath(g, c);
     if (g.dev.kind === "new" && d.retail && !g.dev.offer && g.pay.method !== "full") notes.push({t:"warn", m:label + ": no promotion chosen yet. Pick one in Edit options, or Full Retail Price."});
     if (d.warn) { out.warn = (out.warn ? out.warn + " " : "") + d.warn; notes.push({t:"warn", m:label + ": " + d.warn}); }
+    var pm = g.dev.kind === "new" && g.dev.model ? model(g.dev.model) : null;
+    if (pm && pm.dated) notes.push({t:"info", m:label + ": the " + pm.name + " price wasn't confirmed in the latest promo check" + (pm.verified ? " (last confirmed " + shortDate(pm.verified) + ")" : "") + ". Check the price before quoting."});
     if (d.retail) retailBuy += d.retail * q;
     if (d.eip) {
       out.lines.push({l:d.name, a:d.eip, sub:fmt(d.fin) + " over " + d.term + " months"});
@@ -2003,6 +2005,7 @@ function editBody(g, q){
         var has = hasOffer(m);
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : fmt(m.price)) + '</span></button>';
       }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div>' : '') + '</div>';
+    if (cur && (cur.dated || cur.verified)) b2 += '<p class="mtag" style="margin:6px 0 0;white-space:normal">' + (cur.dated ? '<span class="why" style="color:var(--warn);font-weight:600">Price not confirmed in the latest check</span>' + (cur.verified ? " · last confirmed " + shortDate(cur.verified) : "") : "Price confirmed " + shortDate(cur.verified)) + '</p>';
     if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
   }
   if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
