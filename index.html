@@ -391,16 +391,6 @@ html.locked,html.locked body{overflow:hidden}
 .hcmp .no{color:var(--muted)}
 .hcmp td small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 
-/* Compare bars */
-.cmp{display:flex;flex-direction:column;gap:12px}
-.cmprow{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;align-items:center;gap:10px;font-size:14px}
-.cmprow .cl{font-weight:600}
-.track{height:24px;background:var(--surface);border:1px solid var(--line);border-radius:3px;overflow:hidden}
-.fillbar{height:100%;background:var(--muted);opacity:.45}
-.cmprow.cur .fillbar{background:var(--accent);opacity:1}
-.cmprow.na .track{background:repeating-linear-gradient(135deg,var(--sunk) 0 6px,var(--surface) 6px 12px)}
-.cmpval{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.15}
-.cmpval small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
 
 /* Job aid */
 .aid{display:flex;flex-direction:column;gap:12px}
@@ -1995,32 +1985,42 @@ function featTable(cols, rows, diffOnly){
   });
   var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">Highlighted: on this quote</span></th>' + cols.map(function(cl){
     return '<th scope="col" class="' + (cl.cur ? "cur" : "") + '"><span class="pn">' + esc(cl.name) + '</span><span class="pp">' + cl.price + '<small> /mo</small></span>' +
-      '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.sub || "") + '</span>' + (cl.cur ? '<span class="yes" style="font-size:12px;display:block;margin-top:6px">✓ On quote</span>' : '') + '</th>';
+      '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.sub || "") + '</span>' +
+      (cl.cur ? '<span class="yes" style="font-size:12px;display:block;margin-top:6px">✓ On quote</span>' : (cl.choose ? '<button class="obtn" data-act="plan" data-v="' + cl.choose + '">Choose</button>' : '')) + '</th>';
   }).join("") + '</tr>';
   return '<div class="hcwrap" style="margin-top:12px"><table class="hcmp many" style="min-width:' + (180 + cols.length * 132) + 'px"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
 }
 function planCompareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired"), diffOnly = !!ui.pcmpDiff;
-  var D = PLAN_CMP[tab], cols, rows = [], bars = "";
+  var D = PLAN_CMP[tab], cols, rows = [];
   var onQuote = function(type, id){ return s.groups.some(function(g){ return g.type === type && cplanOf(g).id === id; }); };
   var lines = n + " line" + (n > 1 ? "s" : "");
+  /* The plan charge at the quote's line count, with the difference from the plan on the quote (same family only). */
+  var mine = function(fam){ return c.fam === fam && !(fam === "exp" && isLegacy(c)); };
+  var ap = function(fam){ return mine(fam) ? s.autopay : true; }, sg = function(fam){ return mine(fam) ? segOf(s) : null; };
+  function costCell(fam, id){
+    var pc = LEGACY[id] ? legacyRef(id, n, ap(fam)) : planCalc(fam, id, n, ap(fam), false, sg(fam));
+    if (!pc) return '<span class="no">' + (LEGACY[id] ? "Not listed" : esc(planNA(id, sg(fam), false, fam).replace(/^./, function(x){ return x.toUpperCase(); }))) + '</span>';
+    var t = (pc.est ? "≈" : "") + fmt0(pc.total), curPc = null;
+    if (c.fam === fam && c.pid) curPc = LEGACY[c.pid] ? legacyRef(c.pid, n, ap(fam)) : planCalc(fam, c.pid, n, ap(fam), false, sg(fam));
+    if (!curPc) return t;
+    var d = pc.total - curPc.total;
+    return t + '<small>' + (id === c.pid ? "current" : (d === 0 ? "same as current" : (d > 0 ? "+" : "−") + fmt0(Math.abs(d)) + " vs current")) + '</small>';
+  }
+  var priceNote = function(fam){ return mine(fam) ? (s.autopay ? "With AutoPay" : "Without AutoPay") + (sg(fam) ? " · " + SEG[sg(fam)].label + " Savings" : "") : "With AutoPay"; };
   if (tab === "voice") {
-    cols = D.cols.map(function(id){ var p = TMIX[id]; return {id:id, name:p.full, price:fmt0(p.ap[0]), sub:"1 line with AutoPay", cur: c.fam === "tmix" && c.pid === id}; });
+    cols = D.cols.map(function(id){ var p = TMIX[id]; return {id:id, name:p.full, price:fmt0(p.ap[0]), sub:"1 line with AutoPay", cur: c.fam === "tmix" && c.pid === id, choose: planCalc("tmix", id, n, ap("tmix"), false, sg("tmix")) ? "tmix:" + id : null}; });
     rows.push({sec:"Price & Picks"});
-    rows.push({l:"At " + lines + (c.fam === "tmix" ? " on this quote" : ""), n:"With AutoPay", v:D.cols.map(function(id){ var pc = planCalc("tmix", id, n, true, false, null); return pc ? fmt0(pc.total) : "Up to " + TMIX[id].max + " lines"; })});
+    rows.push({l:"At " + lines + (c.fam === "tmix" ? " on this quote" : ""), n:priceNote("tmix"), raw:true, v:D.cols.map(function(id){ return costCell("tmix", id); })});
     rows.push({l:"Picks at " + lines, v:D.cols.map(function(id){ var k = n <= TMIX[id].max ? picksFor(id, n) : 0; return k ? String(k) : "None"; })});
     rows.push({l:"Most lines", v:D.cols.map(function(id){ return String(TMIX[id].max); })});
-    if (c.fam === "tmix") bars = '<h4 style="margin:4px 0 8px">Plan charge on this quote</h4>' + compareBody(q);
   } else if (tab === "retired") {
     cols = D.cols.map(function(id){
       var p = EXP[id] || LEGACY[id], one = p.ap ? p.ap[0] : (p.ref ? p.ref[0] : 0);
-      return {id:id, name:p.full, price:fmt0(one), sub: p.legacy ? "1 line · last published" : "1 line with AutoPay", cur: c.fam === "exp" && c.pid === id};
+      return {id:id, name:p.full, price:fmt0(one), sub: p.legacy ? "1 line · last published" : "1 line with AutoPay", cur: c.fam === "exp" && c.pid === id, choose: (LEGACY[id] || planCalc("exp", id, n, ap("exp"), false, sg("exp"))) ? "exp:" + id : null};
     });
     rows.push({sec:"Price"});
-    rows.push({l:"At " + lines + (c.fam === "exp" ? " on this quote" : ""), n:"With AutoPay", v:D.cols.map(function(id){
-      if (LEGACY[id]) { var r = legacyRef(id, n, true); return r ? (r.est ? "≈" : "") + fmt0(r.total) : "Not listed"; }
-      var pc = planCalc("exp", id, n, true, false, null); return pc ? (pc.est ? "≈" : "") + fmt0(pc.total) : "Not listed"; })});
-    if (c.fam === "exp" && !isLegacy(c)) bars = '<h4 style="margin:4px 0 8px">Plan charge on this quote</h4>' + compareBody(q);
+    rows.push({l:"At " + lines + (c.fam === "exp" ? " on this quote" : ""), n:priceNote("exp"), raw:true, v:D.cols.map(function(id){ return costCell("exp", id); })});
   } else {
     var type = tab === "sync" ? null : tab;
     cols = D.cols.map(function(id){
@@ -2032,7 +2032,6 @@ function planCompareBody(q){
   rows = rows.concat(D.rows);
   var h = '<div class="seg" role="tablist" aria-label="Plan type" style="width:100%">' + CMP_TABS.map(function(t){
       return '<button role="tab" data-act="cmptab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join("") + '</div>';
-  if (bars) h += '<div style="margin-top:16px">' + bars + '</div>';
   h += '<div class="qrow" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px"><div class="seg sm" role="group" aria-label="Show">' +
       '<button data-act="pcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="pcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
       '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>';
@@ -2041,26 +2040,6 @@ function planCompareBody(q){
   h += '<p class="fhint">' + esc(D.fine.replace("{tabnv}", TAB_NO_VOICE)) + ' From T-Mobile\'s plan pages, checked ' + shortDate(PLAN_CMP_ASOF) + '.</p>';
   return h;
 }
-function compareBody(q){
-  var s = state, c = q.c, n = Math.max(c.n, 1);
-  var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
-  var rows = order.map(function(id){
-    var pc = c.fam === "tmix" ? planCalc("tmix", id, n, s.autopay, false, segOf(s)) : planCalc("exp", id, n, s.autopay, false, segOf(s));
-    return {id:id, pc:pc, pk: c.fam === "tmix" ? picksFor(id, n) : null};
-  });
-  var max = Math.max.apply(null, rows.map(function(r){ return r.pc ? r.pc.total : 0; }));
-  var cur = rows.filter(function(r){ return r.id === c.pid; })[0];
-  var curT = cur && cur.pc ? cur.pc.total : 0;
-  return '<div class="cmp">' + rows.map(function(r){
-    var name = planName(c.fam, r.id), spec = (c.fam === "tmix" ? TMIX : EXP)[r.id].specs;
-    if (!r.pc) return '<div class="cmprow na"><span class="cl">' + name + '</span><div class="track"></div><span class="cmpval muted">—<small>' + planNA(r.id, segOf(s), false, c.fam) + '</small></span></div>';
-    var diff = r.pc.total - curT;
-    return '<button class="cmprow' + (r.id === c.pid ? " cur" : "") + '" data-act="plan" data-v="' + r.id + '" style="width:100%;border:0;background:none;padding:0;text-align:left;color:inherit"><span class="cl">' + name + '<small class="muted" style="display:block;font-weight:400;font-size:12px">' + spec + '</small></span>' +
-      '<div class="track"><div class="fillbar" style="width:' + (max ? r.pc.total / max * 100 : 0).toFixed(1) + '%"></div></div>' +
-      '<span class="cmpval">' + (r.pc.est ? "≈" : "") + fmt0(r.pc.total) + '<small>' + (r.id === c.pid ? "current" : (diff === 0 ? "same" : (diff > 0 ? "+" : "−") + fmt0(Math.abs(diff)))) + (r.pk != null ? " · " + (r.pk ? r.pk + " Pick" + (r.pk > 1 ? "s" : "") : "no Picks") : "") + '</small></span></button>';
-  }).join("") + '</div><p class="fhint">Plan charge for the whole account' + (c.ex ? " at " + n + " lines" : "") + '. Devices, protection, connected lines and fees stay the same on every plan. Tap a plan to switch.</p>';
-}
-
 function jobAid(){
   var steps = [
     ["Add the devices", "Use the Add Devices tray. Each card is a group of lines with the same setup. Use − and + on a card for more of the same phone."],
@@ -3104,7 +3083,7 @@ document.addEventListener("click", function(e){
       break;
     case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
     /* Plan tier buttons and Compare plans list plans of the quote's own family. */
-    case "plan": { var cp0 = ctxOf(state); setPlan(cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v); break; }
+    case "plan": { var cp0 = ctxOf(state); setPlan(/^(tmix|exp):/.test(v) ? v : (cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v)); break; }
     case "view": state.view = v; break;
     case "plantab": ui.planTab = v; break;
     case "traytab": ui.trayTab = v; break;
