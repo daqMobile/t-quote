@@ -355,6 +355,25 @@ html.locked,html.locked body{overflow:hidden}
 .f label{font-size:13px;font-weight:600}
 .f select{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--muted);border-radius:3px;background:var(--surface)}
 
+/* Home Internet plan comparison */
+.hcwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.hcmp{width:100%;min-width:560px;border-collapse:collapse;font-size:14px}
+.hcmp th,.hcmp td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.hcmp thead th{position:sticky;top:0;background:var(--surface);z-index:1;border-bottom:1.5px solid var(--ink)}
+.hcmp thead .pn{font-family:var(--display);font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;display:block}
+.hcmp thead .pp{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;display:block}
+.hcmp thead .pp small{font-family:var(--body);font-size:12px;font-weight:500;color:var(--muted)}
+.hcmp thead button{margin-top:8px;font-size:11.5px;padding:7px 12px}
+.hcmp th[scope="row"]{font-weight:600;width:30%}
+.hcmp th[scope="row"] small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.hcmp td.sec{background:var(--sunk);font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 12px}
+.hcmp .cur{background:var(--accent-soft)}
+.hcmp thead th.cur{background:var(--accent-soft);box-shadow:inset 0 3px 0 var(--accent)}
+.hcmp .diff td:not(.sec){font-weight:600}
+.hcmp .yes{color:var(--accent);font-weight:700}
+.hcmp .no{color:var(--muted)}
+.hcmp td small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+
 /* Compare bars */
 .cmp{display:flex;flex-direction:column;gap:12px}
 .cmprow{display:grid;grid-template-columns:110px minmax(0,1fr) 92px;align-items:center;gap:10px;font-size:14px}
@@ -772,9 +791,9 @@ function whenStr(iso){
 }
 var TAGS = {picks:"Picks offers", onus:"On Us", trade:"Trade-in offers", newline:"New line offers"};
 var HINT = {
-  rely:{name:"Rely",ap:50,d:"Everyday streaming and browsing"},
-  amplified:{name:"Amplified",ap:60,d:"Faster speeds, mesh access point"},
-  allin:{name:"All-In",ap:70,d:"Top speeds, mesh, streaming perks"}
+  rely:{name:"Rely",ap:50,d:"Fast speeds for everyday streaming and browsing"},
+  amplified:{name:"Amplified",ap:60,d:"Fastest speeds and a Wi-Fi 7 gateway"},
+  allin:{name:"All-In",ap:70,d:"Fastest speeds, mesh, Cyber Security, TechPro"}
 };
 var HINT_ORDER = ["rely","amplified","allin"];
 /* AWAY Internet: T-Mobile's on-the-go internet plan (RVs, travel, seasonal stays), from
@@ -790,6 +809,34 @@ var AWAY_ORDER = ["away200","awayunl"];
 var AWAY_AP = 10, AWAY_GATEWAY = 370, AWAY_PAUSE = 10;
 var HINT_VOICE = 20;
 var HINT_AP = 10;
+/* Home Internet plan comparison (Compare plans in the Home Internet tab), from t-mobile.com/home-internet/plans and
+   the All-In plan page, checked Nov 17, 2026. Prices come from HINT, HINT_AP and HINT_VOICE. Each row: a label,
+   an optional note, and one value per plan in HINT_ORDER (true = included, false = not included). */
+var HINT_CMP_ASOF = "2026-11-17";
+var HINT_CMP = [
+  {sec:"Speed & data"},
+  {l:"Typical download (5G)", v:["133–354 Mbps","170–498 Mbps","170–498 Mbps"]},
+  {l:"Typical upload", v:["12–55 Mbps","12–55 Mbps","12–55 Mbps"]},
+  {l:"Typical latency", v:["16–28 ms","16–28 ms","16–28 ms"]},
+  {l:"Speed tier", v:["Fast speeds","Fastest speeds, no speed caps","Fastest speeds, no speed caps"]},
+  {l:"Data", v:["Unlimited","Unlimited","Unlimited"]},
+  {sec:"Equipment"},
+  {l:"Gateway", v:["High-performance 5G Gateway","Premium Wi-Fi 7 Gateway","Premium Wi-Fi 7 Gateway"]},
+  {l:"Mesh Wi-Fi extender", n:"As needed, requested after activation ($5/mo value)", v:[false,false,true]},
+  {l:"Gateway upgrade after year 3", n:"One-time upgrade to the latest gateway, if available", v:[false,false,true]},
+  {sec:"Security & support"},
+  {l:"Standard security", v:[true,true,true]},
+  {l:"Advanced Cyber Security", n:"Monitors and helps block threats on the home network ($7/mo value)", v:[false,false,true]},
+  {l:"24/7 Personal TechPro by Assurant", n:"Live tech experts for setup and troubleshooting ($8.25/mo value)", v:[false,false,true]},
+  {sec:"Perks"},
+  {l:"T-Mobile Tuesdays", v:[true,true,true]},
+  {l:"Hulu / Paramount+", n:"New All-In lines no longer include them; T-Mix Picks can cover them", v:[false,false,false]},
+  {sec:"Fees & terms"},
+  {l:"Device connection charge", v:["$35 at sale","$35 at sale","$35 at sale"]},
+  {l:"Annual contract", v:["None · $0 to cancel","None · $0 to cancel","None · $0 to cancel"]},
+  {l:"Monthly fees not in the price", v:["Regulatory & telco recovery fee up to $2.60, plus taxes","Regulatory & telco recovery fee up to $2.60, plus taxes","Regulatory & telco recovery fee up to $2.60, plus taxes"]},
+  {l:"Gateway return", v:["Return undamaged or pay up to $370","Return undamaged or pay up to $370","Return undamaged or pay up to $370"]}
+];
 /* T-Mobile Visa (Capital One). The quote mentions it only when the box in the top bar is checked. */
 var VISA = {head:"5% back in T-Mobile Rewards", body:"on phones, devices and accessories from T-Mobile, plus 2% on everything else.",
             ap:"Paying your bill with it on AutoPay keeps your AutoPay discount.", fine:"Subject to credit approval."};
@@ -1654,7 +1701,8 @@ function renderInternet(q){
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
       '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Voice line discount ($' + HINT_VOICE + '/mo)<br><small class="muted">Needs a T-Mobile phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
       '<label class="check' + (segOf(s) === "employee" ? " dis" : "") + '" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect && segOf(s) !== "employee" ? " checked" : "") + (segOf(s) === "employee" ? " disabled" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')' + (segOf(s) === "employee" ? '<br><small class="muted">Waived with employee pricing.</small>' : '') + '</span></label>' +
-    '</div><p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>' + renderAway(q);
+    '</div><div class="tbtns" style="margin-top:14px"><button class="obtn" data-act="sheet" data-v="hcompare">Compare plans</button></div>' +
+    '<p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>' + renderAway(q);
 }
 /* AWAY Internet: its own product in the Home Internet tab, with plan, options and a promotion list. */
 function renderAway(q){
@@ -1730,6 +1778,7 @@ function renderSheet(q){
                : '<button class="linkbtn" data-act="sheet" data-v="review">Back</button><button class="pbtn" data-act="dosave"' + (live.saving ? " disabled" : "") + '>' + (live.saving ? "Saving…" : "Save quote") + '</button>');
   else if (s === "open") html = drawer("Open quote", "Type a Quote ID or pick a recent quote", openBody(), "");
   else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
+  else if (s === "hcompare") html = drawer("Compare Home Internet plans", "Rely, Amplified and All-In side by side", hintCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
   else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
   else if (s === "settings") html = drawer("Settings", "Appearance, saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
@@ -1773,6 +1822,39 @@ function reviewBody(q){
 function dedupe(a){ var seen = {}; return a.filter(function(x){ if (seen[x.m]) return false; seen[x.m] = 1; return true; }); }
 function rrow(r){ return '<div class="rr' + (r.c ? " " + r.c : "") + '"><span class="l">' + esc(r.l) + (r.sub ? '<small>' + esc(r.sub) + '</small>' : '') + '</span><span class="a">' + fmt(r.a) + '</span></div>'; }
 
+/* Compare plans (Home Internet): every feature of Rely, Amplified and All-In in one table. Rows that differ are bold;
+   "Differences only" hides the rest. The plan on the quote is highlighted, and Choose puts a plan on the quote. */
+function hintCompareBody(q){
+  var s = state, hi = s.hint, diffOnly = !!ui.hcmpDiff, voiceOk = q.c.ex || q.c.newVoice > 0;
+  function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
+  function cell(x){ return x === true ? '<span class="yes">✓ Included</span>' : x === false ? '<span class="no">—</span>' : esc(x); }
+  var price = [
+    {sec:"Price per month"},
+    {l:"With AutoPay", v:HINT_ORDER.map(function(id){ return fmt0(HINT[id].ap); })},
+    {l:"Without AutoPay", v:HINT_ORDER.map(function(id){ return fmt0(HINT[id].ap + HINT_AP); })},
+    {l:"With a voice line", n:"AutoPay price minus the $" + HINT_VOICE + " voice line discount", v:HINT_ORDER.map(function(id){ return fmt0(HINT[id].ap - HINT_VOICE); })},
+    {l:"Price guarantee", v:["5 years","5 years","10 years"]}
+  ];
+  var rows = price.concat(HINT_CMP), body = "", pending = "";
+  rows.forEach(function(r){
+    if (r.sec) { pending = '<tr><td class="sec" colspan="' + (HINT_ORDER.length + 1) + '">' + esc(r.sec) + '</td></tr>'; return; }
+    var d = !same(r.v);
+    if (diffOnly && !d) return;
+    body += pending; pending = "";
+    body += '<tr class="' + (d ? "diff" : "") + '"><th scope="row">' + esc(r.l) + (r.n ? '<small>' + esc(r.n) + '</small>' : '') + '</th>' +
+      r.v.map(function(x, i){ return '<td class="' + (hi.on && hi.plan === HINT_ORDER[i] ? "cur" : "") + '">' + cell(x) + '</td>'; }).join("") + '</tr>';
+  });
+  var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">' + (hi.on ? "Highlighted: on this quote" : "Not on the quote yet") + '</span></th>' + HINT_ORDER.map(function(id){
+    var p = HINT[id], on = hi.on && hi.plan === id, now = p.ap + (s.autopay ? 0 : HINT_AP) - (hi.voice && voiceOk ? HINT_VOICE : 0);
+    return '<th scope="col" class="' + (on ? "cur" : "") + '"><span class="pn">' + p.name + '</span><span class="pp">' + fmt0(now) + '<small> /mo</small></span><span class="muted" style="font-size:12px;font-weight:500;display:block">on this quote</span><span style="font-size:12.5px;font-weight:500;display:block;margin-top:6px">' + esc(p.d) + '</span>' +
+      (on ? '<span class="obtn" style="display:inline-block;margin-top:8px;font-size:11.5px;padding:7px 12px;border-color:transparent">✓ On quote</span>' : '<button class="obtn" data-act="hplan" data-v="' + id + '">Choose</button>') + '</th>';
+  }).join("") + '</tr>';
+  return '<div class="qrow" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div class="seg sm" role="group" aria-label="Show">' +
+      '<button data-act="hcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="hcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
+      '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>' +
+    '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
+    '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
+}
 function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
   var order = c.fam === "tmix" ? TMIX_ORDER : EXP_ORDER;
@@ -2890,6 +2972,7 @@ document.addEventListener("click", function(e){
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
+    case "hcmpdiff": ui.hcmpDiff = v === "diff"; break;
     case "awayon": state.away.on = !state.away.on; if (state.away.on && ui.offersHidden) ui.offersHidden.away = false; break;
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
