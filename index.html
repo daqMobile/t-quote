@@ -774,6 +774,17 @@ var HINT = {
   allin:{name:"All-In",ap:70,d:"Top speeds, mesh, streaming perks"}
 };
 var HINT_ORDER = ["rely","amplified","allin"];
+/* AWAY Internet: T-Mobile's on-the-go internet plan (RVs, travel, seasonal stays), from
+   t-mobile.com/home-internet/plans/rv-camper-internet-plans (checked Nov 17, 2026). Prices are with AutoPay
+   ($10 more without). 5G Gateway included, no monthly equipment fee; return it undamaged or pay up to $370.
+   $35 device connection charge. Pause up to 90 days, twice a year, for $10/mo. Credit approval and an eligible
+   physical address required; for use at multiple locations, not mainly one; no off-net roaming. */
+var AWAY = {
+  away200:{name:"AWAY 200GB", ap:110, d:"200GB of high-speed data, then 128kbps until the next bill cycle"},
+  awayunl:{name:"AWAY Unlimited", ap:160, d:"Unlimited data. May be slower past 1.2TB/mo during congestion"}
+};
+var AWAY_ORDER = ["away200","awayunl"];
+var AWAY_AP = 10, AWAY_GATEWAY = 370, AWAY_PAUSE = 10;
 var HINT_VOICE = 20;
 var HINT_AP = 10;
 /* T-Mobile Visa (Capital One). The quote mentions it only when the box in the top bar is checked. */
@@ -842,6 +853,7 @@ function exampleState(){
   return {v:2, sv:3, example:true, loaded:null, tab:"wireless", view:"grid", cust:"new", existingLines:2, planNew:topPlan(TMIX), planExp:topPlan(EXP), exFam:"exp",
     autopay:true, visa:false, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
+    away:{on:false, plan:"awayunl", connect:true, offer:"", customMo:0, customMonths:12},
     set:{connect:35, employeePct:75, employeeHintPct:20}};
 }
 function blankState(){
@@ -850,6 +862,7 @@ function blankState(){
   s.example = false; s.groups = [newGroup("phone", null)]; s.perks = []; s.planDiscount = "none"; s.cust = "new";
   s.planNew = topPlan(TMIX); s.planExp = topPlan(EXP); s.exFam = "exp";
   s.hint = {on:false, plan:"amplified", voice:true, connect:true};
+  s.away = {on:false, plan:"awayunl", connect:true, offer:"", customMo:0, customMonths:12};
   return s;
 }
 var state = exampleState();
@@ -868,6 +881,7 @@ try {
       state = Object.assign(d, o);
       state.set = Object.assign(exampleState().set, o.set || {});
       state.hint = Object.assign(exampleState().hint, o.hint || {});
+      state.away = Object.assign(exampleState().away, o.away || {});
       var mx = 0;
       state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; });
       gid = mx + 1;
@@ -1000,6 +1014,7 @@ function planOfferCount(id, g){
 function creditText(x, g){
   var o = x.o, pm = planMoOf(o), pmo = planMonthsOf(o);
   if (o.pay === "card") return "(virtual prepaid card)";
+  if (o.pay === "once") return "(one-time bill credit)";
   if (o.pay === "plan") return "(" + fmt(pm) + "/mo off the plan" + (pmo !== 36 ? " for " + pmo + " mo" : "") + ")";
   var mo = offerMonths(o, g);
   return "(" + fmt(x.credit / mo) + "/mo credit" + (mo !== 36 ? " for " + mo + " mo" : "") + (pm ? " + " + fmt(pm) + "/mo off the plan" : "") + ")";
@@ -1021,7 +1036,7 @@ function offersFor(g, c){
   var m = model(g.dev.model); if (!m) return [];
   /* Plan promotions (pay "plan": a monthly credit on the line's plan, no phone needed) are listed for every phone. */
   var voice = !!(TYPES[g.type] && TYPES[g.type].voice);
-  return offerPool().filter(function(o){ return (o.fam === "any" || o.fam === c.fam) && (o.pay === "plan" ? voice : (o.models || []).indexOf(m.fam) > -1) && (!o.expired || g.dev.offer === o.id); }).map(function(o){
+  return offerPool().filter(function(o){ return !o.product && (o.fam === "any" || o.fam === c.fam) && (o.pay === "plan" ? voice : (o.models || []).indexOf(m.fam) > -1) && (!o.expired || g.dev.offer === o.id); }).map(function(o){
     /* planOk: the offer works on the plan chosen (its plan list, the account's monthly plan total, and enough Picks on
        the plan). Offers that fail it are left out of the promotion list unless already chosen. */
     var why = "", planOk = false;
@@ -1108,7 +1123,7 @@ function isByod(g){ return !!g && g.dev.kind === "existing" && !!g.dev.byod; }
 function byodOffersFor(g, c){
   if (!isByod(g) || !TYPES[g.type] || !TYPES[g.type].voice) return [];
   var count = sum(state.groups.filter(function(x){ return isByod(x) && x.lineType !== "upgrade" && TYPES[x.type] && TYPES[x.type].voice; }).map(function(x){ return x.qty; }));
-  return offerPool().filter(function(o){ return (o.byod || o.pay === "plan") && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
+  return offerPool().filter(function(o){ return !o.product && (o.byod || o.pay === "plan") && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
     var why = "", planOk = false;
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
@@ -1131,6 +1146,34 @@ function byodPick(g, c){
   var v = isByod(g) ? g.dev.byodOffer : "";
   if (!v || v === "none") return null;
   var list = byodOffersFor(g, c);
+  if (v === "best") return bestOffer(list);
+  return list.filter(function(x){ return x.o.id === v; })[0] || null;
+}
+/* ---------- AWAY Internet offers ----------
+   Offers in promos.json with product "away". plans: "any" or AWAY plan ids ("away200", "awayunl"). pay: "plan"
+   (monthly bill credit: planMo for planMonths), "once" (one-time bill credit of upTo) or "card" (virtual prepaid
+   card of upTo). need: "voice" (a phone line on the account), "newline" or "none"; newAcct: new accounts only.
+   Same list rules as phone offers: another plan's offers are hidden unless chosen; others greyed with the reason. */
+function awayOffersFor(c){
+  var a = state.away;
+  if (!a.on) return [];
+  var voiceOk = c.ex || c.newVoice > 0;
+  return offerPool().filter(function(o){ return o.product === "away" && (!o.expired || a.offer === o.id); }).map(function(o){
+    var why = "", planOk = false;
+    if (o.plans !== "any" && (o.plans || []).indexOf(a.plan) < 0) why = "Needs " + (o.plans || []).map(function(p){ return AWAY[p] ? AWAY[p].name : p; }).join(" or ");
+    else planOk = true;
+    if (planOk) {
+      if (o.autopay && !state.autopay) why = "Needs AutoPay";
+      else if (o.newAcct && c.ex) why = "New accounts only";
+      else if (o.need === "voice" && !voiceOk) why = "Needs a phone line on the account";
+    }
+    return {o:o, ok:!why, planOk:planOk, why:why, credit:o.upTo || 0, expired:!!o.expired};
+  });
+}
+function awayPick(c){
+  var v = state.away.on ? state.away.offer : "";
+  if (!v || v === "none" || v === "custom") return null;
+  var list = awayOffersFor(c);
   if (v === "best") return bestOffer(list);
   return list.filter(function(x){ return x.o.id === v; })[0] || null;
 }
@@ -1390,6 +1433,31 @@ function compute(s){
     else if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
   }
 
+  if (s.away.on) {
+    var ap = AWAY[s.away.plan] || AWAY.awayunl;
+    H.push({l:ap.name, a:ap.ap, sub: s.autopay ? "AutoPay price · 5G Gateway included" : "5G Gateway included"});
+    if (!s.autopay) H.push({l:"AWAY · No AutoPay", a:AWAY_AP});
+    if (seg === "employee") H.push({l:"AWAY · Employee pricing", a:-round2(ap.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
+    var aw = awayPick(c);
+    if (s.away.offer === "custom") {
+      var cmo = num(s.away.customMo), cmn = Math.max(1, Math.round(num(s.away.customMonths)) || 1);
+      if (cmo > 0) H.push({l:"AWAY · Custom promo", a:-cmo, c:"credit", sub:fmt(cmo) + "/mo for " + cmn + " month" + (cmn > 1 ? "s" : "")});
+      else notes.push({t:"warn", m:"AWAY: enter the custom promo's monthly credit, or pick another option."});
+    } else if (aw && !aw.ok) {
+      notes.push({t:"warn", m:"AWAY: " + aw.o.label + " doesn't apply: " + aw.why.charAt(0).toLowerCase() + aw.why.slice(1) + "."});
+    } else if (aw) {
+      var al = "AWAY · " + aw.o.label + (aw.expired ? " (expired)" : "");
+      if (aw.o.pay === "card") RB.push({l:al, a:-aw.credit, c:"credit", sub:"up to " + fmt0(aw.credit) + " · virtual prepaid Mastercard"});
+      else if (aw.o.pay === "once") ONE.push({l:al, a:-aw.credit, c:"credit"});
+      else { var amo = planMoOf(aw.o); H.push({l:al, a:-amo, c:"credit", sub:fmt(amo) + "/mo for " + planMonthsOf(aw.o) + " months"}); }
+      if (aw.expired) notes.push({t:"warn", m:aw.o.label + " has ended" + (aw.o.ends ? " (" + shortDate(aw.o.ends) + ")" : "") + ". It's shown as it was when this quote was saved."});
+      else if (aw.o.dated) notes.push({t:"info", m:aw.o.label + " wasn't confirmed in the latest promo check" + (aw.o.verified ? " (last confirmed " + shortDate(aw.o.verified) + ")" : "") + ". Check that it's still running."});
+    }
+    if (seg === "employee") T.push({l:"AWAY device connection charge", a:0, sub:"waived with employee pricing"});
+    else if (s.away.connect) T.push({l:"AWAY device connection charge", a:num(s.set.connect)});
+    notes.push({t:"info", m:"AWAY is for use at multiple locations, not mainly one address. Credit approval and an eligible physical address are required. The gateway must be returned undamaged or it costs up to " + fmt0(AWAY_GATEWAY) + "."});
+  }
+
   if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
   else if (empWaive && s.groups.length) T.unshift({l:"Device connection charge", a:0, sub:"waived with employee pricing"});
 
@@ -1463,7 +1531,7 @@ function renderStage(q){
   var s = state, c = q.c, h = banner(q);
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
-    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + (s.hint.on ? 1 : 0) + ')</button></div>';
+    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0)) + ')</button></div>';
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
@@ -1580,7 +1648,55 @@ function renderInternet(q){
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
       '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Voice line discount ($' + HINT_VOICE + '/mo)<br><small class="muted">Needs a T-Mobile phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
       '<label class="check' + (segOf(s) === "employee" ? " dis" : "") + '" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect && segOf(s) !== "employee" ? " checked" : "") + (segOf(s) === "employee" ? " disabled" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')' + (segOf(s) === "employee" ? '<br><small class="muted">Waived with employee pricing.</small>' : '') + '</span></label>' +
-    '</div><p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>';
+    '</div><p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>' + renderAway(q);
+}
+/* AWAY Internet: its own product in the Home Internet tab, with plan, options and a promotion list. */
+function renderAway(q){
+  var s = state, a = s.away, emp = segOf(s) === "employee";
+  var h = '<div class="panel" style="border-top:1px solid var(--line);margin-top:16px">' +
+    '<button class="switch" role="switch" aria-checked="' + a.on + '" data-act="awayon"><span class="knob"></span>Add AWAY Internet to this quote</button>' +
+    '<p class="fhint">Internet on the go for RVs, travel and seasonal stays, anywhere on T-Mobile\'s network. Not for use mainly at one address.</p>' +
+    '<div class="hint-plans">' + AWAY_ORDER.map(function(id){
+      var p = AWAY[id], price = p.ap + (s.autopay ? 0 : AWAY_AP);
+      return '<button class="hplan" data-act="aplan" data-v="' + id + '" aria-pressed="' + (a.on && a.plan === id) + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + p.d + '</span><span class="d">' + fmt0(p.ap) + ' with AutoPay, ' + fmt0(p.ap + AWAY_AP) + ' without</span></button>';
+    }).join("") + '</div>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
+      '<label class="check' + (emp ? " dis" : "") + '" for="aConn"><input id="aConn" type="checkbox" data-k="away.connect" data-t="bool"' + (a.connect && !emp ? " checked" : "") + (emp ? " disabled" : "") + '><span>Device connection charge applies (' + fmt0(num(s.set.connect)) + ')<br><small class="muted">' + (emp ? "Waived with employee pricing." : "One-time, due at sale.") + '</small></span></label>' +
+    '</div>';
+  if (a.on) h += '<div style="margin-top:16px">' + awayList(q) + '</div>';
+  h += '<p class="fhint">5G Gateway included with no monthly equipment fee; return it undamaged or pay up to ' + fmt0(AWAY_GATEWAY) + '. Pause up to 90 days, twice a year, for ' + fmt0(AWAY_PAUSE) + '/mo. Credit approval and an eligible physical address required. Taxes and fees are extra.</p></div>';
+  return h;
+}
+/* AWAY promotions: laid out like the phone offers (Best available offer, details, hidden-offer count, Hide/Show
+   offers), with "No offers available." when none fit, plus Custom promo for a credit from the store system. */
+function awayList(q){
+  var c = q.c, a = state.away, all = awayOffersFor(c);
+  var list = all.filter(function(x){ return x.planOk || x.o.id === a.offer; }), hidden = all.length - list.length;
+  var hiddenNote = hidden ? '<p class="info" style="margin:2px 0 6px">' + I.info + hidden + ' offer' + (hidden > 1 ? "s" : "") + ' for the other AWAY plan ' + (hidden > 1 ? "are" : "is") + ' hidden.</p>' : '';
+  var best = bestOffer(all), ap = awayPick(c);
+  var nm = "ao", k = "away.offer", offHidden = !!(ui.offersHidden && ui.offersHidden.away), items = [];
+  function keep(v, html){ items.push({v:v, html:html}); }
+  var h = '<div><div class="mhead"><h4>Apply a promotion?</h4><button class="linkbtn" data-act="offtog" data-g="away" aria-expanded="' + !offHidden + '">' + (offHidden ? "Show offers" : "Hide offers") + '</button></div>';
+  if (ap && !ap.ok) h += '<p class="info warn">' + esc(ap.o.label + " doesn't apply: " + ap.why.charAt(0).toLowerCase() + ap.why.slice(1) + ".") + '</p>';
+  if (!list.length && !offHidden) h += '<p class="info" style="margin:0 0 6px">' + I.info + 'No offers available.</p>';
+  h += '<div class="radios">';
+  if (list.length) keep("best", radio(nm, nm + "-best", "best", a.offer, "<b>Best available offer</b>", best ? pickLabel(best.o.label) + " · up to <span class=\"pk\">" + fmt(best.credit) + "</span> " + creditText(best, null) : "Nothing qualifies right now.", false, k));
+  list.forEach(function(x){
+    var conf = x.expired ? ' <span class="why">Expired' + (x.o.ends ? " " + shortDate(x.o.ends) : "") + ', shown as saved</span>'
+      : (x.o.dated ? ' <span class="why">Not confirmed in the latest check</span>' : (x.o.verified ? " · Confirmed " + shortDate(x.o.verified) : ""));
+    keep(x.o.id, radio(nm, nm + "-" + x.o.id, x.o.id, a.offer, pickLabel(x.o.label) + (x.expired ? " (expired)" : "") + " - Up to <span class=\"pk\">" + fmt0(x.credit) + "</span> " + creditText(x, null),
+      "Details: " + esc(x.o.detail || "") + conf + (x.ok ? "" : ' <span class="why">' + esc(x.why) + '</span>'), !x.ok, k));
+  });
+  if (hidden) items.push({v:"__hidden", html:hiddenNote});
+  keep("custom", radio(nm, nm + "-custom", "custom", a.offer, "Custom promo", "Enter a monthly credit from the store system", false, k));
+  keep("none", radio(nm, nm + "-none", "none", a.offer, "No promotion", "", false, k));
+  var showItems = offHidden ? items.filter(function(it){ return it.v === a.offer; }) : items;
+  h += showItems.map(function(it){ return it.html; }).join("") + (offHidden && !showItems.length ? '<p class="info" style="margin:0">No promotion chosen yet.</p>' : '');
+  h += '</div>';
+  if (a.offer === "custom") h += '<div class="frow" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">' +
+    '<div class="f"><label for="aCusMo">Monthly credit</label><span class="money"><input class="tin" id="aCusMo" type="number" inputmode="decimal" min="0" step="0.01" data-k="away.customMo" data-t="num" value="' + (num(a.customMo) || "") + '" placeholder="0.00"></span></div>' +
+    '<div class="f"><label for="aCusMn">For how many months</label><input class="tin" id="aCusMn" type="number" inputmode="numeric" min="1" step="1" data-k="away.customMonths" data-t="num" value="' + (num(a.customMonths) || 12) + '"></div></div>';
+  return h + '</div>';
 }
 
 /* ================= Rendering: drawers ================= */
@@ -1729,7 +1845,7 @@ function feesBody(){
   return '<div class="fields">' +
     mf("sConn", "Connection charge per line", "set.connect", st.connect) +
     '<div class="f"><label for="sEmp">Employee discount, wireless lines (%)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + empPct() + '"></div>' +
-    '<div class="f"><label for="sEmpH">Employee discount, Home Internet (%)</label><input class="tin" id="sEmpH" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeeHintPct" data-t="num" value="' + empHintPct() + '"></div></div>' +
+    '<div class="f"><label for="sEmpH">Employee discount, Home Internet &amp; AWAY (%)</label><input class="tin" id="sEmpH" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeeHintPct" data-t="num" value="' + empHintPct() + '"></div></div>' +
     '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>' + versionLine();
 }
 
@@ -2129,16 +2245,18 @@ function round2(n){ return Math.round(n * 100) / 100; }
 /* The saved-quote record for what's on screen. */
 function quoteDoc(id, note){
   var q = compute(state), applied = {}, offers = {}, devices = {}, pool = offerPool();
+  /* Snapshot each offer the quote uses, so the saved quote still finds it after it ends. */
+  function snap(o){
+    if (!o) return;
+    var x = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models || [], tag:o.tag || "",
+             status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
+    ["byod","pay","planMo","planMonths","newAcct","minMonthly","maxPerAcct","months","needVoice","product","autopay"].forEach(function(k){ if (o[k] != null && o[k] !== false && o[k] !== 0) x[k] = o[k]; });
+    offers[o.id] = x;
+  }
+  var awp = awayPick(q.c);
+  if (awp && awp.ok) { applied.away = awp.o.id; snap(awp.o); }
   state.groups.forEach(function(g){
     var d = devMath(g, q.c);
-    /* Snapshot each offer the quote uses, so the saved quote still finds it after it ends. */
-    function snap(o){
-      if (!o) return;
-      var x = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models || [], tag:o.tag || "",
-               status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
-      ["byod","pay","planMo","planMonths","newAcct","minMonthly","maxPerAcct","months","needVoice"].forEach(function(k){ if (o[k] != null && o[k] !== false && o[k] !== 0) x[k] = o[k]; });
-      offers[o.id] = x;
-    }
     if (d.offer && d.offer.id) {
       applied[g.id] = d.offer.id;
       snap(pool.filter(function(x){ return x.id === d.offer.id; })[0]);
@@ -2215,6 +2333,7 @@ function applyQuote(d){
   var src = d.state || {}, s = Object.assign(exampleState(), JSON.parse(JSON.stringify(src)));
   s.set = Object.assign(exampleState().set, src.set || {});
   s.hint = Object.assign(exampleState().hint, src.hint || {});
+  s.away = Object.assign(exampleState().away, src.away || {});
   s.example = false;
   if (s.planDiscount === "port") s.planDiscount = "none";   // older quotes: the number-transfer price is a per-line offer now
   s.loaded = {id:d.id, savedAt:d.savedAt, note:d.note || "", offers:d.offers || {}, devices:d.devices || {}, applied:d.applied || {}, monthly:d.monthly, today:d.today};
@@ -2224,6 +2343,8 @@ function applyQuote(d){
     if (s.loaded.applied[g.id + ".byod"]) g.dev.byodOffer = s.loaded.applied[g.id + ".byod"];
     else if (g.dev.byodOffer === "best") g.dev.byodOffer = "none";
   });
+  if (s.loaded.applied.away) s.away.offer = s.loaded.applied.away;
+  else if (s.away.offer === "best") s.away.offer = "none";
   state = s;
   var mx = 0; state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; }); gid = mx + 1;
 }
@@ -2327,6 +2448,7 @@ function quoteHead(q){
   if (!c.ex && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
   else if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
   if (state.hint.on) head += (head ? " + " : "") + "5G Home Internet";
+  if (state.away.on) head += (head ? " + " : "") + "AWAY Internet";
   return head;
 }
 /* Customer-facing row labels: drop the rep's group name ("Smartphone ×2 · ") and show the count at the end. */
@@ -2684,7 +2806,7 @@ document.addEventListener("click", function(e){
     }
     case "openid": doOpen(v); return;
     case "reprice":
-      state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; if (x.dev.byodOffer && x.dev.byodOffer !== "none") x.dev.byodOffer = "best"; });
+      state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; if (x.dev.byodOffer && x.dev.byodOffer !== "none") x.dev.byodOffer = "best"; }); if (state.away.offer && state.away.offer !== "none" && state.away.offer !== "custom") state.away.offer = "best";
       state.loaded = null; toast("Repriced with today's offers."); break;
     case "unload": state = blankState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
     case "close": ui.sheet = null; ui.edit = null; break;
@@ -2752,11 +2874,13 @@ document.addEventListener("click", function(e){
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
     case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !ui.modelOpen[g.id]; } break;
     case "pay": if (g) g.pay.method = v; break;
-    case "offtog": if (g) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[g.id] = !ui.offersHidden[g.id]; } break;
+    case "offtog": { var otk = g ? g.id : b.getAttribute("data-g"); if (otk) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[otk] = !ui.offersHidden[otk]; } } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
+    case "awayon": state.away.on = !state.away.on; if (state.away.on && ui.offersHidden) ui.offersHidden.away = false; break;
+    case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
   }
   if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear"].indexOf(act) < 0 && act !== "example") state.example = false;
@@ -2792,6 +2916,7 @@ document.addEventListener("change", function(e){
   /* Choosing a promotion folds the offer list; "Show offers" opens it again. */
   var om = el.type === "radio" && /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k);
   if (om) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[om[1]] = true; }
+  if (el.type === "radio" && el.dataset.k === "away.offer") { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden.away = true; }
   /* Turning BYOD on shows its offer list open. */
   var bm = el.type === "checkbox" && el.checked && /^g\.([^.]+)\.dev\.byod$/.exec(el.dataset.k);
   if (bm && ui.offersHidden) ui.offersHidden[bm[1]] = false;
@@ -2827,10 +2952,12 @@ document.addEventListener("click", function(e){
   var el = e.target;
   if (!el || el.type !== "radio" || !el.dataset || !el.dataset.k) return;
   var om = /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k), og = om && grp(om[1]);
-  if (!og || String(og.dev[om[2]]) !== el.value) return;
+  /* where the choice lives: a line's dev.offer / dev.byodOffer, or state.away.offer */
+  var holder = og ? og.dev : (el.dataset.k === "away.offer" ? state.away : null), field = og ? om[2] : "offer", hk = og ? og.id : "away";
+  if (!holder || String(holder[field]) !== el.value) return;
   ui.offersHidden = ui.offersHidden || {};
-  if (ui.offersHidden[og.id]) { og.dev[om[2]] = ""; ui.offersHidden[og.id] = false; state.example = false; }
-  else ui.offersHidden[og.id] = true;
+  if (ui.offersHidden[hk]) { holder[field] = ""; ui.offersHidden[hk] = false; state.example = false; }
+  else ui.offersHidden[hk] = true;
   var id = el.id; renderAll();
   var ne = id && document.getElementById(id); if (ne) ne.focus({preventScroll:true});
 });
