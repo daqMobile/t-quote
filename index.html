@@ -202,7 +202,7 @@ button:disabled{cursor:not-allowed}
 .popin{animation:popIn .25s cubic-bezier(.2,.8,.3,1) both}
 .popout{animation:popOut .1s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.popin,.popout{animation:none}}
-/* Review, Compare plans and Card details slide in when they open and back out, twice as fast, when they close
+/* Review, Compare plans and Card details slide in when they open (0.3s) and back out when they close (0.075s)
    (only when opened from the page and when closed, not on every redraw or when moving between panels). */
 @keyframes drawerIn{from{transform:translateX(36px);opacity:0}to{transform:none;opacity:1}}
 @keyframes drawerOut{from{transform:none;opacity:1}to{transform:translateX(36px);opacity:0}}
@@ -210,8 +210,8 @@ button:disabled{cursor:not-allowed}
 @keyframes scrimOut{from{opacity:1}to{opacity:0}}
 .drawer.slidein{animation:drawerIn .3s cubic-bezier(.2,.8,.3,1) both}
 .scrim.fadein{animation:scrimIn .25s ease-out both}
-.drawer.slideout{animation:drawerOut .1s cubic-bezier(.4,0,1,1) both;pointer-events:none}
-.scrim.fadeout{animation:scrimOut .1s ease-in both;pointer-events:none}
+.drawer.slideout{animation:drawerOut .075s cubic-bezier(.4,0,1,1) both;pointer-events:none}
+.scrim.fadeout{animation:scrimOut .075s ease-in both;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.drawer.slidein,.scrim.fadein,.drawer.slideout,.scrim.fadeout{animation:none}}
 .cards.list{grid-template-columns:minmax(0,1fr);gap:8px}
 .lrow{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 44px 10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px}
@@ -239,6 +239,10 @@ button:disabled{cursor:not-allowed}
 .handle{position:absolute;left:50%;top:-1px;transform:translate(-50%,-100%);border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:6px 16px 4px;display:flex;flex-direction:column;align-items:center;gap:0}
 .handle .ico{width:16px;height:12px;transition:transform .15s}
 .handle[aria-expanded="false"] .ico{transform:rotate(180deg)}
+/* Collapsed, the Add Devices tab is 25% larger so it's easier to tap. */
+.handle{transform-origin:50% 100%;transition:transform .28s ease}
+.tray.shut .handle{transform:translate(-50%,-100%) scale(1.25)}
+@media (prefers-reduced-motion:reduce){.handle{transition:none}}
 .trayin{padding:14px;display:flex;flex-direction:column;align-items:center;gap:12px}
 .traycount{font-size:13px;color:var(--muted)}
 .traytop{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%}
@@ -1867,7 +1871,7 @@ function renderSheet(q){
       od.classList.remove("slidein"); od.classList.add("slideout");
       if (osc) { osc.classList.remove("fadein"); osc.classList.add("fadeout"); }
       ui.closing = true;
-      ui.closeT = setTimeout(function(){ ui.closing = false; if (!ui.sheet) root.innerHTML = ""; }, 100);
+      ui.closeT = setTimeout(function(){ ui.closing = false; if (!ui.sheet) root.innerHTML = ""; }, 75);
       return;
     }
     root.innerHTML = ""; return;
