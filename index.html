@@ -385,6 +385,9 @@ html.locked,html.locked body{overflow:hidden}
 .hcmp thead th.cur{background:var(--accent-soft);box-shadow:inset 0 3px 0 var(--accent)}
 .hcmp .diff td:not(.sec){font-weight:600}
 .hcmp .yes{color:var(--accent);font-weight:700}
+.hcmp.many th[scope="row"]{width:168px;min-width:150px}
+.hcmp.many th[scope="row"],.hcmp.many thead th:first-child{position:sticky;left:0;background:var(--surface);z-index:2;box-shadow:1px 0 0 var(--line)}
+.hcmp.many thead th:first-child{z-index:3}
 .hcmp .no{color:var(--muted)}
 .hcmp td small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 
@@ -679,7 +682,7 @@ var CPLANS = {
     {id:"tabEss",name:"Tablet Essentials",ap:15},
     {id:"tabUnl",name:"Tablet Unlimited",ap:20},
     {id:"tabPlus",name:"Tablet Unlimited Plus",ap:25},
-    {id:"tabByod",name:"BYOD tablet line",ap:5,byod:true,plans:["loaded"]}
+    {id:"tabByod",name:"BYOD tablet line",ap:5,byod:true,plans:["loaded","beyond"]}
   ],
   /* SyncUP lines (t-mobile.com/devices/family-devices and the SyncUP pages, Nov 13, 2026). AutoPay prices, +$5 without. */
   syncKids:    [{id:"syncKids", name:"SyncUP KIDS watch line", ap:10, noVoice:10}],
@@ -823,6 +826,70 @@ var AWAY_ORDER = ["away200","awayunl"];
 var AWAY_AP = 10, AWAY_GATEWAY = 370, AWAY_PAUSE = 10;
 var HINT_VOICE = 20;
 var HINT_AP = 10;
+/* Wireless plan comparison (Compare plans on the Wireless tab), one table per plan type. Sources, checked Nov 17, 2026:
+   T-Mix and tablet/watch plans from t-mobile.com/cell-phone-plans and T-Mobile's tablet and smartwatch plan pages;
+   SyncUP from t-mobile.com/devices/family-devices; retired plans from T-Mobile's Experience launch (Apr 2025) and
+   Go5G coverage (Android Authority, Droid Life, RV Mobile Internet). "Not listed" = T-Mobile doesn't publish it.
+   Values line up with each table's column order; true = included, false = not included. */
+var PLAN_CMP_ASOF = "2026-11-17";
+var PLAN_CMP = {
+  voice:{cols:["loaded","more","standard","saver"], rows:[
+    {sec:"Data & video"},
+    {l:"Premium data", n:"Standard and Saver may slow during congestion after 50GB, until the next bill cycle", v:["Unlimited","Unlimited","50GB","50GB"]},
+    {l:"Video", v:["Up to 4K UHD","Up to 4K UHD","480p (SD)","480p (SD)"]},
+    {l:"Hotspot", v:["250GB high-speed","60GB high-speed","Unlimited 3G","Unlimited 3G"]},
+    {sec:"Travel"},
+    {l:"Canada & Mexico", v:["Unlimited texts, 30GB high-speed","Unlimited texts, 15GB high-speed","Not listed","Not listed"]},
+    {l:"215+ countries", v:["Unlimited texts, 15GB high-speed","Unlimited texts, 5GB high-speed","Free texting, low-rate calls","Free texting, low-rate calls"]},
+    {sec:"Extras"},
+    {l:"Optimized Video Calling", v:[true,"With 1 Pick","With 1 Pick",false]},
+    {l:"T-Satellite", v:["With 1 Pick","With 1 Pick","With 1 Pick","Not listed"]},
+    {l:"$5 watch & tablet lines", v:[true,false,false,false]},
+    {l:"Scam Shield Basic", v:[true,true,true,true]},
+    {l:"T-Mobile Tuesdays", v:[true,true,true,true]}
+  ], fine:"T-Mix phone lines don't come with a price guarantee. Prices include AutoPay ($10 more per phone line without)."},
+  retired:{cols:["beyond","more","go5gnext","go5gplus","go5g","essentials"], rows:[
+    {sec:"Plan"},
+    {l:"Adding lines in Quick Quote", v:["Yes","Yes","Upgrades only","Upgrades only","Upgrades only","Upgrades only"]},
+    {l:"Device upgrades", v:["Every year","Every 2 years","Every year (after 6 months, 50% paid)","Every 2 years","Not listed","Not listed"]},
+    {l:"Price guarantee", v:["5 years","5 years","Not listed","Not listed","Not listed","Not listed"]},
+    {sec:"Data & video"},
+    {l:"Premium data", v:["Unlimited","Unlimited","Unlimited","Unlimited","100GB","50GB"]},
+    {l:"Video", v:["Up to 4K UHD","Up to 4K UHD","Up to 4K UHD","Up to 4K UHD","Not listed","SD"]},
+    {l:"Hotspot", v:["250GB, then 600 kbps","60GB, then 3G","250GB high-speed","50GB high-speed","15GB, then 3G","Unlimited 3G"]},
+    {sec:"Travel"},
+    {l:"Canada & Mexico high-speed data", v:["30GB","15GB","30GB","15GB","10GB","Not listed"]},
+    {l:"215+ countries high-speed data", v:["15GB","5GB","15GB","5GB","Not listed","Not listed"]},
+    {sec:"Extras"},
+    {l:"Streaming", v:["Netflix Standard w/ ads, Apple TV+, Hulu w/ ads","Netflix Standard w/ ads, Apple TV+","Netflix Standard w/ ads, Apple TV+","Netflix Standard w/ ads, Apple TV+","Not listed",false]},
+    {l:"T-Satellite", v:[true,"$10/mo add-on","Not listed","Not listed","Not listed","Not listed"]},
+    {l:"$5 watch & tablet lines", v:[true,false,true,false,false,false]}
+  ], fine:"Retired plans aren't sold to new customers; existing accounts keep them. Features are as T-Mobile last published them, and perks can differ by account, so check the account's plan. Go5G and Essentials prices are their last published rates."},
+  tablet:{cols:["tabEss","tabUnl","tabPlus"], rows:[
+    {sec:"Data & video"},
+    {l:"High-speed data", n:"Unlimited plans may slow during congestion past 50GB/mo", v:["5GB, then 600 kbps","Unlimited","Unlimited"]},
+    {l:"Hotspot", v:["Not listed","Not listed","15GB high-speed, then 3G"]},
+    {l:"Video", v:["Up to 480p (SD)","HD","Full HD, up to 4K when turned on"]},
+    {sec:"Travel"},
+    {l:"Canada & Mexico", v:["Unlimited data at 128 kbps","Unlimited texts, 5GB high-speed","Unlimited texts, 15GB high-speed"]},
+    {l:"International", v:["Unlimited texts from the U.S.","Unlimited texts, 5GB high-speed in 11 countries","Unlimited texts, 5GB high-speed in 215+ countries"]}
+  ], fine:"A tablet line is $5/mo with T-Mix Loaded or Experience Beyond. Tablet lines cost ${tabnv} more without a phone line on the account. AutoPay discount: $5 per tablet line."},
+  watch:{cols:["watch","watchPlus"], rows:[
+    {sec:"Service"},
+    {l:"Talk, text & data", n:"Calls and texts are person-to-person only", v:["Unlimited, high-speed","Unlimited, high-speed"]},
+    {l:"Canada & Mexico", n:"T-Mobile's page says 15GB; its fine print says 5GB high-speed, then 128 kbps", v:[false,"Unlimited texts, 5GB high-speed"]},
+    {l:"215+ countries", v:[false,"Unlimited texts, 5GB high-speed, then 256 kbps"]},
+    {l:"Video", v:["SD","SD"]},
+    {l:"Without a phone line", v:["Up to $50/mo more","Up to $50/mo more"]}
+  ], fine:"A watch line is $5/mo with T-Mix Loaded or Experience Beyond. AutoPay discount: $5 per watch line. $35 device connection charge."},
+  sync:{cols:["syncKids","syncTracker","syncDrive"], rows:[
+    {sec:"Service"},
+    {l:"What it does", v:["Kids' watch: calls and video chat with approved contacts, real-time location","Real-time location for bags, keys, pets and other valuables","Car location, vehicle health and in-car Wi-Fi"]},
+    {l:"Without a phone line", v:["$10/mo more","Not listed","Not listed"]},
+    {l:"Needs", v:["A separate voice line and a compatible smartphone for most features","SyncUP app","SyncUP app"]},
+    {l:"Where it works", v:["U.S., Canada and Mexico","Not listed","Not listed"]}
+  ], fine:"Prices include AutoPay ($5 more without). $35 device connection charge. SyncUP DRIVE starts at $10/mo; its free-device offer needs the SyncUP DRIVE Unlimited plan, so confirm that price in the store system."}
+};
 /* Home Internet plan comparison (Compare plans in the Home Internet tab), from t-mobile.com/home-internet/plans and
    the All-In plan page, checked Nov 17, 2026. Prices come from HINT, HINT_AP and HINT_VOICE. Each row: a label,
    an optional note, and one value per plan in HINT_ORDER (true = included, false = not included). */
@@ -1803,7 +1870,7 @@ function renderSheet(q){
     live.saved ? '<button class="linkbtn" data-act="sheet" data-v="review">Back to review</button><button class="pbtn" data-act="close">Done</button>'
                : '<button class="linkbtn" data-act="sheet" data-v="review">Back</button><button class="pbtn" data-act="dosave"' + (live.saving ? " disabled" : "") + '>' + (live.saving ? "Saving…" : "Save quote") + '</button>');
   else if (s === "open") html = drawer("Open quote", "Type a Quote ID or pick a recent quote", openBody(), "");
-  else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
+  else if (s === "compare") html = drawer("Compare plans", "Every plan type side by side · " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on this quote", planCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "hcompare") html = drawer("Compare Home Internet plans", "Rely, Amplified and All-In side by side", hintCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "visa") html = drawer("T-Mobile Visa", "Everything about the card, from Capital One", visaBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
@@ -1909,6 +1976,70 @@ function hintCompareBody(q){
       '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>' +
     '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
     '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Gateway: return it undamaged or pay up to $370. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
+}
+/* Compare plans (Wireless): every plan type in one panel, a tab each. The phone tabs keep the plan-charge bars for the
+   quote's line count (tap to switch plans); every tab has a feature table where rows that differ are bold and
+   "Differences only" hides the rest. Plans on the quote are highlighted. */
+var CMP_TABS = [["voice","T-Mix"],["retired","Retired"],["tablet","Tablet"],["watch","Watch"],["sync","SyncUP"]];
+function featTable(cols, rows, diffOnly){
+  function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
+  function cell(x){ return x === true ? '<span class="yes">✓ Included</span>' : x === false ? '<span class="no">—</span>' : (x === "Not listed" ? '<span class="no">Not listed</span>' : esc(x)); }
+  var body = "", pending = "";
+  rows.forEach(function(r){
+    if (r.sec) { pending = '<tr><td class="sec" colspan="' + (cols.length + 1) + '">' + esc(r.sec) + '</td></tr>'; return; }
+    var d = !same(r.v);
+    if (diffOnly && !d) return;
+    body += pending; pending = "";
+    body += '<tr class="' + (d ? "diff" : "") + '"><th scope="row">' + esc(r.l) + (r.n ? '<small>' + esc(r.n) + '</small>' : '') + '</th>' +
+      r.v.map(function(x, i){ return '<td class="' + (cols[i].cur ? "cur" : "") + '">' + (r.raw ? x : cell(x)) + '</td>'; }).join("") + '</tr>';
+  });
+  var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">Highlighted: on this quote</span></th>' + cols.map(function(cl){
+    return '<th scope="col" class="' + (cl.cur ? "cur" : "") + '"><span class="pn">' + esc(cl.name) + '</span><span class="pp">' + cl.price + '<small> /mo</small></span>' +
+      '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.sub || "") + '</span>' + (cl.cur ? '<span class="yes" style="font-size:12px;display:block;margin-top:6px">✓ On quote</span>' : '') + '</th>';
+  }).join("") + '</tr>';
+  return '<div class="hcwrap" style="margin-top:12px"><table class="hcmp many" style="min-width:' + (180 + cols.length * 132) + 'px"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
+}
+function planCompareBody(q){
+  var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired"), diffOnly = !!ui.pcmpDiff;
+  var D = PLAN_CMP[tab], cols, rows = [], bars = "";
+  var onQuote = function(type, id){ return s.groups.some(function(g){ return g.type === type && cplanOf(g).id === id; }); };
+  var lines = n + " line" + (n > 1 ? "s" : "");
+  if (tab === "voice") {
+    cols = D.cols.map(function(id){ var p = TMIX[id]; return {id:id, name:p.full, price:fmt0(p.ap[0]), sub:"1 line with AutoPay", cur: c.fam === "tmix" && c.pid === id}; });
+    rows.push({sec:"Price & Picks"});
+    rows.push({l:"At " + lines + (c.fam === "tmix" ? " on this quote" : ""), n:"With AutoPay", v:D.cols.map(function(id){ var pc = planCalc("tmix", id, n, true, false, null); return pc ? fmt0(pc.total) : "Up to " + TMIX[id].max + " lines"; })});
+    rows.push({l:"Picks at " + lines, v:D.cols.map(function(id){ var k = n <= TMIX[id].max ? picksFor(id, n) : 0; return k ? String(k) : "None"; })});
+    rows.push({l:"Most lines", v:D.cols.map(function(id){ return String(TMIX[id].max); })});
+    if (c.fam === "tmix") bars = '<h4 style="margin:4px 0 8px">Plan charge on this quote</h4>' + compareBody(q);
+  } else if (tab === "retired") {
+    cols = D.cols.map(function(id){
+      var p = EXP[id] || LEGACY[id], one = p.ap ? p.ap[0] : (p.ref ? p.ref[0] : 0);
+      return {id:id, name:p.full, price:fmt0(one), sub: p.legacy ? "1 line · last published" : "1 line with AutoPay", cur: c.fam === "exp" && c.pid === id};
+    });
+    rows.push({sec:"Price"});
+    rows.push({l:"At " + lines + (c.fam === "exp" ? " on this quote" : ""), n:"With AutoPay", v:D.cols.map(function(id){
+      if (LEGACY[id]) { var r = legacyRef(id, n, true); return r ? (r.est ? "≈" : "") + fmt0(r.total) : "Not listed"; }
+      var pc = planCalc("exp", id, n, true, false, null); return pc ? (pc.est ? "≈" : "") + fmt0(pc.total) : "Not listed"; })});
+    if (c.fam === "exp" && !isLegacy(c)) bars = '<h4 style="margin:4px 0 8px">Plan charge on this quote</h4>' + compareBody(q);
+  } else {
+    var type = tab === "sync" ? null : tab;
+    cols = D.cols.map(function(id){
+      var t = type || (id === "syncKids" ? "syncKids" : id === "syncTracker" ? "syncTracker" : "syncDrive");
+      var p = (CPLANS[t] || []).filter(function(x){ return x.id === id; })[0] || {name:id, ap:0};
+      return {id:id, name:p.name.replace(/ line$/, ""), price:(p.from ? "From " : "") + fmt0(p.ap), sub:"With AutoPay · " + fmt0(p.ap + 5) + " without", cur:onQuote(t, id)};
+    });
+  }
+  rows = rows.concat(D.rows);
+  var h = '<div class="seg" role="tablist" aria-label="Plan type" style="width:100%">' + CMP_TABS.map(function(t){
+      return '<button role="tab" data-act="cmptab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join("") + '</div>';
+  if (bars) h += '<div style="margin-top:16px">' + bars + '</div>';
+  h += '<div class="qrow" style="align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px"><div class="seg sm" role="group" aria-label="Show">' +
+      '<button data-act="pcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="pcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
+      '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>';
+  h += featTable(cols, rows, diffOnly);
+  if (cols.length > 4) h += '<p class="fhint" style="margin-top:6px">Swipe the table sideways to see all ' + cols.length + ' plans.</p>';
+  h += '<p class="fhint">' + esc(D.fine.replace("{tabnv}", TAB_NO_VOICE)) + ' From T-Mobile\'s plan pages, checked ' + shortDate(PLAN_CMP_ASOF) + '.</p>';
+  return h;
 }
 function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
@@ -3028,6 +3159,8 @@ document.addEventListener("click", function(e){
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
     case "hcmpdiff": ui.hcmpDiff = v === "diff"; break;
+    case "cmptab": ui.cmpTab = v; break;
+    case "pcmpdiff": ui.pcmpDiff = v === "diff"; break;
     case "awayon": state.away.on = !state.away.on; if (state.away.on && ui.offersHidden) ui.offersHidden.away = false; break;
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
