@@ -814,13 +814,8 @@ var HINT_AP = 10;
    an optional note, and one value per plan in HINT_ORDER (true = included, false = not included). */
 var HINT_CMP_ASOF = "2026-11-17";
 var HINT_CMP = [
-  {sec:"Speed & data"},
-  {l:"Typical download (5G)", v:["133–354 Mbps","170–498 Mbps","170–498 Mbps"]},
-  {l:"Typical upload", v:["12–55 Mbps","12–55 Mbps","12–55 Mbps"]},
-  {l:"Typical latency", v:["16–28 ms","16–28 ms","16–28 ms"]},
-  {l:"Speed tier", v:["Fast speeds","Fastest speeds, no speed caps","Fastest speeds, no speed caps"]},
-  {l:"Data", v:["Unlimited","Unlimited","Unlimited"]},
-  {sec:"Equipment"},
+  {sec:"Speed & equipment"},
+  {l:"Speed tier", n:"Actual speeds depend on the address", v:["Fast speeds","Fastest speeds, no speed caps","Fastest speeds, no speed caps"]},
   {l:"Gateway", v:["High-performance 5G Gateway","Premium Wi-Fi 7 Gateway","Premium Wi-Fi 7 Gateway"]},
   {l:"Mesh Wi-Fi extender", n:"As needed, requested after activation ($5/mo value)", v:[false,false,true]},
   {l:"Gateway upgrade after year 3", n:"One-time upgrade to the latest gateway, if available", v:[false,false,true]},
@@ -830,12 +825,7 @@ var HINT_CMP = [
   {l:"24/7 Personal TechPro by Assurant", n:"Live tech experts for setup and troubleshooting ($8.25/mo value)", v:[false,false,true]},
   {sec:"Perks"},
   {l:"T-Mobile Tuesdays", v:[true,true,true]},
-  {l:"Hulu / Paramount+", n:"New All-In lines no longer include them; T-Mix Picks can cover them", v:[false,false,false]},
-  {sec:"Fees & terms"},
-  {l:"Device connection charge", v:["$35 at sale","$35 at sale","$35 at sale"]},
-  {l:"Annual contract", v:["None · $0 to cancel","None · $0 to cancel","None · $0 to cancel"]},
-  {l:"Monthly fees not in the price", v:["Regulatory & telco recovery fee up to $2.60, plus taxes","Regulatory & telco recovery fee up to $2.60, plus taxes","Regulatory & telco recovery fee up to $2.60, plus taxes"]},
-  {l:"Gateway return", v:["Return undamaged or pay up to $370","Return undamaged or pay up to $370","Return undamaged or pay up to $370"]}
+  {l:"Hulu / Paramount+", n:"Not on the All-In sold today; T-Mix Picks can cover them. Customers who already have the previous All-In keep them unless they add a T-Mix line.", v:[false,false,"Previous All-In only"]}
 ];
 /* T-Mobile Visa (Capital One). The quote mentions it only when the box in the top bar is checked. */
 var VISA = {head:"5% back in T-Mobile Rewards", body:"on phones, devices and accessories from T-Mobile, plus 2% on everything else.",
@@ -1853,7 +1843,7 @@ function hintCompareBody(q){
       '<button data-act="hcmpdiff" data-v="all" aria-pressed="' + !diffOnly + '">All details</button><button data-act="hcmpdiff" data-v="diff" aria-pressed="' + diffOnly + '">Differences only</button></div>' +
       '<span class="muted" style="font-size:12.5px">Bold rows differ between plans</span></div>' +
     '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
-    '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
+    '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Gateway: return it undamaged or pay up to $370. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
 }
 function compareBody(q){
   var s = state, c = q.c, n = Math.max(c.n, 1);
