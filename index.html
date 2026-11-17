@@ -126,6 +126,20 @@ button:disabled{cursor:not-allowed}
 .bchip.on{background:var(--badge);color:var(--badge-ink);font-weight:700}
 .bcheck{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:600;padding:5px 10px}
 .bcheck input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.binfo{border:0;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-weight:600;font-size:12.5px}
+.binfo .ico{width:15px;height:15px}
+/* T-Mobile Visa details */
+.vtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px}
+.vt{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.vt .n{font-family:var(--display);font-size:32px;font-weight:700;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.vt .t{font-weight:600;font-size:14px}
+.vt .d{font-size:12.5px;color:var(--muted)}
+.vt.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.vcard{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:14px 16px}
+.vcard h4{margin:0 0 8px}
+.vcard ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.vcard .rr{border-top:1px solid var(--line);padding:7px 0;font-size:14px}
+.vcard .rr:first-of-type{border-top:0}
 .dpanel{background:var(--surface);border:1px solid var(--line);border-top:0;padding:14px;display:grid;gap:14px}
 @media (min-width:720px){.dpanel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}}
 /* Sizing: the discount panel and the Add Devices box are drawn smaller and the plan tiers and line cards
@@ -830,6 +844,27 @@ var HINT_CMP = [
 /* T-Mobile Visa (Capital One). The quote mentions it only when the box in the top bar is checked. */
 var VISA = {head:"5% back in T-Mobile Rewards", body:"on phones, devices and accessories from T-Mobile, plus 2% on everything else.",
             ap:"Paying your bill with it on AutoPay keeps your AutoPay discount.", fine:"Subject to credit approval."};
+/* Full T-Mobile Visa details for the Card details panel, from t-mobile.com/cards/visa-credit-rewards (APRs as of
+   10/30/2026) and t-mobile.com/benefits/dining, checked Nov 17, 2026. The welcome offer shows only through its end date. */
+var VISA_INFO = {
+  asof:"2026-11-17",
+  welcome:{amt:50, ends:"2026-11-18", text:"One-time $50 wireless bill credit when approved. New card accounts, 1 per wireless account; apply through an official T-Mobile channel showing the offer. Allow 2 bill cycles."},
+  rewards:["5% applies at T-Mobile.com, the T-Life app, T-Mobile stores and Authorized Retailers.",
+           "No rewards on device installment (EIP) payments, wireless service or prepaid service.",
+           "The 5% doesn't apply when paying through a third-party digital wallet (e.g. Apple Pay, Google Pay); those earn 2%.",
+           "Cash advances and balance transfers earn no rewards.",
+           "Rewards never expire while the account is open. Redeem in the T-Life app toward any T-Mobile purchase, including the bill; the card covers any remainder."],
+  rates:[["Annual fee","$0"],["Foreign transaction fee","$0"],["Purchase APR","18.74% or 28.74% variable, based on credit"],["Cash advance APR","28.74% variable"],
+         ["Cash advance fee","5% or $5, whichever is greater"],["Balance transfer fee","3% or $3, whichever is greater"],["Late payment fee","Up to $40"]],
+  perks:["T-Mobile TRAVEL: up to 50% off select hotels and up to 45% off select Pay Now rental cars, counting the extra discount for booking with the card.",
+         "T-Mobile Tuesdays cardholder perks in the T-Life app.",
+         "Visa Signature benefits: travel and emergency assistance, emergency card replacement, $0 fraud liability.",
+         "Capital One tools: instant digital card on approval, virtual card numbers, lock and unlock the card in the Capital One app."],
+  who:["Active T-Mobile consumer postpaid customer with at least one active line on an eligible smartphone plan.",
+       "Lives in the 50 states, Washington D.C., Puerto Rico or a U.S. military location.",
+       "Not for T-Mobile for Business, Government or Prepaid customers.",
+       "Credit approval by Capital One, N.A. Apply in store or at t-mobile.com/card."]
+};
 function visaLine(){ return "The T-Mobile Visa earns " + VISA.head + " " + VISA.body + (state.autopay ? " " + VISA.ap : "") + " " + VISA.fine; }   // Home Internet AutoPay discount: $10/mo per line (Rely $50 w/ AutoPay, $60 without)
 var TYPES = {
   phone:{label:"Smartphone",voice:true},
@@ -1582,6 +1617,7 @@ function renderStage(q){
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
     '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
+    '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button>' +
     '<span class="bchip">No additional discounts applied</span></div>';
 
   /* Promotion status sits at the very bottom, out of the way. */
@@ -1769,6 +1805,7 @@ function renderSheet(q){
   else if (s === "open") html = drawer("Open quote", "Type a Quote ID or pick a recent quote", openBody(), "");
   else if (s === "compare") html = drawer("Compare plans", "Same " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on every plan", compareBody(q), "");
   else if (s === "hcompare") html = drawer("Compare Home Internet plans", "Rely, Amplified and All-In side by side", hintCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
+  else if (s === "visa") html = drawer("T-Mobile Visa", "Everything about the card, from Capital One", visaBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
   else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
   else if (s === "settings") html = drawer("Settings", "Appearance, saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
@@ -1812,6 +1849,34 @@ function reviewBody(q){
 function dedupe(a){ var seen = {}; return a.filter(function(x){ if (seen[x.m]) return false; seen[x.m] = 1; return true; }); }
 function rrow(r){ return '<div class="rr' + (r.c ? " " + r.c : "") + '"><span class="l">' + esc(r.l) + (r.sub ? '<small>' + esc(r.sub) + '</small>' : '') + '</span><span class="a">' + fmt(r.a) + '</span></div>'; }
 
+/* Card details: the T-Mobile Visa's rewards, Tuesday extras, welcome offer, AutoPay, rates and fees, perks and who can
+   apply. The switch at the bottom is the same as the T-Mobile Visa box in the top bar. */
+function visaBody(q){
+  var V = VISA_INFO, c = q.c, today = todayStr();
+  var apAmt = c.fam === "tmix" ? "$10 per phone line on T-Mix" : "$5 per line, up to 8 lines, on Experience and older plans";
+  function list(a){ return '<ul>' + a.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>'; }
+  var h = '<div style="display:flex;flex-direction:column;gap:14px">' +
+    '<div class="vtiles">' +
+      '<div class="vt hot"><span class="n">5%</span><span class="t">Phones, devices &amp; accessories</span><span class="d">Bought at T-Mobile, in T-Mobile Rewards</span></div>' +
+      '<div class="vt"><span class="n">2%</span><span class="t">Everything else</span><span class="d">Every purchase, no caps listed</span></div>' +
+      '<div class="vt"><span class="n">11%</span><span class="t">Restaurants on Tuesdays</span><span class="d">6% the rest of the week, through T-Mobile Dining Rewards</span></div>' +
+    '</div>';
+  if (V.welcome && today <= V.welcome.ends) h += '<div class="vcard" style="border-left:4px solid var(--accent)"><h4>Welcome offer · ends ' + shortDate(V.welcome.ends) + '</h4><p style="margin:0;font-size:14px">' + esc(V.welcome.text) + '</p></div>';
+  else h += '<p class="info">' + I.info + 'No welcome offer listed as of ' + shortDate(V.asof) + '. Check t-mobile.com/card for a current one.</p>';
+  h += '<div class="vcard"><h4>Tuesdays &amp; other extras</h4><ul>' +
+      '<li><b>T-Mobile Dining Rewards:</b> 10% cash back on Tuesdays and 5% other days at participating restaurants, plus an extra 1% when paying with the linked T-Mobile Visa (11% Tuesdays, 6% other days). Paid to the linked card once the balance reaches $10. Limited time; link the card in the T-Life app.</li>' +
+      '<li>The card itself has no Tuesday bonus on everyday purchases; it\'s 2% every day.</li>' +
+      V.perks.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></div>' +
+    '<div class="vcard"><h4>AutoPay</h4><ul><li>Paying the T-Mobile bill on AutoPay with the card keeps the AutoPay discount. Other credit cards don\'t.</li>' +
+      '<li>On this quote: ' + esc(apAmt) + '. Starts the next bill cycle; no extra discount if they already get AutoPay another way.</li></ul></div>' +
+    '<div class="vcard"><h4>How rewards work</h4>' + list(V.rewards) + '</div>' +
+    '<div class="vcard"><h4>Rates &amp; fees</h4>' + V.rates.map(function(r){ return '<div class="rr"><span class="l">' + esc(r[0]) + '</span><span class="a" style="white-space:normal;text-align:right">' + esc(r[1]) + '</span></div>'; }).join("") +
+      '<p class="fhint" style="margin-top:6px">Variable APRs as of Oct 30, 2026.</p></div>' +
+    '<div class="vcard"><h4>Who can apply</h4>' + list(V.who) + '</div>' +
+    '<label class="check" for="visaChk2"><input id="visaChk2" type="checkbox" data-k="visa" data-t="bool"' + (state.visa ? " checked" : "") + '><span>Customer was quoted or signed up for the T-Mobile Visa<br><small class="muted">Adds the card\'s 5% back to the quote, the same as the box in the top bar.</small></span></label>' +
+    '<p class="fhint">Issued by Capital One, N.A. Terms change; confirm on t-mobile.com/card. From T-Mobile\'s card and Dining Rewards pages, checked ' + shortDate(V.asof) + '.</p></div>';
+  return h;
+}
 /* Compare plans (Home Internet): every feature of Rely, Amplified and All-In in one table. Rows that differ are bold;
    "Differences only" hides the rest. The plan on the quote is highlighted, and Choose puts a plan on the quote. */
 function hintCompareBody(q){
