@@ -405,6 +405,11 @@ html.locked,html.locked body{overflow:hidden}
 .hcmp.many thead th:first-child{z-index:3}
 .hcmp .no{color:var(--muted)}
 .hcmp td small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.pphead{margin:0 0 14px;font-size:14.5px;line-height:1.45}
+.ppctl{display:flex;flex-wrap:wrap;gap:16px 24px}
+.ppnotes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px;margin-top:18px}
+.ppnotes ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px;line-height:1.45}
+@media (max-width:760px){.ppnotes{grid-template-columns:minmax(0,1fr)}}
 
 
 /* Job aid */
@@ -1681,7 +1686,9 @@ function renderStage(q){
   var s = state, c = q.c, h = banner(q);
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
-    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0)) + ')</button></div>';
+    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0)) + ')</button>' +
+    '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button></div>';
+  if (s.tab === "prepaid") { $("#stage").innerHTML = h + renderPrepaid(); return; }
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
@@ -1999,11 +2006,67 @@ function hintCompareBody(q){
     '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
     '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Gateway: return it undamaged or pay up to $370. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
 }
+/* Prepaid: a reference page only. Prepaid has no financing, and nothing on this tab changes the quote.
+   promos.json can carry a "prepaid" block in this same shape; the daily check refreshes it once a week.
+   price: monthly price for 1-5 lines WITHOUT AutoPay (null = not offered). ap: true = $apOff off per account
+   with AutoPay, false = no AutoPay discount, null = not listed. false in a feature = not included. */
+var PREPAID = {asof:"2026-11-18", apOff:5, perks:"T-Mobile Tuesdays, MLB.TV, Scam Block", activate:"$0 online · $10/line in store",
+  plans:[
+    {id:"starter", name:"Starter Monthly", price:[45,75,105,135,165], ap:true, d:"15GB of high-speed data", data:"15GB, then unlimited at 2G", hotspot:"Uses the 15GB, then 2G", video:"SD", canmex:"+$5/mo add-on", intl:"+$15/mo add-on: calls to landlines in 70+ countries", connect:"$10", guar:"5 years"},
+    {id:"unlimited", name:"Unlimited Monthly", price:[50,80,110,140,170], ap:true, d:"Lowest unlimited price", data:"Unlimited · 50GB premium", hotspot:"Unlimited at 3G speeds", video:"SD (up to 2.5 Mbps)", canmex:"+$5/mo add-on", intl:"+$15/mo add-on: calls to landlines in 70+ countries", connect:"$10", guar:"5 years"},
+    {id:"plus", name:"Unlimited Plus Monthly", price:[65,95,125,155,185], ap:true, d:"Hotspot, Canada & Mexico, HD passes", data:"Unlimited · 50GB premium", hotspot:"5GB high-speed", video:"SD, HD video passes available", canmex:"Talk & text included", intl:"Texting to 215+ countries", connect:"$10", guar:"5 years"},
+    {id:"promo", name:"Unlimited Promo", price:[55,75,null,null,null], ap:null, d:"Limited time: 2 lines for $75", data:"Unlimited · 50GB premium", hotspot:"3GB high-speed", video:null, canmex:"Talk & text included", intl:"Texting to 215+ countries", connect:"$10", guar:"5 years"},
+    {id:"10gb", name:"10GB", price:[97,98,99,100,130], ap:false, d:"4 lines for $100", data:"10GB, then unlimited at 2G (128 kbps)", hotspot:"Uses the 10GB", video:"SD; HD up to 1080p with Data Maximizer off", canmex:false, intl:false, connect:"$25 per voice line, $5 per other line", guar:"5 years"}
+  ],
+  deals:["Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time.",
+    "No prepaid phone or switching deals listed today."],
+  notes:["No financing: phones are paid in full at purchase. No annual contract, no credit check, $0 early termination fee.",
+    "Paid monthly, in advance. AutoPay takes $5 off per account starting the month after enrolling, so the first month is charged without it. AutoPay needs a debit card or bank account.",
+    "Activation or plan change: $0 online or in the T-Mobile Prepaid app, $10 per line in store.",
+    "Bring your own phone: it must be unlocked and compatible. Check the IMEI (dial *#06#). eSIM phones can activate in the T-Mobile Prepaid app.",
+    "Talk and text are unlimited for calls and texts between 2 people. Heavy users (over 50GB a month) may see lower speeds during congestion.",
+    "5-year price guarantee on talk, text and data. Taxes, fees and add-ons are extra and can change.",
+    "Typical 5G speeds: 144 to 561 Mbps down, 6 to 34 Mbps up.",
+    "Prepaid support: 1-877-464-8646."]};
+function renderPrepaid(){
+  var D = live.prepaid || PREPAID, n = Math.min(Math.max(ui.ppLines || 1, 1), 5), apOn = ui.ppAp !== false, off = num(D.apOff) || 5;
+  var plans = (D.plans || []).filter(function(p){ return p && p.name && Array.isArray(p.price); });
+  var base = function(p, k){ var x = p.price[k - 1]; return typeof x === "number" ? x : null; };
+  var mo = function(p, k){ var x = base(p, k); return x == null ? null : (apOn && p.ap === true ? x - off : x); };
+  var lines = n + " line" + (n > 1 ? "s" : "");
+  var f = function(k){ return plans.map(function(p){ return p[k] == null ? "Not listed" : p[k]; }); };
+  var cols = plans.map(function(p){ var x = mo(p, n); return {name:p.name, price:x == null ? "—" : fmt0(x), sub:x == null ? "Not offered at " + lines : (p.d || "")}; });
+  var rows = [
+    {sec:"Price for " + lines},
+    {l:"With AutoPay", n:"$" + off + " off per account", v:plans.map(function(p){ var x = base(p, n); return x == null ? "Not listed" : p.ap === true ? fmt0(x - off) : p.ap === false ? fmt0(x) + " (no AutoPay discount)" : fmt0(x) + " (listed price)"; })},
+    {l:"Without AutoPay", n:"Also the first month's price", v:plans.map(function(p){ var x = base(p, n); return x == null || p.ap == null ? "Not listed" : fmt0(x); })},
+    {l:"Per line", v:plans.map(function(p){ var x = mo(p, n); return x == null ? "Not listed" : "$" + (x % n ? (x / n).toFixed(2) : x / n); })},
+    {l:"1 · 2 · 3 · 4 · 5 lines", n:apOn ? "With AutoPay where offered" : "Without AutoPay", v:plans.map(function(p){ return [1,2,3,4,5].map(function(k){ var x = mo(p, k); return x == null ? "–" : "$" + x; }).join(" · "); })},
+    {l:"Price guarantee", v:f("guar")},
+    {sec:"Data"},
+    {l:"High-speed data", v:f("data")}, {l:"Hotspot", v:f("hotspot")}, {l:"Video", v:f("video")},
+    {sec:"Calling & travel"},
+    {l:"Talk & text", v:plans.map(function(){ return "Unlimited"; })}, {l:"Canada & Mexico", v:f("canmex")}, {l:"International", v:f("intl")},
+    {sec:"Fees & perks"},
+    {l:"Activation fee", n:"Also for plan changes", v:plans.map(function(p){ return p.activate || D.activate || "Not listed"; })},
+    {l:"Device connection charge", n:"One-time, due at sale", v:f("connect")},
+    {l:"Perks", v:plans.map(function(p){ return p.perks || D.perks || "Not listed"; })}
+  ];
+  var seg = function(act, items, cur){ return '<div class="seg" role="group">' + items.map(function(it){ return '<button data-act="' + act + '" data-v="' + it[0] + '" aria-pressed="' + (String(cur) === String(it[0])) + '">' + it[1] + '</button>'; }).join("") + '</div>'; };
+  var list = function(a){ return (Array.isArray(a) ? a : []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join(""); };
+  return '<div class="panel">' +
+    '<p class="pphead"><b>Reference only.</b> Prepaid has no financing, and nothing on this tab is added to the quote.</p>' +
+    '<div class="ppctl"><div><span class="flabel">Lines</span>' + seg("pplines", [[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"]], n) + '</div>' +
+      '<div><span class="flabel">AutoPay</span>' + seg("ppap", [["1","With AutoPay"],["0","Without"]], apOn ? "1" : "0") + '</div></div>' +
+    featTable(cols, rows, false, "Prices for " + lines + (apOn ? ", with AutoPay" : ", without AutoPay")) +
+    '<div class="ppnotes"><div><span class="flabel">Current deals</span><ul>' + list(D.deals) + '</ul></div><div><span class="flabel">Good to know</span><ul>' + list(D.notes) + '</ul></div></div>' +
+    '<p class="fhint">From T-Mobile\'s Prepaid plans page, checked ' + shortDate(D.asof) + '. Promo plans are limited time; confirm in the store system before quoting.</p></div>';
+}
 /* Compare plans (Wireless): every plan type in one panel, a tab each, as a feature table. Rows that differ are bold,
    plans on the quote are highlighted, and on the T-Mix and Retired tabs the price row shows each plan's charge at the
    quote's line count against the current plan, with Choose to switch. */
 var CMP_TABS = [["voice","T-Mix"],["retired","Retired"],["tablet","Tablet"],["watch","Watch"],["sync","SyncUP"]];
-function featTable(cols, rows, diffOnly){
+function featTable(cols, rows, diffOnly, corner){
   function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
   function cell(x){ return x === true ? '<span class="yes">✓ Included</span>' : x === false ? '<span class="no">—</span>' : (x === "Not listed" ? '<span class="no">Not listed</span>' : esc(x)); }
   var body = "", pending = "";
@@ -2015,7 +2078,7 @@ function featTable(cols, rows, diffOnly){
     body += '<tr class="' + (d ? "diff" : "") + '"><th scope="row">' + esc(r.l) + (r.n ? '<small>' + esc(r.n) + '</small>' : '') + '</th>' +
       r.v.map(function(x, i){ return '<td class="' + (cols[i].cur ? "cur" : "") + '">' + (r.raw ? x : cell(x)) + '</td>'; }).join("") + '</tr>';
   });
-  var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">Highlighted: on this quote</span></th>' + cols.map(function(cl){
+  var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">' + esc(corner || "Highlighted: on this quote") + '</span></th>' + cols.map(function(cl){
     return '<th scope="col" class="' + (cl.cur ? "cur" : "") + '"><span class="pn">' + esc(cl.name) + '</span><span class="pp">' + cl.price + '<small> /mo</small></span>' +
       '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.sub || "") + '</span>' +
       (cl.cur ? '<span class="yes" style="font-size:12px;display:block;margin-top:6px">✓ On quote</span>' : (cl.choose ? '<button class="obtn" data-act="plan" data-v="' + cl.choose + '">Choose</button>' : '')) + '</th>';
@@ -2673,6 +2736,8 @@ function startLive(){
     live.offers = offers.length ? offers : null;
     live.devices = devices.length ? devices : null;
     live.meta = d.meta || null;
+    var pp = d.prepaid, ppOk = pp && Array.isArray(pp.plans) && pp.plans.filter(function(p){ return p && p.name && Array.isArray(p.price); }).length;
+    live.prepaid = ppOk ? pp : null;
     live.state = "live";
     renderSoon();
   }, function(){ live.state = "error"; renderSoon(); });
@@ -3103,6 +3168,8 @@ document.addEventListener("click", function(e){
       ui.confirm = false; state = blankState(); ui.sheet = null; resetMail(); toast("Started a new quote."); break;
     case "example": state = exampleState(); ui.sheet = null; resetMail(); toast("Example quote loaded."); break;
     case "tab": state.tab = v; break;
+    case "pplines": ui.ppLines = +v || 1; break;
+    case "ppap": ui.ppAp = v === "1"; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
     case "cust":
       if (state.cust === v) break;

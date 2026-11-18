@@ -2863,5 +2863,127 @@
    "type": "syncTracker",
    "verified": "2026-11-18"
   }
- ]
+ ],
+ "prepaid": {
+  "activate": "$0 online · $10/line in store",
+  "apOff": 5,
+  "asof": "2026-11-18",
+  "deals": [
+   "Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time.",
+   "No prepaid phone or switching deals listed today."
+  ],
+  "notes": [
+   "No financing: phones are paid in full at purchase. No annual contract, no credit check, $0 early termination fee.",
+   "Paid monthly, in advance. AutoPay takes $5 off per account starting the month after enrolling, so the first month is charged without it. AutoPay needs a debit card or bank account.",
+   "Activation or plan change: $0 online or in the T-Mobile Prepaid app, $10 per line in store.",
+   "Bring your own phone: it must be unlocked and compatible. Check the IMEI (dial *#06#). eSIM phones can activate in the T-Mobile Prepaid app.",
+   "Talk and text are unlimited for calls and texts between 2 people. Heavy users (over 50GB a month) may see lower speeds during congestion.",
+   "5-year price guarantee on talk, text and data. Taxes, fees and add-ons are extra and can change.",
+   "Typical 5G speeds: 144 to 561 Mbps down, 6 to 34 Mbps up.",
+   "Prepaid support: 1-877-464-8646."
+  ],
+  "perks": "T-Mobile Tuesdays, MLB.TV, Scam Block",
+  "plans": [
+   {
+    "ap": true,
+    "canmex": "+$5/mo add-on",
+    "connect": "$10",
+    "d": "15GB of high-speed data",
+    "data": "15GB, then unlimited at 2G",
+    "guar": "5 years",
+    "hotspot": "Uses the 15GB, then 2G",
+    "id": "starter",
+    "intl": "+$15/mo add-on: calls to landlines in 70+ countries",
+    "name": "Starter Monthly",
+    "price": [
+     45,
+     75,
+     105,
+     135,
+     165
+    ],
+    "video": "SD"
+   },
+   {
+    "ap": true,
+    "canmex": "+$5/mo add-on",
+    "connect": "$10",
+    "d": "Lowest unlimited price",
+    "data": "Unlimited · 50GB premium",
+    "guar": "5 years",
+    "hotspot": "Unlimited at 3G speeds",
+    "id": "unlimited",
+    "intl": "+$15/mo add-on: calls to landlines in 70+ countries",
+    "name": "Unlimited Monthly",
+    "price": [
+     50,
+     80,
+     110,
+     140,
+     170
+    ],
+    "video": "SD (up to 2.5 Mbps)"
+   },
+   {
+    "ap": true,
+    "canmex": "Talk & text included",
+    "connect": "$10",
+    "d": "Hotspot, Canada & Mexico, HD passes",
+    "data": "Unlimited · 50GB premium",
+    "guar": "5 years",
+    "hotspot": "5GB high-speed",
+    "id": "plus",
+    "intl": "Texting to 215+ countries",
+    "name": "Unlimited Plus Monthly",
+    "price": [
+     65,
+     95,
+     125,
+     155,
+     185
+    ],
+    "video": "SD, HD video passes available"
+   },
+   {
+    "ap": null,
+    "canmex": "Talk & text included",
+    "connect": "$10",
+    "d": "Limited time: 2 lines for $75",
+    "data": "Unlimited · 50GB premium",
+    "guar": "5 years",
+    "hotspot": "3GB high-speed",
+    "id": "promo",
+    "intl": "Texting to 215+ countries",
+    "name": "Unlimited Promo",
+    "price": [
+     55,
+     75,
+     null,
+     null,
+     null
+    ],
+    "video": null
+   },
+   {
+    "ap": false,
+    "canmex": false,
+    "connect": "$25 per voice line, $5 per other line",
+    "d": "4 lines for $100",
+    "data": "10GB, then unlimited at 2G (128 kbps)",
+    "guar": "5 years",
+    "hotspot": "Uses the 10GB",
+    "id": "10gb",
+    "intl": false,
+    "name": "10GB",
+    "price": [
+     97,
+     98,
+     99,
+     100,
+     130
+    ],
+    "video": "SD; HD up to 1080p with Data Maximizer off"
+   }
+  ]
+ }
 }
