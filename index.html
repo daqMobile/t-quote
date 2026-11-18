@@ -2109,7 +2109,7 @@ function ppSummary(){
   var row = function(l, v, cls){ return '<div class="r' + (cls ? " " + cls : "") + '"><span>' + l + '</span><span>' + v + '</span></div>'; };
   var h = '<div class="ppbig"><div><span class="flabel">Due today</span><b>' + fmt(r.today) + '</b><small>plus taxes and fees</small></div>' +
     '<div><span class="flabel">Monthly' + (apNow ? ' from month 2' : '') + '</span><b>' + fmt(r.monthly) + '</b><small>' + esc(r.plan.name) + ', ' + ln + (apNow ? ', with AutoPay' : '') + '</small></div></div>';
-  h += '<span class="flabel" style="margin-top:6px">Due today</span>';
+  h += '<span class="flabel" style="margin-top:6px">Breakdown</span>';
   r.phones.forEach(function(c, i){
     if (!c) return;
     h += row('Line ' + (i + 1) + ': ' + esc(c.m.name) + (c.price < c.m.price ? ' <small>' + fmt(c.m.price) + ' full price</small>' : ''), fmt(c.price));
@@ -2118,7 +2118,7 @@ function ppSummary(){
   h += row('Device connection charge <small>' + fmt0(r.connectEach) + ' × ' + ln + '</small>', fmt(r.connect));
   h += row('Activation fee <small>' + (P.store ? fmt0(r.actEach) + ' × ' + ln + ' in store' : 'Online or in the app') + '</small>', fmt(r.act));
   h += row('Total due today', fmt(r.today), "t");
-  if (r.saved > 0.004) h += '<p class="fhint" style="color:var(--good);font-weight:600">Prepaid deals save ' + fmt(r.saved) + ' on phones today.</p>';
+  if (r.saved > 0.004) h += '<p class="fhint" style="color:var(--good);font-weight:600">Deals save ' + fmt(r.saved) + ' on phones today.</p>';
   return h;
 }
 function ppQuote(D, plans, n, apOn){
