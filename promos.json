@@ -2869,8 +2869,18 @@
   "apOff": 5,
   "asof": "2026-11-18",
   "deals": [
-   "Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time.",
-   "No prepaid phone or switching deals listed today."
+   "Galaxy A17 5G On Us with Unlimited Plus Monthly when you put another $85 into the account at a T-Mobile store. Plus $10 device connection charge.",
+   "Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time."
+  ],
+  "devices": [
+   {
+    "fam": "a17",
+    "id": "a17-128",
+    "mfr": "Samsung",
+    "name": "Galaxy A17 5G 128GB",
+    "price": 279.99,
+    "status": "active"
+   }
   ],
   "notes": [
    "No financing: phones are paid in full at purchase. No annual contract, no credit check, $0 early termination fee.",
@@ -2881,6 +2891,25 @@
    "5-year price guarantee on talk, text and data. Taxes, fees and add-ons are extra and can change.",
    "Typical 5G speeds: 144 to 561 Mbps down, 6 to 34 Mbps up.",
    "Prepaid support: 1-877-464-8646."
+  ],
+  "offers": [
+   {
+    "deposit": 85,
+    "detail": "Sign up for Unlimited Plus Monthly and put another $85 into the account at a T-Mobile store.",
+    "ends": null,
+    "id": "pp-a17-onus",
+    "label": "Galaxy A17 5G On Us",
+    "models": [
+     "a17"
+    ],
+    "need": "none",
+    "plans": [
+     "plus"
+    ],
+    "price": 0,
+    "source": "https://prepaid.t-mobile.com/",
+    "status": "active"
+   }
   ],
   "perks": "T-Mobile Tuesdays, MLB.TV, Scam Block",
   "plans": [

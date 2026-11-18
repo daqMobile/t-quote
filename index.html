@@ -2031,8 +2031,10 @@ var PREPAID = {asof:"2026-11-18", apOff:5, perks:"T-Mobile Tuesdays, MLB.TV, Sca
     {id:"promo", name:"Unlimited Promo", price:[55,75,null,null,null], ap:null, d:"Limited time: 2 lines for $75", data:"Unlimited · 50GB premium", hotspot:"3GB high-speed", video:null, canmex:"Talk & text included", intl:"Texting to 215+ countries", connect:"$10", guar:"5 years"},
     {id:"10gb", name:"10GB", price:[97,98,99,100,130], ap:false, d:"4 lines for $100", data:"10GB, then unlimited at 2G (128 kbps)", hotspot:"Uses the 10GB", video:"SD; HD up to 1080p with Data Maximizer off", canmex:false, intl:false, connect:"$25 per voice line, $5 per other line", guar:"5 years"}
   ],
-  deals:["Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time.",
-    "No prepaid phone or switching deals listed today."],
+  offers:[{"id": "pp-a17-onus", "label": "Galaxy A17 5G On Us", "detail": "Sign up for Unlimited Plus Monthly and put another $85 into the account at a T-Mobile store.", "models": ["a17"], "price": 0, "deposit": 85, "plans": ["plus"], "need": "none", "status": "active", "ends": null, "source": "https://prepaid.t-mobile.com/"}],
+  devices:[{"id": "a17-128", "fam": "a17", "mfr": "Samsung", "name": "Galaxy A17 5G 128GB", "price": 279.99, "status": "active"}],
+  deals:["Galaxy A17 5G On Us with Unlimited Plus Monthly when you put another $85 into the account at a T-Mobile store. Plus $10 device connection charge.",
+    "Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time."],
   notes:["No financing: phones are paid in full at purchase. No annual contract, no credit check, $0 early termination fee.",
     "Paid monthly, in advance. AutoPay takes $5 off per account starting the month after enrolling, so the first month is charged without it. AutoPay needs a debit card or bank account.",
     "Activation or plan change: $0 online or in the T-Mobile Prepaid app, $10 per line in store.",
@@ -2067,28 +2069,32 @@ function ppPhones(){
 }
 function ppModel(id){ return id ? ppPhones().filter(function(m){ return m.id === id; })[0] || null : null; }
 /* Prepaid phone deals (prepaid.offers): models are device family keys; price is the deal price or off the dollars off. */
-function ppDealsFor(m, planId){
+function ppDealsFor(m, planId, anyPlan){
   return (ppData().offers || []).filter(function(o){
     return o && o.id && o.label && o.status !== "expired" && Array.isArray(o.models) && o.models.indexOf(m.fam) > -1 &&
-      (o.plans == null || o.plans === "any" || (Array.isArray(o.plans) && o.plans.indexOf(planId) > -1));
+      (anyPlan || o.plans == null || o.plans === "any" || (Array.isArray(o.plans) && o.plans.indexOf(planId) > -1));
   });
 }
 function ppDealPrice(m, o){ return typeof o.price === "number" ? o.price : Math.max(0, m.price - num(o.off)); }
 /* What one line's phone costs today, with the deal it uses. */
 function ppPhoneCost(ph, planId){
   var m = ppModel(ph.dev); if (!m) return null;
-  var deals = ppDealsFor(m, planId), pick = ph.deal;
-  if (pick === "custom") return {m:m, deals:deals, pick:"custom", price:Math.max(0, m.price - num(ph.off))};
-  if (pick === "full") return {m:m, deals:deals, pick:"full", price:m.price};
-  var o = deals.filter(function(x){ return x.id === pick; })[0];
-  if (!o && deals.length) o = deals.slice().sort(function(a, b){ return ppDealPrice(m, a) - ppDealPrice(m, b); })[0];
-  return o ? {m:m, deals:deals, pick:o.id, deal:o, price:ppDealPrice(m, o)} : {m:m, deals:deals, pick:"full", price:m.price};
+  var deals = ppDealsFor(m, planId), other = ppDealsFor(m, planId, true).filter(function(o){ return deals.indexOf(o) < 0; }), pick = ph.deal, res;
+  if (pick === "custom") res = {pick:"custom", price:Math.max(0, m.price - num(ph.off))};
+  else if (pick === "full") res = {pick:"full", price:m.price};
+  else {
+    var o = deals.filter(function(x){ return x.id === pick; })[0];
+    if (!o && deals.length) o = deals.slice().sort(function(a, b){ return ppDealPrice(m, a) - ppDealPrice(m, b); })[0];
+    res = o ? {pick:o.id, deal:o, price:ppDealPrice(m, o), deposit:num(o.deposit)} : {pick:"full", price:m.price};
+  }
+  res.m = m; res.deals = deals; res.other = other; res.deposit = res.deposit || 0;
+  return res;
 }
 function ppCalc(){
   var P = ppState(), D = ppData(), plans = ppPlanList(D), n = P.lines;
   var plan = plans.filter(function(p){ return p.id === P.plan; })[0];
   if (!plan || ppBase(plan, n) == null) plan = plans.filter(function(p){ return ppBase(p, n) != null; })[0];
-  var r = {P:P, D:D, plan:plan, n:n, phones:[], phoneSum:0, saved:0};
+  var r = {P:P, D:D, plan:plan, n:n, phones:[], phoneSum:0, saved:0, deposit:0};
   if (!plan) return r;
   r.monthly = ppMonthly(plan, n, P.ap, D);
   r.first = ppBase(plan, n);
@@ -2099,9 +2105,9 @@ function ppCalc(){
   for (var i = 0; i < n; i++) {
     var c = ppPhoneCost(P.phones[i], plan.id);
     r.phones.push(c);
-    if (c) { r.phoneSum += c.price; r.saved += c.m.price - c.price; }
+    if (c) { r.phoneSum += c.price; r.saved += c.m.price - c.price; r.deposit += c.deposit; }
   }
-  r.today = r.phoneSum + r.connect + r.act + r.first;
+  r.today = r.phoneSum + r.connect + r.act + r.first + r.deposit;
   return r;
 }
 function ppSummary(){
@@ -2118,6 +2124,7 @@ function ppSummary(){
   h += row('First month of service' + (apNow ? ' <small>AutoPay starts the month after enrolling</small>' : ''), fmt(r.first));
   h += row('Device connection charge <small>' + fmt0(r.connectEach) + ' × ' + ln + '</small>', fmt(r.connect));
   h += row('Activation fee <small>' + (P.store ? fmt0(r.actEach) + ' × ' + ln + ' in store' : 'Online or in the app') + '</small>', fmt(r.act));
+  if (r.deposit > 0) h += row('Added to the account balance <small>Required by the phone deal; it goes toward future months</small>', fmt(r.deposit));
   h += row('Total due today', fmt(r.today), "t");
   if (r.saved > 0.004) h += '<p class="fhint" style="color:var(--good);font-weight:600">Deals save ' + fmt(r.saved) + ' on phones today.</p>';
   return h;
@@ -2145,10 +2152,14 @@ function ppQuote(D, plans, n, apOn){
       h += '<div class="radios" style="margin-top:10px">' + c.deals.map(function(o){
         return radio("ppd" + i, "ppd" + i + "-" + o.id, o.id, c.pick, esc(o.label) + ' · ' + fmt(ppDealPrice(c.m, o)), esc(o.detail || ""), false, k + ".deal");
       }).join("") +
+        c.other.map(function(o){
+          var need = (Array.isArray(o.plans) ? o.plans : []).map(function(id){ var pl = plans.filter(function(x){ return x.id === id; })[0]; return pl ? pl.name : id; }).join(" or ");
+          return radio("ppd" + i, "ppd" + i + "-" + o.id, o.id, "", esc(o.label) + ' · ' + fmt(ppDealPrice(c.m, o)), 'Needs ' + esc(need || "another plan") + '. ' + esc(o.detail || ""), true, k + ".deal");
+        }).join("") +
         radio("ppd" + i, "ppd" + i + "-custom", "custom", c.pick, "Custom deal", "Enter the instant discount from the store system", false, k + ".deal") +
         radio("ppd" + i, "ppd" + i + "-full", "full", c.pick, "Full Retail Price · " + fmt(c.m.price), "", false, k + ".deal") + '</div>';
       if (c.pick === "custom") h += '<div class="f" style="margin-top:8px"><label for="ppOff' + i + '">Instant discount</label><span class="money"><input class="tin" id="ppOff' + i + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="' + k + '.off" data-t="num" value="' + (num(ph.off) || "") + '"></span></div>';
-      if (!c.deals.length) h += '<p class="fhint" style="margin-top:6px">No prepaid deals on this phone right now.</p>';
+      if (!c.deals.length && !c.other.length) h += '<p class="fhint" style="margin-top:6px">No prepaid deals on this phone right now.</p>';
     } else if (!ph.dev) h += '<p class="fhint" style="margin-top:6px">Must be unlocked and compatible.</p>';
     h += '</div>';
   }
