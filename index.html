@@ -410,6 +410,18 @@ html.locked,html.locked body{overflow:hidden}
 .ppnotes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px;margin-top:18px}
 .ppnotes ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px;line-height:1.45}
 @media (max-width:760px){.ppnotes{grid-template-columns:minmax(0,1fr)}}
+.pptitle{font-family:var(--display);font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin:0}
+.hplan:disabled{opacity:.45;cursor:not-allowed}
+.pplines{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:16px}
+.ppline{border:1px solid var(--line);border-radius:6px;padding:12px;min-width:0}
+.ppline select{width:100%}
+.ppsum{margin-top:16px;border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:var(--sunk)}
+.ppsum .r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;font-size:14.5px;font-variant-numeric:tabular-nums}
+.ppsum .r small{display:block;color:var(--muted);font-size:12px}
+.ppsum .r.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700;font-size:16px}
+.ppbig{display:flex;flex-wrap:wrap;gap:16px 40px;margin-bottom:12px}
+.ppbig b{display:block;font-family:var(--display);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.ppbig small{color:var(--muted);font-size:12.5px}
 
 
 /* Job aid */
@@ -1015,6 +1027,7 @@ function blankState(){
   s.planNew = topPlan(TMIX); s.planExp = topPlan(EXP); s.exFam = "exp";
   s.hint = {on:false, plan:"amplified", voice:true, connect:true};
   s.away = {on:false, plan:"awayunl", connect:true, offer:"", customMo:0, customMonths:12};
+  s.pp = null;
   return s;
 }
 var state = exampleState();
@@ -2028,14 +2041,127 @@ var PREPAID = {asof:"2026-11-18", apOff:5, perks:"T-Mobile Tuesdays, MLB.TV, Sca
     "5-year price guarantee on talk, text and data. Taxes, fees and add-ons are extra and can change.",
     "Typical 5G speeds: 144 to 561 Mbps down, 6 to 34 Mbps up.",
     "Prepaid support: 1-877-464-8646."]};
+/* The prepaid quote lives in state.pp: lines (1-5) and AutoPay, shared with the plan table above it, plus the plan,
+   in-store activation and one phone per line. It is never added to the postpaid quote. */
+function ppState(){
+  var p = state.pp;
+  if (!p || typeof p !== "object") p = state.pp = {};
+  p.lines = Math.min(Math.max(parseInt(p.lines, 10) || 1, 1), 5);
+  if (typeof p.ap !== "boolean") p.ap = true;
+  if (typeof p.store !== "boolean") p.store = true;
+  if (typeof p.plan !== "string") p.plan = "unlimited";
+  if (!Array.isArray(p.phones)) p.phones = [];
+  for (var i = 0; i < 5; i++) if (!p.phones[i] || typeof p.phones[i] !== "object") p.phones[i] = {dev:"", deal:"", off:0};
+  return p;
+}
+function ppData(){ return live.prepaid || PREPAID; }
+function ppPlanList(D){ return (D.plans || []).filter(function(p){ return p && p.name && Array.isArray(p.price); }); }
+function ppBase(p, k){ var x = p.price[k - 1]; return typeof x === "number" ? x : null; }
+function ppMonthly(p, k, apOn, D){ var x = ppBase(p, k); return x == null ? null : (apOn && p.ap === true ? x - (num(D.apOff) || 5) : x); }
+function ppDollars(t, pick){ var m = String(t || "").match(/\$\d+(\.\d+)?/g); if (!m) return null; var v = m.map(function(s){ return parseFloat(s.slice(1)); }); return pick === "max" ? Math.max.apply(null, v) : v[0]; }
+/* Phones: T-Mobile's phone list plus any prepaid-only phones the weekly check adds (prepaid.devices). */
+function ppPhones(){
+  var extra = (ppData().devices || []).filter(function(m){ return m && m.id && m.name && typeof m.price === "number" && m.status !== "retired"; });
+  return modelPool().filter(function(m){ return m.type === "phone"; }).concat(extra);
+}
+function ppModel(id){ return id ? ppPhones().filter(function(m){ return m.id === id; })[0] || null : null; }
+/* Prepaid phone deals (prepaid.offers): models are device family keys; price is the deal price or off the dollars off. */
+function ppDealsFor(m, planId){
+  return (ppData().offers || []).filter(function(o){
+    return o && o.id && o.label && o.status !== "expired" && Array.isArray(o.models) && o.models.indexOf(m.fam) > -1 &&
+      (o.plans == null || o.plans === "any" || (Array.isArray(o.plans) && o.plans.indexOf(planId) > -1));
+  });
+}
+function ppDealPrice(m, o){ return typeof o.price === "number" ? o.price : Math.max(0, m.price - num(o.off)); }
+/* What one line's phone costs today, with the deal it uses. */
+function ppPhoneCost(ph, planId){
+  var m = ppModel(ph.dev); if (!m) return null;
+  var deals = ppDealsFor(m, planId), pick = ph.deal;
+  if (pick === "custom") return {m:m, deals:deals, pick:"custom", price:Math.max(0, m.price - num(ph.off))};
+  if (pick === "full") return {m:m, deals:deals, pick:"full", price:m.price};
+  var o = deals.filter(function(x){ return x.id === pick; })[0];
+  if (!o && deals.length) o = deals.slice().sort(function(a, b){ return ppDealPrice(m, a) - ppDealPrice(m, b); })[0];
+  return o ? {m:m, deals:deals, pick:o.id, deal:o, price:ppDealPrice(m, o)} : {m:m, deals:deals, pick:"full", price:m.price};
+}
+function ppCalc(){
+  var P = ppState(), D = ppData(), plans = ppPlanList(D), n = P.lines;
+  var plan = plans.filter(function(p){ return p.id === P.plan; })[0];
+  if (!plan || ppBase(plan, n) == null) plan = plans.filter(function(p){ return ppBase(p, n) != null; })[0];
+  var r = {P:P, D:D, plan:plan, n:n, phones:[], phoneSum:0, saved:0};
+  if (!plan) return r;
+  r.monthly = ppMonthly(plan, n, P.ap, D);
+  r.first = ppBase(plan, n);
+  r.connectEach = ppDollars(plan.connect) != null ? ppDollars(plan.connect) : 10;
+  r.connect = r.connectEach * n;
+  r.actEach = P.store ? (ppDollars(D.activate, "max") != null ? ppDollars(D.activate, "max") : 10) : 0;
+  r.act = r.actEach * n;
+  for (var i = 0; i < n; i++) {
+    var c = ppPhoneCost(P.phones[i], plan.id);
+    r.phones.push(c);
+    if (c) { r.phoneSum += c.price; r.saved += c.m.price - c.price; }
+  }
+  r.today = r.phoneSum + r.connect + r.act + r.first;
+  return r;
+}
+function ppSummary(){
+  var r = ppCalc(); if (!r.plan) return '<p class="fhint">No prepaid plan is offered at this many lines.</p>';
+  var P = r.P, n = r.n, ln = n + " line" + (n > 1 ? "s" : ""), apNow = P.ap && r.plan.ap === true;
+  var row = function(l, v, cls){ return '<div class="r' + (cls ? " " + cls : "") + '"><span>' + l + '</span><span>' + v + '</span></div>'; };
+  var h = '<div class="ppbig"><div><span class="flabel">Due today</span><b>' + fmt(r.today) + '</b><small>plus taxes and fees</small></div>' +
+    '<div><span class="flabel">Monthly' + (apNow ? ' from month 2' : '') + '</span><b>' + fmt(r.monthly) + '</b><small>' + esc(r.plan.name) + ', ' + ln + (apNow ? ', with AutoPay' : '') + '</small></div></div>';
+  h += '<span class="flabel" style="margin-top:6px">Due today</span>';
+  r.phones.forEach(function(c, i){
+    if (!c) return;
+    h += row('Line ' + (i + 1) + ': ' + esc(c.m.name) + (c.price < c.m.price ? ' <small>' + fmt(c.m.price) + ' full price</small>' : ''), fmt(c.price));
+  });
+  h += row('First month of service' + (apNow ? ' <small>AutoPay starts the month after enrolling</small>' : ''), fmt(r.first));
+  h += row('Device connection charge <small>' + fmt0(r.connectEach) + ' × ' + ln + '</small>', fmt(r.connect));
+  h += row('Activation fee <small>' + (P.store ? fmt0(r.actEach) + ' × ' + ln + ' in store' : 'Online or in the app') + '</small>', fmt(r.act));
+  h += row('Total due today', fmt(r.today), "t");
+  if (r.saved > 0.004) h += '<p class="fhint" style="color:var(--good);font-weight:600">Prepaid deals save ' + fmt(r.saved) + ' on phones today.</p>';
+  return h;
+}
+function ppQuote(D, plans, n, apOn){
+  var P = ppState(), r = ppCalc(), ln = n + " line" + (n > 1 ? "s" : "");
+  var h = '<div class="panel" style="border-top:1px solid var(--line);margin-top:16px">' +
+    '<h3 class="pptitle">Prepaid quote</h3>' +
+    '<p class="fhint" style="margin-top:2px">Uses the lines and AutoPay picked above. Phones are paid in full today.</p>' +
+    '<div class="hint-plans">' + plans.map(function(p){
+      var x = ppMonthly(p, n, apOn, D), on = r.plan && r.plan.id === p.id;
+      return '<button class="hplan" data-act="ppplan" data-v="' + esc(p.id) + '" aria-pressed="' + !!on + '"' + (x == null ? ' disabled' : '') + '><span class="n">' + esc(p.name) + '</span><span class="p">' + (x == null ? '—' : fmt0(x) + '<small> /mo</small>') + '</span><span class="d">' + (x == null ? 'Not offered at ' + ln : esc(p.d || "")) + '</span></button>';
+    }).join("") + '</div>' +
+    '<label class="check" for="ppStore" style="margin-top:16px"><input id="ppStore" type="checkbox" data-k="pp.store" data-t="bool"' + (P.store ? " checked" : "") + '><span>Activating in store<br><small class="muted">' + esc(D.activate || "$10 per line in store") + '</small></span></label>';
+  var byMfr = {}, order = [];
+  ppPhones().forEach(function(m){ var k = m.mfr || "Other"; if (!byMfr[k]) { byMfr[k] = []; order.push(k); } byMfr[k].push(m); });
+  h += '<div class="pplines">';
+  for (var i = 0; i < n; i++) {
+    var ph = P.phones[i], c = r.plan ? r.phones[i] : null, k = "pp.phones." + i;
+    h += '<div class="ppline"><label class="flabel" for="ppDev' + i + '">Line ' + (i + 1) + '</label><div class="selwrap"><select id="ppDev' + i + '" data-k="' + k + '.dev" data-t="str">' +
+      '<option value="">Bring your own phone</option>' + order.map(function(mf){
+        return '<optgroup label="' + esc(mf) + '">' + byMfr[mf].map(function(m){ return '<option value="' + esc(m.id) + '"' + (m.id === ph.dev ? " selected" : "") + '>' + esc(m.name) + ' · ' + fmt(m.price) + '</option>'; }).join("") + '</optgroup>';
+      }).join("") + '</select></div>';
+    if (c) {
+      h += '<div class="radios" style="margin-top:10px">' + c.deals.map(function(o){
+        return radio("ppd" + i, "ppd" + i + "-" + o.id, o.id, c.pick, esc(o.label) + ' · ' + fmt(ppDealPrice(c.m, o)), esc(o.detail || ""), false, k + ".deal");
+      }).join("") +
+        radio("ppd" + i, "ppd" + i + "-custom", "custom", c.pick, "Custom deal", "Enter the instant discount from the store system", false, k + ".deal") +
+        radio("ppd" + i, "ppd" + i + "-full", "full", c.pick, "Full Retail Price · " + fmt(c.m.price), "", false, k + ".deal") + '</div>';
+      if (c.pick === "custom") h += '<div class="f" style="margin-top:8px"><label for="ppOff' + i + '">Instant discount</label><span class="money"><input class="tin" id="ppOff' + i + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="' + k + '.off" data-t="num" value="' + (num(ph.off) || "") + '"></span></div>';
+      if (!c.deals.length) h += '<p class="fhint" style="margin-top:6px">No prepaid deals on this phone right now.</p>';
+    } else if (!ph.dev) h += '<p class="fhint" style="margin-top:6px">Must be unlocked and compatible.</p>';
+    h += '</div>';
+  }
+  h += '</div><div class="ppsum" id="ppsum">' + ppSummary() + '</div>' +
+    '<p class="fhint">Phone prices are T-Mobile\'s full retail prices; confirm prepaid pricing in the store system. Not added to the postpaid quote.</p></div>';
+  return h;
+}
 function renderPrepaid(){
-  var D = live.prepaid || PREPAID, n = Math.min(Math.max(ui.ppLines || 1, 1), 5), apOn = ui.ppAp !== false, off = num(D.apOff) || 5;
-  var plans = (D.plans || []).filter(function(p){ return p && p.name && Array.isArray(p.price); });
-  var base = function(p, k){ var x = p.price[k - 1]; return typeof x === "number" ? x : null; };
-  var mo = function(p, k){ var x = base(p, k); return x == null ? null : (apOn && p.ap === true ? x - off : x); };
+  var P = ppState(), D = ppData(), n = P.lines, apOn = P.ap;
+  var plans = ppPlanList(D), cur = ppCalc().plan;
+  var mo = function(p, k){ return ppMonthly(p, k, apOn, D); };
   var lines = n + " line" + (n > 1 ? "s" : "");
   var f = function(k){ return plans.map(function(p){ return p[k] == null ? "Not listed" : p[k]; }); };
-  var cols = plans.map(function(p){ var x = mo(p, n); return {name:p.name, price:x == null ? "—" : fmt0(x), sub:x == null ? "Not offered at " + lines : (p.d || "")}; });
+  var cols = plans.map(function(p){ var x = mo(p, n); return {name:p.name, price:x == null ? "—" : fmt0(x), sub:x == null ? "Not offered at " + lines : (p.d || ""), cur:!!cur && cur.id === p.id}; });
   var rows = [
     {sec:"Price for " + lines},
     {l:"Per line", v:plans.map(function(p){ var x = mo(p, n); return x == null ? "Not listed" : "$" + (x % n ? (x / n).toFixed(2) : x / n); })},
@@ -2050,15 +2176,16 @@ function renderPrepaid(){
     {l:"Device connection charge", n:"One-time, due at sale", v:f("connect")},
     {l:"Perks", v:plans.map(function(p){ return p.perks || D.perks || "Not listed"; })}
   ];
-  var seg = function(act, items, cur){ return '<div class="seg" role="group">' + items.map(function(it){ return '<button data-act="' + act + '" data-v="' + it[0] + '" aria-pressed="' + (String(cur) === String(it[0])) + '">' + it[1] + '</button>'; }).join("") + '</div>'; };
+  var seg = function(act, items, cv){ return '<div class="seg" role="group">' + items.map(function(it){ return '<button data-act="' + act + '" data-v="' + it[0] + '" aria-pressed="' + (String(cv) === String(it[0])) + '">' + it[1] + '</button>'; }).join("") + '</div>'; };
   var list = function(a){ return (Array.isArray(a) ? a : []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join(""); };
   return '<div class="panel">' +
-    '<p class="pphead"><b>Reference only.</b> Prepaid has no financing, and nothing on this tab is added to the quote.</p>' +
+    '<p class="pphead"><b>No financing on prepaid:</b> phones are paid in full. Nothing on this tab is added to the postpaid quote.</p>' +
     '<div class="ppctl"><div><span class="flabel">Lines</span>' + seg("pplines", [[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"]], n) + '</div>' +
       '<div><span class="flabel">AutoPay</span>' + seg("ppap", [["1","With AutoPay"],["0","Without"]], apOn ? "1" : "0") + '</div></div>' +
     featTable(cols, rows, false, "Prices for " + lines + (apOn ? ", with AutoPay" : ", without AutoPay")) +
     '<div class="ppnotes"><div><span class="flabel">Current deals</span><ul>' + list(D.deals) + '</ul></div><div><span class="flabel">Good to know</span><ul>' + list(D.notes) + '</ul></div></div>' +
-    '<p class="fhint">From T-Mobile\'s Prepaid plans page, checked ' + shortDate(D.asof) + '. Promo plans are limited time; confirm in the store system before quoting.</p></div>';
+    '<p class="fhint">From T-Mobile\'s Prepaid plans page, checked ' + shortDate(D.asof) + '. Promo plans are limited time; confirm in the store system before quoting.</p></div>' +
+    ppQuote(D, plans, n, apOn);
 }
 /* Compare plans (Wireless): every plan type in one panel, a tab each, as a feature table. Rows that differ are bold,
    plans on the quote are highlighted, and on the T-Mix and Retired tabs the price row shows each plan's charge at the
@@ -3166,8 +3293,9 @@ document.addEventListener("click", function(e){
       ui.confirm = false; state = blankState(); ui.sheet = null; resetMail(); toast("Started a new quote."); break;
     case "example": state = exampleState(); ui.sheet = null; resetMail(); toast("Example quote loaded."); break;
     case "tab": state.tab = v; break;
-    case "pplines": ui.ppLines = +v || 1; break;
-    case "ppap": ui.ppAp = v === "1"; break;
+    case "pplines": ppState().lines = +v || 1; break;
+    case "ppap": ppState().ap = v === "1"; break;
+    case "ppplan": ppState().plan = v; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
     case "cust":
       if (state.cust === v) break;
@@ -3237,7 +3365,7 @@ document.addEventListener("click", function(e){
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
   }
-  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear"].indexOf(act) < 0 && act !== "example") state.example = false;
+  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear","pplines","ppap","ppplan"].indexOf(act) < 0 && act !== "example") state.example = false;
   var focusId = document.activeElement && document.activeElement.id;
   renderAll();
   if (act === "sheet" || act === "edit") { var t = $("#dTitle"); if (t) t.focus({preventScroll:true}); }
@@ -3254,6 +3382,7 @@ document.addEventListener("input", function(e){
   }
   if (!el.dataset || !el.dataset.k) return;
   if (el.tagName === "SELECT" || el.type === "checkbox" || el.type === "radio") return;
+  if (/^pp\./.test(el.dataset.k)) { ppState(); setPath(el.dataset.k, parseFloat(el.value) || 0); save(); var ps = $("#ppsum"); if (ps) ps.innerHTML = ppSummary(); return; }
   setPath(el.dataset.k, el.dataset.t === "num" ? (parseFloat(el.value) || 0) : el.value);
   state.example = false;
   renderLive();
@@ -3265,7 +3394,9 @@ document.addEventListener("change", function(e){
   if (el.tagName !== "SELECT" && el.type !== "checkbox" && el.type !== "radio") return;
   var t = el.dataset.t, val;
   if (t === "bool") val = el.checked; else if (t === "bool01") val = el.value === "1"; else if (t === "num") val = parseFloat(el.value) || 0; else val = el.value;
+  if (/^pp\./.test(el.dataset.k)) ppState();
   setPath(el.dataset.k, val);
+  if (/^pp\.phones\.\d+\.dev$/.test(el.dataset.k)) setPath(el.dataset.k.replace(/dev$/, "deal"), "");
   if (el.dataset.k === "__plan") afterPlanChange();
   /* Choosing a promotion folds the offer list; "Show offers" opens it again. */
   var om = el.type === "radio" && /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k);
@@ -3274,7 +3405,7 @@ document.addEventListener("change", function(e){
   /* Turning BYOD on shows its offer list open. */
   var bm = el.type === "checkbox" && el.checked && /^g\.([^.]+)\.dev\.byod$/.exec(el.dataset.k);
   if (bm && ui.offersHidden) ui.offersHidden[bm[1]] = false;
-  state.example = false;
+  if (!/^pp\./.test(el.dataset.k)) state.example = false;
   var id = el.id, wasSelect = el.tagName === "SELECT";
   renderAll();
   /* Put focus back for keyboards, but not on a dropdown on a touch screen: on iPad, focusing a dropdown opens its list again. */
