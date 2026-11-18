@@ -2050,6 +2050,7 @@ function ppState(){
   if (typeof p.ap !== "boolean") p.ap = true;
   if (typeof p.store !== "boolean") p.store = true;
   if (typeof p.plan !== "string") p.plan = "unlimited";
+  if (p.brand !== "connect") p.brand = "tmo";
   if (!Array.isArray(p.phones)) p.phones = [];
   for (var i = 0; i < 5; i++) if (!p.phones[i] || typeof p.phones[i] !== "object") p.phones[i] = {dev:"", deal:"", off:0};
   return p;
@@ -2155,8 +2156,43 @@ function ppQuote(D, plans, n, apOn){
     '<p class="fhint">Phone prices are T-Mobile\'s full retail prices; confirm prepaid pricing in the store system. Not added to the postpaid quote.</p></div>';
   return h;
 }
+/* Connect by T-Mobile: T-Mobile's separate budget prepaid brand. Reference only, from its website (Nov 18, 2026). */
+var CONNECT = {asof:"2026-11-18", plans:[
+    {id:"c15", name:"Connect $15", price:15, data:"5GB"},
+    {id:"c25", name:"Connect $25", price:25, data:"8GB"},
+    {id:"c35", name:"Connect $35", price:35, data:"12GB"}],
+  notes:["A separate prepaid brand that runs on T-Mobile's network, with its own website and account.",
+    "No contracts, no credit checks, no complicated extras.",
+    "Change plans whenever you want.",
+    "Domestic use only. Video typically streams in SD quality.",
+    "Prices are per month, plus taxes and fees."]};
+function ppBrandSeg(P){
+  return '<div class="seg" role="group" aria-label="Prepaid brand" style="margin-bottom:14px">' +
+    '<button data-act="ppbrand" data-v="tmo" aria-pressed="' + (P.brand === "tmo") + '">T-Mobile Prepaid</button>' +
+    '<button data-act="ppbrand" data-v="connect" aria-pressed="' + (P.brand === "connect") + '">Connect by T-Mobile</button></div>';
+}
+function renderConnect(P){
+  var C = CONNECT, plans = C.plans;
+  var cols = plans.map(function(p){ return {name:p.name, price:fmt0(p.price), sub:p.data + " data"}; });
+  var all = function(v){ return plans.map(function(){ return v; }); };
+  var rows = [
+    {sec:"Plan"},
+    {l:"Monthly price", n:"Per month, plus taxes and fees", v:plans.map(function(p){ return fmt0(p.price); })},
+    {l:"Data", v:plans.map(function(p){ return p.data; })},
+    {l:"Talk", v:all("Unlimited")}, {l:"Text", v:all("Unlimited")},
+    {l:"Video", v:all("SD quality")},
+    {l:"Where it works", v:all("Domestic use only")},
+    {l:"Contract & credit check", v:all("None")}
+  ];
+  return '<div class="panel">' + ppBrandSeg(P) +
+    '<p class="pphead"><b>Connect by T-Mobile:</b> T-Mobile\'s budget prepaid brand. Unlimited talk and text starting at $15/mo. Reference only.</p>' +
+    featTable(cols, rows, false, "Connect by T-Mobile") +
+    '<div class="ppnotes" style="grid-template-columns:minmax(0,1fr)"><div><span class="flabel">Good to know</span><ul>' + C.notes.map(function(t){ return '<li>' + esc(t) + '</li>'; }).join("") + '</ul></div></div>' +
+    '<p class="fhint">From Connect by T-Mobile\'s website, ' + shortDate(C.asof) + '. Confirm current plans before quoting.</p></div>';
+}
 function renderPrepaid(){
   var P = ppState(), D = ppData(), n = P.lines, apOn = P.ap;
+  if (P.brand === "connect") return renderConnect(P);
   var plans = ppPlanList(D), cur = ppCalc().plan;
   var mo = function(p, k){ return ppMonthly(p, k, apOn, D); };
   var lines = n + " line" + (n > 1 ? "s" : "");
@@ -2178,7 +2214,7 @@ function renderPrepaid(){
   ];
   var seg = function(act, items, cv){ return '<div class="seg" role="group">' + items.map(function(it){ return '<button data-act="' + act + '" data-v="' + it[0] + '" aria-pressed="' + (String(cv) === String(it[0])) + '">' + it[1] + '</button>'; }).join("") + '</div>'; };
   var list = function(a){ return (Array.isArray(a) ? a : []).map(function(t){ return '<li>' + esc(t) + '</li>'; }).join(""); };
-  return '<div class="panel">' +
+  return '<div class="panel">' + ppBrandSeg(P) +
     '<p class="pphead"><b>No financing on prepaid:</b> phones are paid in full. Nothing on this tab is added to the postpaid quote.</p>' +
     '<div class="ppctl"><div><span class="flabel">Lines</span>' + seg("pplines", [[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"]], n) + '</div>' +
       '<div><span class="flabel">AutoPay</span>' + seg("ppap", [["1","With AutoPay"],["0","Without"]], apOn ? "1" : "0") + '</div></div>' +
@@ -3296,6 +3332,7 @@ document.addEventListener("click", function(e){
     case "pplines": ppState().lines = +v || 1; break;
     case "ppap": ppState().ap = v === "1"; break;
     case "ppplan": ppState().plan = v; break;
+    case "ppbrand": ppState().brand = v === "connect" ? "connect" : "tmo"; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
     case "cust":
       if (state.cust === v) break;
@@ -3365,7 +3402,7 @@ document.addEventListener("click", function(e){
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
   }
-  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear","pplines","ppap","ppplan"].indexOf(act) < 0 && act !== "example") state.example = false;
+  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear","pplines","ppap","ppplan","ppbrand"].indexOf(act) < 0 && act !== "example") state.example = false;
   var focusId = document.activeElement && document.activeElement.id;
   renderAll();
   if (act === "sheet" || act === "edit") { var t = $("#dTitle"); if (t) t.focus({preventScroll:true}); }
