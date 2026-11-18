@@ -1600,7 +1600,7 @@ function compute(s){
       if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: c.fam === "biz" ? Math.min(c.n,5) + " × $5 (lines 1–5)" : Math.min(c.n,12) + " × $10"});
       if (c.fam === "biz" && s.bizFree) {
         var fc = bizFreeCredit(c.pid, c.n);
-        if (fc) { plan -= fc; share = plan / c.n; W.push({l:"3rd line free", a:-fc, c:"credit", sub:"one line per account · monthly bill credit"}); notes.push({t:"info", m:"3rd line free: new business accounts with 3+ voice lines, one free line per account, as a monthly bill credit. Confirm the credit in the store system."}); }
+        if (fc) { plan -= fc; share = plan / c.n; W.push({l:"3rd line free", a:-fc, c:"credit", sub:"one line per account · monthly bill credit"}); notes.push({t:"info", m:"3rd line free: new business accounts with 3+ voice lines get one line's monthly service price back as a monthly bill credit (1 per account). It won't show at checkout, credits can take up to 2 bill cycles, and they stop if any voice line is cancelled or the plan changes. Taxes and fees on that line still apply."}); }
         else notes.push({t:"warn", m:"3rd line free needs 3 or more phone lines."});
       }
       if (c.fam === "biz" && c.n >= 13) notes.push({t:"info", m:"13 or more business lines go through T-Mobile's business sales team."});
@@ -1884,7 +1884,7 @@ function renderStage(q){
         (c.ex ? acctFields(c, "pd") : '<p class="fhint">Choosing Upgrade as a line type makes the quote an existing account.</p>') +
       '</div>' +
       '<div><span class="flabel">Account discounts</span>' +
-        '<label class="check' + (c.ex ? " dis" : "") + '" for="bizFree"><input id="bizFree" type="checkbox" data-k="bizFree" data-t="bool"' + (s.bizFree && !c.ex ? " checked" : "") + (c.ex ? " disabled" : "") + '><span>3rd line free<br><small class="muted">New business accounts with 3 or more voice lines. One free line per account, as a monthly bill credit.</small></span></label>' +
+        '<label class="check' + (c.ex ? " dis" : "") + '" for="bizFree"><input id="bizFree" type="checkbox" data-k="bizFree" data-t="bool"' + (s.bizFree && !c.ex ? " checked" : "") + (c.ex ? " disabled" : "") + '><span>3rd line free<br><small class="muted">New business accounts with 3 or more voice lines (2 paid + 1 free). One free line per account, as a monthly bill credit for that line\'s service price. Won\'t show at checkout; stops if a voice line is cancelled or the plan changes.</small></span></label>' +
         '<p class="fhint">Business accounts don\'t get the consumer discounts (Military, First Responder, 55+, Work Perks or Employee). Number-transfer and other promotional credits are chosen per line under Apply a promotion in Edit Options.</p></div>' +
     '</div>';
   } else if (s.discountsOpen) {
