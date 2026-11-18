@@ -43,6 +43,8 @@
     color-scheme:dark;
   }
 }
+:root[data-mode="biz"]{--accent:#8A0050; --accent-soft:#F3E2EB; --band:#77003F; --band-ink:#FFFFFF}
+.bizlbl{font-weight:500;opacity:.85}
 :root[data-theme="dark"]{
   --bg:#0D1217; --surface:#151C23; --sunk:#1B232B; --ink:#E6EBF0; --muted:#94A2AE; --line:#2B3640;
   --accent:#F57AB9; --accent-ink:#0D1217; --accent-soft:#3A1830;
@@ -491,6 +493,8 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 8px 24px -8px rgba(0,0,0,.5);max-width:calc(100% - 32px);text-align:center}
 @media (min-width:900px){.toast{bottom:24px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (prefers-color-scheme: dark){ :root[data-mode="biz"]:not([data-theme="light"]){--accent:#D7579A; --accent-soft:#2C1022; --band:#8E2A60; --band-ink:#FFFFFF} }
+:root[data-mode="biz"][data-theme="dark"]{--accent:#D7579A; --accent-soft:#2C1022; --band:#8E2A60; --band-ink:#FFFFFF}
 </style>
 </head>
 <body>
@@ -536,6 +540,92 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
 "use strict";
 var KEY = "tmix-quick-quote.v2";
 var ASOF = "Nov 9, 2026";
+/* Quick Quote has two screens: consumer (default) and Quick Quote for Business. Each keeps its own quote on this device. */
+var MODE_KEY = KEY + ".mode", MODE = "consumer";
+try { if (localStorage.getItem(MODE_KEY) === "biz") MODE = "biz"; } catch (e) {}
+function isBiz(){ return MODE === "biz"; }
+function storeKey(){ return isBiz() ? KEY + ".biz" : KEY; }
+
+/* ================= T-Mobile for Business =================
+   SuperMobile, ProMobile and CoreMobile (t-mobile.com/business/wireless-business-plans, Nov 18, 2026).
+   list = T-Mobile's listed monthly totals for 1-8 lines before AutoPay; addl = each line past 8.
+   AutoPay: $5 off per line on lines 1-5 (bank or debit). The quote treats the 6+ line totals as the AutoPay price,
+   which is how T-Mobile's own 6-line examples add up ($125 / $200 / $250 with the 3rd line free); confirm in the
+   store system. 3rd line free: new business accounts with 3+ voice lines, one line per account, as a bill credit. */
+var BIZ_ASOF = "2026-11-18";
+var BIZ = {
+  super: {name:"SuperMobile", full:"SuperMobile", max:30, list:[100,170,210,250,290,300,350,400], addl:50, specs:"Unlimited premium data · 300GB hotspot · 4K video · T-Satellite"},
+  pro:   {name:"ProMobile",   full:"ProMobile",   max:30, list:[85,150,180,210,240,240,280,320],  addl:40, specs:"200GB premium data · 200GB hotspot · 4K video · Threat Protect"},
+  core:  {name:"CoreMobile",  full:"CoreMobile",  max:30, list:[65,100,120,140,160,150,175,200],  addl:25, specs:"50GB premium data · 5GB hotspot · HD video"}
+};
+var BIZ_ORDER = ["super","pro","core"];
+function bizList(id, n){ var b = BIZ[id], t = b.list; return n <= t.length ? t[n-1] : t[t.length-1] + (n - t.length) * b.addl; }
+/* The 3rd line free credit: the third line's price at 3-5 lines, one line at the per-line rate at 6+. */
+/* Plan price with the 3rd line free taken off, for per-line prices that match the quote total. */
+function bizCalcFree(id, n, autopay, free){
+  var pc = planCalc("biz", id, n, autopay); if (!pc || !free) return pc;
+  var fc = bizFreeCredit(id, n); return Object.assign({}, pc, {total:pc.total - fc});
+}
+function bizFreeCredit(id, n){ var b = BIZ[id]; if (!b || n < 3) return 0; return n <= 5 ? b.list[2] - b.list[1] - 5 : b.addl; }
+/* Business data-only lines. Mobile Internet: $20/mo with AutoPay and a voice line ($60 without one), from T-Mobile's
+   business tablet offer terms. The wearable line price isn't published for these plans, so it's flagged on the quote. */
+var CPLANS_BIZ = {
+  tablet: [{id:"bizTab", name:"Mobile Internet line", ap:20}],
+  watch:  [{id:"bizWatch", name:"Wearable line", ap:10, unconfirmed:true}]
+};
+function cplansFor(t){ return (typeof state !== "undefined" && state && state.biz ? CPLANS_BIZ : CPLANS)[t]; }
+/* 5G Business Internet: $70/mo, $35/mo with a business voice line ($35 monthly bill credit). */
+var BIZ_INT = {id:"bizint", name:"5G Business Internet", price:70, voiceCr:35, d:"Business-grade 5G internet · 5-year price guarantee"};
+/* Business device offers (t-mobile.com/business/apple-business-iphone-deals and /business/offers/samsung-galaxy-5g,
+   Nov 18, 2026). Credits are 24 monthly bill credits. promos.json's "business" block replaces this list when present. */
+var BIZ_OFFERS = [
+  {id:"b-18promax", fam:"biz", label:"iPhone 18 Pro Max On Us", upTo:1200, months:24, picks:0, plans:["super"], need:"trade+newline", models:["18promax"], tag:"trade",
+   detail:"Switch, trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay). 24 monthly bill credits plus a one-time credit.", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-duo", fam:"biz", label:"iPhone Duo · up to $1,200 off", upTo:1200, months:24, picks:0, plans:["super"], need:"trade+newline", models:["duo"], tag:"trade",
+   detail:"Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-18pro", fam:"biz", label:"iPhone 18 Pro On Us", upTo:1300, months:24, picks:0, plans:["super"], need:"trade+newline", models:["18pro"], tag:"trade",
+   detail:"Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-air", fam:"biz", label:"iPhone Air On Us", upTo:1100, months:24, picks:0, plans:["super"], need:"trade+newline", models:["air"], tag:"trade",
+   detail:"Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-17", fam:"biz", label:"iPhone 17 On Us", upTo:830, months:24, picks:0, plans:["pro","super"], need:"trade+newline", models:["17"], tag:"trade",
+   detail:"Trade in an eligible phone and add a line on ProMobile or higher ($80+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-17e", fam:"biz", label:"iPhone 17e On Us · upgrade", upTo:830, months:24, picks:0, plans:["super"], need:"trade", models:["17e"], tag:"trade",
+   detail:"Upgrade and trade in an eligible phone on SuperMobile ($95+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-16", fam:"biz", label:"iPhone 16 · up to $730 off", upTo:730, months:24, picks:0, plans:["super"], need:"newline", models:["16"], tag:"newline",
+   detail:"Add a new line on SuperMobile ($95+/mo w/AutoPay). No trade-in needed.", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-ipada16", fam:"biz", label:"iPad (A16) for $299", upTo:300.99, months:24, picks:0, plans:"any", need:"newline", models:["ipada16"], tag:"newline",
+   detail:"Add a new mobile internet line ($20+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/apple-business-iphone-deals"},
+  {id:"b-fold8", fam:"biz", label:"Galaxy Z Fold8 · up to $1,100 off", upTo:1100, months:24, picks:0, plans:["super"], need:"trade+newline", models:["fold8","fold8u"], tag:"trade",
+   detail:"Switch with an eligible trade-in and a new line on SuperMobile ($95+/mo w/AutoPay). 24 monthly bill credits plus a one-time credit.", source:"https://www.t-mobile.com/business/offers/samsung-galaxy-5g"},
+  {id:"b-s26", fam:"biz", label:"Galaxy S26 / S26+ · up to $1,100 off", upTo:1100, months:24, picks:0, plans:["super"], need:"trade+newline", models:["s26","s26p"], tag:"trade",
+   detail:"Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/offers/samsung-galaxy-5g"},
+  {id:"b-s26fe", fam:"biz", label:"Galaxy S26 FE · up to $800 off · upgrade", upTo:800, months:24, picks:0, plans:["pro","super"], need:"trade", models:["s26fe"], tag:"trade",
+   detail:"Qualifying upgrade with an eligible trade-in on ProMobile or higher ($80+/mo w/AutoPay).", source:"https://www.t-mobile.com/business/offers/samsung-galaxy-5g"},
+  {id:"b-switch600", fam:"biz", pay:"plan", label:"$600 for every line you switch", upTo:600, planMo:30, planMonths:20, picks:0, plans:["super"], need:"port", models:[], tag:"plan",
+   detail:"Port-in on a business account with eligible service ($85/mo w/AutoPay): 20 monthly bill credits of $30.", source:"https://www.t-mobile.com/business/wireless-business-plans"}
+];
+BIZ_OFFERS.forEach(function(o){ o.status = "active"; o.verified = BIZ_ASOF; o.dated = false; });
+/* Compare plans (Business): features from the same page. */
+var BIZ_CMP_ROWS = [
+  {sec:"Data & video"},
+  {l:"Premium data", v:["Unlimited","200GB","50GB"]},
+  {l:"Hotspot", n:"High-speed, then unlimited at 3G speeds", v:["300GB","200GB","5GB"]},
+  {l:"Video", v:["Up to 4K UHD","Up to 4K UHD","Up to HD ($3 4K day pass)"]},
+  {l:"Network slice", v:[true,false,false]},
+  {sec:"Travel"},
+  {l:"Canada & Mexico", v:["Talk & text · 5GB high-speed, then 256 kbps","Talk & text · 5GB high-speed, then 128 kbps","Talk & text · 5GB high-speed, then 128 kbps"]},
+  {l:"International", v:["Texting + 5GB high-speed in 215+ countries","5GB in select Central European countries","5GB in select Central European countries"]},
+  {l:"In-flight Wi-Fi", n:"Alaska, Delta, Hawaiian and Southwest", v:[true,true,true]},
+  {sec:"Security & extras"},
+  {l:"Threat Protect", v:[true,true,"+$1.99/line"]},
+  {l:"Scam Shield Premium", v:[true,"+$4/line","+$4/line"]},
+  {l:"T-Satellite", v:[true,"+$10/line","+$10/line"]},
+  {l:"24/7 business care & T-Mobile Tuesdays", v:[true,true,true]},
+  {sec:"Terms"},
+  {l:"Price guarantee", n:"Talk, text and 5G smartphone data", v:["5 years","5 years","5 years"]},
+  {l:"Lines online", n:"13+ lines through business sales", v:["Up to 12","Up to 12","Up to 12"]}
+];
+
 
 /* ================= Pricing data ================= */
 /* T-Mix (new customers). AutoPay prices; +$10 per phone line without AutoPay. */
@@ -573,7 +663,7 @@ var SEG = {
 /* The plan discount in effect. Existing accounts use it too (the discount they already have), except Go5G and Essentials:
    those quote upgrades only, with no plan charge for a discount to change. */
 function segOf(s){
-  if (!SEG[s.planDiscount]) return null;
+  if (s.biz || !SEG[s.planDiscount]) return null;
   if (s.cust === "existing" && s.exFam !== "tmix" && EXP[s.planExp] && EXP[s.planExp].legacy) return null;
   return s.planDiscount;
 }
@@ -630,6 +720,11 @@ function isLegacy(c){ return c.fam === "exp" && !!(EXP[c.pid] && EXP[c.pid].lega
 
 function planCalc(fam, id, n, autopay, portOn, seg){
   if (!(n >= 1)) return null;
+  if (fam === "biz") {
+    var bp = BIZ[id]; if (!bp || n > bp.max) return null;
+    var bl = bizList(id, n), bb = n <= 5 ? bl - 5 * n : bl, bna = autopay ? 0 : 5 * Math.min(n, 5);
+    return {base:bb, price:bb, portSave:0, empSave:0, noAp:bna, total:bb + bna, est:false, list:bl};
+  }
   var p = fam === "tmix" ? TMIX[id] : EXP[id];
   if (!p || p.legacy || n > p.max) return null;
   var S = seg ? SEG[seg] : null, base, est;
@@ -809,7 +904,7 @@ function todayStr(){ var d = new Date(); return d.getFullYear() + "-" + String(d
 function isActive(o){ return o.status !== "expired" && (!o.ends || o.ends >= todayStr()); }
 function offerPool(){
   var map = {};
-  (live.offers || OFFERS).forEach(function(o){ map[o.id] = Object.assign({}, o, {expired: !isActive(o)}); });
+  (state.biz ? (live.bizOffers || BIZ_OFFERS) : (live.offers || OFFERS)).forEach(function(o){ map[o.id] = Object.assign({}, o, {expired: !isActive(o)}); });
   var L = state.loaded;
   if (L && L.offers) Object.keys(L.offers).forEach(function(id){
     var cur = map[id], snap = L.offers[id];
@@ -1004,7 +1099,7 @@ function newGroup(type, st){
          customName: t === "basic" ? "Basic phone" : "", customPrice:0, trade:true, offer:"", customCredit:0, customPicks:0, byod:false, byodOffer:""},
     p360:"0",
     early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
-    pay:{method:"eip", term: t === "syncDrive" ? 24 : 36, connect:true, down:0},
+    pay:{method:"eip", term: (t === "syncDrive" || (st && st.biz)) ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
     cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watch" : (CPLANS[t] ? CPLANS[t][0].id : null))
   };
@@ -1030,12 +1125,36 @@ function blankState(){
   s.pp = null;
   return s;
 }
+function blankBizState(){
+  var s = blankState();
+  s.biz = true; s.planBiz = "super"; s.bizFree = false; s.perks = []; s.visa = false; s.tab = "wireless";
+  gid = 1; s.groups = [newGroup("phone", {biz:true})];
+  s.hint = {on:false, plan:"bizint", voice:true, connect:true};
+  return s;
+}
+function bizExampleState(){
+  var s = blankBizState(); gid = 1;
+  var a = newGroup("phone", {biz:true}); a.qty = 3; a.dev.model = "17-256";
+  var b = newGroup("tablet", {biz:true}); b.dev.model = "ipada16";
+  s.groups = [a, b]; s.example = true; s.bizFree = true;
+  return s;
+}
+function freshState(){ return isBiz() ? blankBizState() : blankState(); }
+/* A stored quote, checked before use (sv 3 and later). */
+function restoreState(o){
+  if (!(o && o.v === 2 && Array.isArray(o.groups) && o.sv === 3)) return null;
+  var s = Object.assign(exampleState(), o);
+  s.set = Object.assign(exampleState().set, o.set || {});
+  s.hint = Object.assign(exampleState().hint, o.hint || {});
+  s.away = Object.assign(exampleState().away, o.away || {});
+  return s;
+}
 var state = exampleState();
 var ui = {sheet:null, edit:null, mfr:"Apple", tagFilter:null, trayOpen:true, trayTab:"top", confirm:false,
           mail:{to:"", name:"", sig:"", subj:null, intro:null, err:"", style:"designed"}};
 try { ui.mail.sig = localStorage.getItem(KEY + ".sig") || ""; if (localStorage.getItem(KEY + ".mstyle") === "plain") ui.mail.style = "plain"; } catch (e) {}
 try {
-  var raw = localStorage.getItem(KEY);
+  var raw = localStorage.getItem(storeKey());
   if (raw) {
     var o = JSON.parse(raw);
     /* sv 3 (Nov 12, 2026): a quote kept from before then may have lines stuck on Upgrade from the Go5G bug,
@@ -1054,10 +1173,13 @@ try {
     }
   }
 } catch (e) {}
+if (isBiz() && !state.biz) state = blankBizState();
+if (!isBiz() && state.biz) state = blankState();
 state.discountsOpen = false;   // Plan discounts starts closed every time the tool opens
 /* A restored quote is checked before use: unknown plans or discounts fall back to defaults, and lines follow the plan
    (Upgrade on Go5G / Essentials, back to Port or New otherwise). */
 function normalizeState(){
+  if (state.biz) { if (!BIZ[state.planBiz]) state.planBiz = "super"; state.visa = false; state.perks = []; state.planDiscount = "none"; state.away.on = false; if (state.tab === "prepaid") state.tab = "wireless"; }
   if (!TMIX[state.planNew] || TMIX[state.planNew].legacy) state.planNew = topPlan(TMIX);
   if (!EXP[state.planExp]) state.planExp = topPlan(EXP);
   if (state.exFam !== "exp" && state.exFam !== "tmix") state.exFam = "exp";
@@ -1070,7 +1192,26 @@ function normalizeState(){
   });
   afterPlanChange();
 }
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+function save(){ try { localStorage.setItem(storeKey(), JSON.stringify(state)); } catch (e) {} }
+/* Shows which screen is on: the darker magenta, the menu button label and the page title. */
+function applyMode(){
+  var b = isBiz(), root = document.documentElement;
+  if (b) root.setAttribute("data-mode", "biz"); else root.removeAttribute("data-mode");
+  var br = document.querySelector(".brand");
+  if (br) br.innerHTML = '<span class="mark" aria-hidden="true">Q</span>Quick Quote' + (b ? ' <span class="bizlbl">for Business</span>' : '') + ' <svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+  document.title = b ? "Quick Quote for Business" : "Quick Quote";
+}
+function setMode(m){ MODE = m === "biz" ? "biz" : "consumer"; try { localStorage.setItem(MODE_KEY, MODE); } catch (e) {} applyMode(); }
+/* Switch screens: keep this screen's quote, then open the other screen's last quote (or a new one). */
+function switchMode(){
+  save();
+  setMode(isBiz() ? "consumer" : "biz");
+  var o = null; try { o = JSON.parse(localStorage.getItem(storeKey()) || "null"); } catch (e) {}
+  var s = restoreState(o);
+  if (s && !!s.biz === isBiz()) { state = s; var mx = 0; state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; }); gid = mx + 1; normalizeState(); }
+  else state = freshState();
+  state.discountsOpen = false; state.loaded = null;
+}
 
 /* ================= Helpers ================= */
 function $(s){ return document.querySelector(s); }
@@ -1086,7 +1227,7 @@ function model(id){
   return m || MODELS.filter(function(x){ return x.id === id; })[0] || null;
 }
 function grp(id){ return state.groups.filter(function(g){ return g.id === id; })[0] || null; }
-function planName(fam, id){ return (fam === "tmix" ? TMIX[id] : EXP[id]).full; }
+function planName(fam, id){ return (fam === "biz" ? BIZ[id] : (fam === "tmix" ? TMIX[id] : EXP[id])).full; }
 /* Tablet plans are add-on prices. With no phone line on the account they cost $40 more per line
    (t-mobile.com tablet plans: "Up to $40 more per line/mo. without qualifying voice line"; Tablet Unlimited $60 and
    Unlimited Plus $65 standalone). BYOD tablet lines need a T-Mix Loaded phone line, so they aren't offered alone. */
@@ -1095,20 +1236,20 @@ function tabletAlone(type, c){ return type === "tablet" && c.n === 0; }
 /* Lines that cost more with no phone line on the account: tablets, and SyncUP KIDS watches ($10 more without the voice line discount). */
 function noVoiceAdd(p, type, c){ return c.n > 0 || p.byod ? 0 : (type === "tablet" ? TAB_NO_VOICE : (p.noVoice || 0)); }
 function cplanPrice(p, type, c, autopay){ return p.ap + (autopay ? 0 : 5) + noVoiceAdd(p, type, c); }
-function cplanOf(g){ var list = CPLANS[g.type]; return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
+function cplanOf(g){ var list = cplansFor(g.type); return list ? (list.filter(function(c){ return c.id === g.cplan; })[0] || list[0]) : null; }
 
 /* An existing account is on Experience, an older plan, or T-Mix (accounts opened since Nov 5, 2026).
    Upgrade lines are lines already on the account, so the account has at least as many phone lines as upgrades. */
 function ctxOf(s){
   var ex = s.cust === "existing";
-  var fam = (!ex || s.exFam === "tmix") ? "tmix" : "exp";
-  var pid = fam === "tmix" ? s.planNew : s.planExp;
+  var fam = s.biz ? "biz" : ((!ex || s.exFam === "tmix") ? "tmix" : "exp");
+  var pid = fam === "biz" ? (BIZ[s.planBiz] ? s.planBiz : "super") : (fam === "tmix" ? s.planNew : s.planExp);
   var voice = s.groups.filter(function(g){ return TYPES[g.type].voice; });
   var newVoice = sum(voice.filter(function(g){ return g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var portVoice = sum(voice.filter(function(g){ return g.lineType === "port"; }).map(function(g){ return g.qty; }));
   var upVoice = sum(voice.filter(function(g){ return g.lineType === "upgrade"; }).map(function(g){ return g.qty; }));
   var E = ex ? Math.max(s.existingLines, upVoice) : 0;
-  var sg = segOf(s), S = sg ? SEG[sg] : null, mx = (fam === "tmix" ? TMIX[pid] : EXP[pid]).max;
+  var sg = segOf(s), S = sg ? SEG[sg] : null, mx = (fam === "biz" ? BIZ[pid] : (fam === "tmix" ? TMIX[pid] : EXP[pid])).max;
   var Sm = S && !S.pct ? segTable(S, fam).max : null;
   if (Sm && Sm[pid]) mx = Math.min(mx, Sm[pid]);
   return {fam:fam, pid:pid, ex:ex, autopay:s.autopay, newVoice:newVoice, portVoice:portVoice, upVoice:upVoice, E:E, n:E + newVoice, max:mx};
@@ -1119,6 +1260,7 @@ function planVal(c, id, fam){ return fam === "tmix" ? (c.ex ? "tmix:" + id : id)
 function curPlanVal(c){ return planVal(c, c.pid, c.fam); }
 /* Plan options for a dropdown: new customers pick a T-Mix tier; existing accounts pick the plan they're on now. */
 function planOptions(c){
+  if (c.fam === "biz") return BIZ_ORDER.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + BIZ[id].full + '</option>'; }).join("");
   function opt(id, fam){ var v = planVal(c, id, fam); return '<option value="' + v + '"' + (v === curPlanVal(c) ? " selected" : "") + '>' + planName(fam, id) + '</option>'; }
   if (!c.ex) return TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("");
   return '<optgroup label="T-Mix">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
@@ -1131,7 +1273,7 @@ function makeExisting(){
   if (state.cust === "existing") return;
   state.cust = "existing"; if (state.planDiscount === "port") state.planDiscount = "none"; state.autoEx = true;
   state.existingLines = Math.max(1, ctxOf(state).upVoice);
-  state.exFam = "tmix";
+  if (!state.biz) state.exFam = "tmix"; else state.bizFree = false;
   state.groups.forEach(function(x){ if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; if (x.dev.byodOffer !== "best" && x.dev.byodOffer !== "none") x.dev.byodOffer = ""; });
   var c = ctxOf(state);
   toast("Upgrades are for existing accounts. This quote is now an existing account on " + planName(c.fam, c.pid) + ". Set their plan and line count in Box 1.");
@@ -1423,7 +1565,7 @@ function devMath(g, c){
 /* ================= Quote math ================= */
 function compute(s){
   var W = [], T = [], ONE = [], RB = [], notes = [], groupsOut = {}, empConn = 0, empConnLines = 0, addNote = "";
-  var c = ctxOf(s), P = c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid], seg = segOf(s);
+  var c = ctxOf(s), P = c.fam === "biz" ? BIZ[c.pid] : (c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid]), seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
   if (seg === "workperks" && c.fam === "exp") {
     if (s.autopay) P = Object.assign({}, P, {full: P.full + " w/ Work Perks"});
@@ -1431,9 +1573,9 @@ function compute(s){
   }
 
   var pc = null, plan = 0, share = 0;
-  if (c.fam === "tmix" && c.ex) {
-    /* Existing T-Mix account: the quote adds only what new lines add to the bill. Upgrades keep their plan. */
-    var tb = planCalc("tmix", c.pid, c.E, s.autopay, false, seg), ta = planCalc("tmix", c.pid, c.n, s.autopay, false, seg);
+  if ((c.fam === "tmix" || c.fam === "biz") && c.ex) {
+    /* Existing T-Mix or business account: the quote adds only what new lines add to the bill. Upgrades keep their plan. */
+    var tb = planCalc(c.fam, c.pid, c.E, s.autopay, false, seg), ta = planCalc(c.fam, c.pid, c.n, s.autopay, false, seg);
     if (ta) addNote = fmt(tb ? tb.total : 0) + " for " + c.E + " → " + fmt(ta.total) + " for " + c.n;
     pc = ta;
     if (!ta) notes.push({t:"bad", m:P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
@@ -1443,16 +1585,22 @@ function compute(s){
               sub: fmt(tb ? tb.total : 0) + " for " + c.E + " → " + fmt(ta.total) + " for " + c.n + (s.autopay ? "" : " (no AutoPay)")});
       if (ta.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
-    if (ta && picksFor(c.pid, c.n)) notes.push({t:"info", m:"Picks shown are the account's total for " + c.n + " phone line" + (c.n === 1 ? "" : "s") + ". Picks the account already uses on perks or other promos count against them."});
-  } else if (c.fam === "tmix") {
-    pc = planCalc("tmix", c.pid, c.n, s.autopay, false, seg);
-    if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price a T-Mix plan."}); }
+    if (ta && c.fam === "tmix" && picksFor(c.pid, c.n)) notes.push({t:"info", m:"Picks shown are the account's total for " + c.n + " phone line" + (c.n === 1 ? "" : "s") + ". Picks the account already uses on perks or other promos count against them."});
+  } else if (c.fam === "tmix" || c.fam === "biz") {
+    pc = planCalc(c.fam, c.pid, c.n, s.autopay, false, seg);
+    if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price " + (c.fam === "biz" ? "the business plan." : "a T-Mix plan.")}); }
     else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
     else {
       plan = pc.total; share = pc.total / c.n;
       W.push({l:P.full + " · " + c.n + " line" + (c.n > 1 ? "s" : ""), a:pc.base, sub: s.autopay ? "AutoPay price" : ""});
       if (pc.empSave) W.push({l:"Employee pricing · phone lines", a:-pc.empSave, sub: empPct() + "% off the plan", c:"credit"});
-      if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: Math.min(c.n,12) + " × $10"});
+      if (pc.noAp) W.push({l:"No AutoPay", a:pc.noAp, sub: c.fam === "biz" ? Math.min(c.n,5) + " × $5 (lines 1–5)" : Math.min(c.n,12) + " × $10"});
+      if (c.fam === "biz" && s.bizFree) {
+        var fc = bizFreeCredit(c.pid, c.n);
+        if (fc) { plan -= fc; share = plan / c.n; W.push({l:"3rd line free", a:-fc, c:"credit", sub:"one line per account · monthly bill credit"}); notes.push({t:"info", m:"3rd line free: new business accounts with 3+ voice lines, one free line per account, as a monthly bill credit. Confirm the credit in the store system."}); }
+        else notes.push({t:"warn", m:"3rd line free needs 3 or more phone lines."});
+      }
+      if (c.fam === "biz" && c.n >= 13) notes.push({t:"info", m:"13 or more business lines go through T-Mobile's business sales team."});
       if (pc.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
   } else if (isLegacy(c)) {
@@ -1504,6 +1652,7 @@ function compute(s){
           if (eq) { empConn += price * eq; out.lines.push({l:"Employee pricing", a:-(eOff * eq / q), c:"cr", plan:true, sub:empPct() + "% off" + (eq < q ? " · " + eq + " of " + q + " lines" : "")}); }
           if (eq < q) notes.push({t:"warn", m:label + ": employee pricing covers up to " + EMP_DATA_LINES + " tablet, watch or other data-only lines, so " + (q - eq) + " line" + (q - eq > 1 ? "s are" : " is") + " at the regular price."});
         }
+        if (cp.unconfirmed) notes.push({t:"warn", m:label + ": the business " + cp.name.toLowerCase() + " price isn't published for SuperMobile, ProMobile and CoreMobile. Confirm it in the store system."});
         W.push({l:label + " · " + cp.name, a:price * q, sub: (q > 1 ? q + " × " + fmt(price) : "") + (nva ? (q > 1 ? " · " : "") + "standalone price, no phone line" : "")});
         if (g.type === "syncKids" && nva) notes.push({t:"warn", m:"SyncUP KIDS watch lines cost $" + nva + " more without a phone line on the account, and most watch features need a separate voice line and a compatible smartphone."});
         if (g.type === "syncDrive") notes.push({t:"warn", m:label + ": T-Mobile lists SyncUP DRIVE service from $10/mo with AutoPay. The free-device offer needs the SyncUP DRIVE Unlimited plan (6GB+ high-speed data), so confirm that plan's price in the store system."});
@@ -1590,7 +1739,14 @@ function compute(s){
   if (empConn) W.push({l:"Employee pricing · watch/tablet lines", a:-round2(empConn * empPct() / 100), sub: empPct() + "% off", c:"credit"});
 
   var H = [];
-  if (s.hint.on) {
+  if (s.hint.on && s.biz) {
+    var bvOk = c.ex || c.newVoice > 0;
+    H.push({l:BIZ_INT.name, a:BIZ_INT.price});
+    if (s.hint.voice && bvOk) H.push({l:"Business voice line credit", a:-BIZ_INT.voiceCr, c:"credit", sub:"monthly bill credit"});
+    if (s.hint.voice && !bvOk) notes.push({t:"warn", m:"The Business Internet voice line credit needs a business phone line on the account."});
+    if (s.hint.connect) T.push({l:"Business Internet connection charge", a:num(s.set.connect)});
+    notes.push({t:"info", m:"5G Business Internet: up to $800 per address toward the old provider's early termination fee (bill credits, proof of balance required). Credits stop if lines are cancelled or plans change."});
+  } else if (s.hint.on) {
     var hp = HINT[s.hint.plan], voiceOk = c.ex || c.newVoice > 0;
     H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
     if (!s.autopay) H.push({l:"No AutoPay", a:HINT_AP});
@@ -1634,7 +1790,7 @@ function compute(s){
   var used = sum(perkRows.map(function(p){ return p.eff; })) + promoPicks;
   if (c.fam === "tmix" && used > budget) notes.unshift({t:"bad", m: budget === 0 ? "This plan has no Picks, so perks and Pick-based phone offers can't apply." : "Picks over by " + (used - budget) + ". Drop a perk or offer, or move up a plan."});
   if (c.fam === "tmix" && c.pid === "loaded" && picksFor("loaded", c.n) && c.n >= 5) notes.push({t:"info", m:"Loaded Pick counts above 4 lines are an estimate."});
-  if (s.hint.on) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
+  if (s.hint.on && !s.biz) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
 
   var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
   return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, RB:RB, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
@@ -1672,12 +1828,12 @@ function banner(q){
 /* The existing account's line count and current plan. Shown under Plan discounts and in Box 1 of Edit options. */
 function acctFields(c, pfx){
   var lo = Math.max(1, c.upVoice);
-  var hint = isLegacy(c) ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here."
+  var hint = c.fam === "biz" ? "The quote shows what the added lines and devices add to their current bill." : isLegacy(c) ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here."
     : (c.fam === "tmix" ? "T-Mix accounts opened since Nov 5, 2026. The quote shows what the added lines and devices add to their current bill, and T-Mix offers use the account's Picks."
     : "The quote shows what the added lines and devices add to their current bill.");
   return '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Phone lines already on the account</span><div class="stepper">' +
       '<button data-act="exlines" data-v="-1" aria-label="Fewer existing lines"' + (c.E <= lo ? " disabled" : "") + '>' + I.minus + '</button><output>' + c.E + '</output>' +
-      '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (c.E + c.newVoice >= c.max || c.E >= 11 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
+      '<button data-act="exlines" data-v="1" aria-label="More existing lines"' + (c.E + c.newVoice >= c.max || c.E >= c.max - 1 ? " disabled" : "") + '>' + I.plus + '</button></div></div>' +
     (c.upVoice ? '<p class="fhint" style="margin-top:4px">Includes the ' + c.upVoice + ' line' + (c.upVoice === 1 ? "" : "s") + ' being upgraded.</p>' : '') +
     '<div style="margin-top:12px"><label class="flabel" for="' + pfx + 'CurPlan">Their current plan</label><div class="selwrap"><select id="' + pfx + 'CurPlan" data-k="__plan" data-t="str">' + planOptions(c) + '</select></div></div>' +
     '<p class="fhint">' + hint + '</p>';
@@ -1697,26 +1853,38 @@ function segOpt(v, label){
 }
 function renderStage(q){
   var s = state, c = q.c, h = banner(q);
+  if (s.biz && s.tab === "prepaid") s.tab = "wireless";
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
-    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">Home Internet (' + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0)) + ')</button>' +
-    '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button></div>';
+    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">' + (s.biz ? "Business Internet (" + (s.hint.on ? 1 : 0) : "Home Internet (" + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0))) + ')</button>' +
+    (s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button>') + '</div>';
   if (s.tab === "prepaid") { $("#stage").innerHTML = h + renderPrepaid(); return; }
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
-      '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa</option>' +
+      '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (s.biz ? "$5 AutoPay discount per line (lines 1–5) · debit card or bank" : (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa') + '</option>' +
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
-    '<span class="bchip">No additional discounts applied</span>' +
-    '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" style="margin-left:auto" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
+    (s.biz && s.bizFree && !c.ex ? '<span class="bchip on">3rd line free applied</span>' : '<span class="bchip">No additional discounts applied</span>') +
+    (s.biz ? '' : '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" style="margin-left:auto" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
-    '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button></div>';
+    '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button>') + '</div>';
 
   /* Promotion status sits at the very bottom, out of the way. */
   var foot = '<div class="livefoot">' + liveLine() + '</div>';
   if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
 
-  if (s.discountsOpen) {
+  if (s.discountsOpen && s.biz) {
+    h += '<div class="dpanel">' +
+      '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
+        '<button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New business account</button>' +
+        '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing business account</button></div>' +
+        (c.ex ? acctFields(c, "pd") : '<p class="fhint">Choosing Upgrade as a line type makes the quote an existing account.</p>') +
+      '</div>' +
+      '<div><span class="flabel">Account discounts</span>' +
+        '<label class="check' + (c.ex ? " dis" : "") + '" for="bizFree"><input id="bizFree" type="checkbox" data-k="bizFree" data-t="bool"' + (s.bizFree && !c.ex ? " checked" : "") + (c.ex ? " disabled" : "") + '><span>3rd line free<br><small class="muted">New business accounts with 3 or more voice lines. One free line per account, as a monthly bill credit.</small></span></label>' +
+        '<p class="fhint">Business accounts don\'t get the consumer discounts (Military, First Responder, 55+, Work Perks or Employee). Number-transfer and other promotional credits are chosen per line under Apply a promotion in Edit Options.</p></div>' +
+    '</div>';
+  } else if (s.discountsOpen) {
     h += '<div class="dpanel">' +
       '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
         '<button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile · T-Mix</button>' +
@@ -1734,12 +1902,12 @@ function renderStage(q){
     '</div>';
   }
 
-  var order = c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER);
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
+  var order = c.fam === "biz" ? BIZ_ORDER : (c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER));
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "biz" ? "Business" : c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
-      var pc = c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, false, segOf(s))
+      var pc = c.fam === "biz" ? bizCalcFree(id, Math.max(c.n,1), s.autopay, !c.ex && s.bizFree) : c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, false, segOf(s))
              : (LEGACY[id] ? legacyRef(id, Math.max(c.n,1), s.autopay) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s)));
-      var nm = c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
+      var nm = c.fam === "biz" ? BIZ[id].name : c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
       return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '"' + (pc ? "" : " disabled") + '>' + nm + ' | ' + (pc ? (pc.est ? "≈" : "") + fmt(pc.total / Math.max(c.n,1)) : planNA(id, segOf(s), true, c.fam)) + '</button>';
     }).join("") + '</div>' +
     '<div class="tbtns"><button class="obtn" data-act="sheet" data-v="compare">Compare plans</button>' +
@@ -1752,14 +1920,14 @@ function renderStage(q){
   Object.keys(TYPES).forEach(function(t){ counts[t] = 0; });
   s.groups.forEach(function(g){ counts[g.type] += g.qty; });
   var full = q.devices >= 20, voiceFull = c.newVoice >= c.max - c.E;
-  var ttab = ui.trayTab === "sync" ? "sync" : "devices", tiles = TRAY_TABS[ttab];
+  var ttab = ui.trayTab === "sync" && !s.biz ? "sync" : "devices", tiles = TRAY_TABS[ttab];
   var nSync = sum(TRAY_TABS.sync.map(function(t){ return counts[t]; }));
   h += '<section class="tray' + (ui.trayOpen ? '' : ' shut') + '" aria-label="Add devices">' +
     '<button class="handle" data-act="tray" aria-expanded="' + ui.trayOpen + '">' + I.down + 'Add devices</button>' +
     '<div class="trayin"' + (ui.trayOpen ? '' : ' aria-hidden="true"') + '>' +
-      '<div class="traytop"><div class="seg traytabs" role="group" aria-label="Device group">' +
+      '<div class="traytop">' + (s.biz ? '<span></span>' : '<div class="seg traytabs" role="group" aria-label="Device group">' +
         '<button data-act="traytab" data-v="devices" aria-pressed="' + (ttab === "devices") + '">Devices</button>' +
-        '<button data-act="traytab" data-v="sync" aria-pressed="' + (ttab === "sync") + '">SyncUP' + (nSync ? ' <span class="tcount">' + nSync + '</span>' : '') + '</button></div>' +
+        '<button data-act="traytab" data-v="sync" aria-pressed="' + (ttab === "sync") + '">SyncUP' + (nSync ? ' <span class="tcount">' + nSync + '</span>' : '') + '</button></div>') +
       '<span class="traycount">' + q.devices + '/20 devices added</span></div>' +
       '<div class="tiles' + (ttab === "sync" ? " three" : "") + '">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
@@ -1777,7 +1945,7 @@ function card(g, i, q){
   if (T0.voice) {
     planSel = '<select class="tin" id="cp-' + g.id + '" data-k="__plan" data-t="str" aria-label="' + (c.ex ? "Their current plan" : "Plan for all phone lines") + '">' + planOptions(c) + '</select>';
   } else {
-    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + CPLANS[g.type].map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : (p.byod && tabletAlone(g.type, c) ? " disabled" : "")) + '>' + p.name + ' · $' + cplanPrice(p, g.type, c, state.autopay) + '</option>'; }).join("") + '</select>';
+    planSel = '<select class="tin" id="cp-' + g.id + '" data-k="g.' + g.id + '.cplan" data-t="str" aria-label="' + T0.label + ' plan">' + cplansFor(g.type).map(function(p){ return '<option value="' + p.id + '"' + (p.id === g.cplan ? " selected" : (p.byod && tabletAlone(g.type, c) ? " disabled" : "")) + '>' + p.name + ' · $' + cplanPrice(p, g.type, c, state.autopay) + '</option>'; }).join("") + '</select>';
   }
   var planLines = o.lines.filter(function(x){ return x.l === "Plan" || x.plan || (!T0.voice && cplanOf(g).name === x.l); });
   var devLines = o.lines.filter(function(x){ return planLines.indexOf(x) < 0; });
@@ -1808,7 +1976,19 @@ function listRow(g, i, q){
     '<button class="lx" data-act="remove" data-v="' + g.id + '" aria-label="Remove this group">' + I.x + '</button></div>';
 }
 
+function renderBizInternet(q){
+  var s = state, hi = s.hint, c = q.c, voiceOk = c.ex || c.newVoice > 0, p = BIZ_INT, price = p.price - (hi.voice && voiceOk ? p.voiceCr : 0);
+  return '<div class="panel">' +
+    '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Business Internet to this quote</button>' +
+    '<div class="hint-plans"><button class="hplan" data-act="hplan" data-v="bizint" aria-pressed="' + hi.on + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + esc(p.d) + '</span><span class="d">' + fmt0(p.price) + '/mo, ' + fmt0(p.price - p.voiceCr) + ' with a business voice line</span></button></div>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
+      '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Business voice line credit (' + fmt0(p.voiceCr) + '/mo)<br><small class="muted">Needs a business phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
+      '<label class="check" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect ? " checked" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')</span></label>' +
+    '</div>' +
+    '<p class="fhint">Up to $800 per address toward the old provider\'s early termination fee, as bill credits (proof of balance required). 5-year price guarantee on 5G internet data. Credits can take 2 bill cycles and stop if lines are cancelled or plans change. Taxes and fees are extra. From T-Mobile\'s business plans page, checked ' + shortDate(BIZ_ASOF) + '.</p></div>';
+}
 function renderInternet(q){
+  if (state.biz) return renderBizInternet(q);
   var s = state, hi = s.hint, voiceOk = q.c.ex || q.c.newVoice > 0;
   return '<div class="panel">' +
     '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Home Internet to this quote</button>' +
@@ -1913,8 +2093,7 @@ function renderSheet(q){
   else if (s === "compare") html = drawer("Compare plans", "Every plan type side by side · " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on this quote", planCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "hcompare") html = drawer("Compare Home Internet plans", "Rely, Amplified and All-In side by side", hintCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "visa") html = drawer("T-Mobile Visa", "Everything about the card, from Capital One", visaBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>');
-  else if (s === "jobaid") html = drawer("Job Aid", "How to build a quick quote", jobAid(), "");
-  else if (s === "menu") html = drawer("Quick Quote", "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
+  else if (s === "menu") html = drawer(isBiz() ? "Quick Quote for Business" : "Quick Quote", isBiz() ? "Store quoting tool for T-Mobile for Business" : "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
   else if (s === "settings") html = drawer("Settings", "Appearance, saved quotes and charges", settingsBody(), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "edit") {
     var g = grp(ui.edit);
@@ -1934,10 +2113,10 @@ function renderSheet(q){
 function reviewBody(q){
   var s = state, c = q.c;
   var head = acctLine(c, q.P, " · ") || "No phone lines";
-  var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
+  var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote' + (s.biz ? " for Business" : "") + '</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? (q.upShare ? " · the lines on this quote" : " · added to current bill") : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
-    (q.H.length ? '<div class="rule"></div><div class="rsec">Home Internet · monthly</div>' + q.H.map(rrow).join("") : '') +
+    (q.H.length ? '<div class="rule"></div><div class="rsec">' + (s.biz ? "Business Internet" : "Home Internet") + ' · monthly</div>' + q.H.map(rrow).join("") : '') +
     '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>' +
     '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
     '<div class="rsub">plus taxes &amp; fees</div>' +
@@ -2257,7 +2436,22 @@ function featTable(cols, rows, diffOnly, corner){
   }).join("") + '</tr>';
   return '<div class="hcwrap" style="margin-top:12px"><table class="hcmp many" style="min-width:' + (180 + cols.length * 132) + 'px"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
 }
+function bizCompareBody(q){
+  var s = state, c = q.c, n = Math.max(c.n, 1), lines = n + " line" + (n > 1 ? "s" : "");
+  var cols = BIZ_ORDER.map(function(id){ var pc1 = planCalc("biz", id, 1, true); return {id:id, name:BIZ[id].full, price:fmt0(pc1.total), sub:"1 line with AutoPay", cur:c.pid === id, choose: planCalc("biz", id, n, s.autopay) ? id : null}; });
+  var cur = planCalc("biz", c.pid, n, s.autopay);
+  var rows = [{sec:"Price"},
+    {l:"At " + lines + " on this quote", n:(s.autopay ? "With AutoPay" : "Without AutoPay") + (s.bizFree && !c.ex && n >= 3 ? " · before 3rd line free" : ""), raw:true, v:BIZ_ORDER.map(function(id){
+      var pc = planCalc("biz", id, n, s.autopay); if (!pc) return '<span class="no">Up to ' + BIZ[id].max + ' lines</span>';
+      var d = cur ? pc.total - cur.total : 0;
+      return fmt0(pc.total) + '<small>' + (id === c.pid ? "current" : (d === 0 ? "same as current" : (d > 0 ? "+" : "−") + fmt0(Math.abs(d)) + " vs current")) + '</small>'; })},
+    {l:"3rd line free credit", n:"New accounts, 3+ voice lines", v:BIZ_ORDER.map(function(id){ var fc = bizFreeCredit(id, Math.max(n, 3)); return fmt0(fc) + "/mo at " + Math.max(n, 3) + " lines"; })},
+    {l:"Each line past 8", v:BIZ_ORDER.map(function(id){ return "+" + fmt0(BIZ[id].addl) + "/line"; })}].concat(BIZ_CMP_ROWS);
+  return '<p class="fhint" style="margin-top:0">Bold rows differ between plans.</p>' + featTable(cols, rows, false) +
+    '<p class="fhint">AutoPay: $5 off per line on lines 1–5 (bank account or debit card). $35 device connection charge per line; regulatory and telco recovery fee up to $4.49–$5.49 per line, plus taxes and surcharges. Device offers pay out as 24 monthly bill credits. Experience for Business (military and first responders): More $40/line and Beyond $52/line at 5 lines with AutoPay and the 3rd line free. New business accounts through Jan 6, 2027: CoreMobile 10 lines for $150/mo (bring your own device, AutoPay; $15 each line after) and $10,000 for adding 10 SuperMobile lines (36 monthly bill credits). From T-Mobile\'s business plan pages, checked ' + shortDate(BIZ_ASOF) + '.</p>';
+}
 function planCompareBody(q){
+  if (state.biz) return bizCompareBody(q);
   var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired");
   var D = PLAN_CMP[tab], cols, rows = [];
   var onQuote = function(type, id){ return s.groups.some(function(g){ return g.type === type && cplanOf(g).id === id; }); };
@@ -2305,24 +2499,11 @@ function planCompareBody(q){
   h += '<p class="fhint">' + esc(D.fine.replace("{tabnv}", TAB_NO_VOICE)) + ' From T-Mobile\'s plan pages, checked ' + shortDate(PLAN_CMP_ASOF) + '.</p>';
   return h;
 }
-function jobAid(){
-  var steps = [
-    ["Add the devices", "Use the Add Devices tray. Each card is a group of lines with the same setup. Use − and + on a card for more of the same phone."],
-    ["Box 1 · Plan", "Pick the plan and the line type. We assume the customer keeps their number, so Port is the default."],
-    ["Box 2 · Device", "Choose New, Existing (bring their own) or Custom. Pick the promotion first if you like, then the manufacturer and model. No promotion is chosen until you pick one: Best available offer, a specific offer, Custom promo or Full Retail Price. We assume they have a phone to trade in."],
-    ["Box 3 · Protection", "Add Protection 360 at the device's tier."],
-    ["Box 4 · Account Picks", "T-Mix phone lines only: choose the account's Picks. On other plans this box is skipped and the boxes after it move up one."],
-    ["Payment type", "Keep the installment plan unless they're paying in full. Uncheck the connection charge only when it's waived. Add any down payment."],
-    ["Line credits", "Add a custom monthly credit (port-in, add-a-line or upgrade) and how many months it runs, or a one-time credit."],
-    ["Review and send", "Open Review and check that Picks aren't over. Save the quote, then email it or copy it into a text."]
-  ];
-  return '<div class="aid">' + steps.map(function(s, i){ return '<div class="step"><span class="num">' + (i+1) + '</span><div><h3>' + s[0] + '</h3><p>' + s[1] + '</p></div></div>'; }).join("") + '</div>';
-}
 function menuBody(){
   return '<div class="menu">' +
+    (isBiz() ? '<button data-act="mode">Switch to Quick Quote<small>Consumer plans, offers and Prepaid</small></button>'
+             : '<button data-act="mode">Switch to Quick Quote for Business<small>SuperMobile, ProMobile, CoreMobile and business offers</small></button>') +
     '<button data-act="sheet" data-v="email">Email quote<small>Opens Outlook with the quote written</small></button>' +
-    '<button data-act="sheet" data-v="open">Open a saved quote<small>Type a Quote ID or pick a recent one</small></button>' +
-    '<button data-act="sheet" data-v="jobaid">Job Aid<small>Step-by-step for building a quote</small></button>' +
     '<button data-act="sheet" data-v="settings">Settings<small>Light or dark, saved quotes, connection charge</small></button>' +
     '<button data-act="example">Load the example quote<small>Replaces what\'s on screen</small></button></div>' +
     '<div class="srcs"><span>Independent tool, not made by or affiliated with T-Mobile. Prices as of ' + ASOF + '. Confirm in the store system before you quote.</span>' +
@@ -2371,6 +2552,7 @@ function feesBody(){
 function p360Opts(g){
   var pi = p360Info(g);
   return P360.filter(function(o){
+    if (o.v === "emp" && state.biz && g.p360 !== "emp") return false;
     if (!pi || !pi.tier || o.v === "0" || o.v === "emp" || o.v === g.p360) return true;
     return o.v === pi.tier;
   }).map(function(o){
@@ -2435,7 +2617,20 @@ function editBody(g, q){
   var c = q.c, T0 = TYPES[g.type], b = "";
   /* Box 1: Plan */
   var b1 = "";
-  if (T0.voice) {
+  if (T0.voice && c.fam === "biz") {
+    var nb = Math.max(c.n, 1);
+    b1 += '<div><h4>' + (c.ex ? "Their current plan" : "Choose plan") + '</h4><p class="info">' + I.info + 'Prices are per phone line at ' + nb + ' line' + (nb > 1 ? "s" : "") + ', ' + (state.autopay ? "with" : "without") + ' AutoPay' + (state.bizFree && !c.ex && nb >= 3 ? ', with the 3rd line free' : '') + '.</p><div class="radios">' +
+      BIZ_ORDER.map(function(id){
+        var pcb = bizCalcFree(id, nb, state.autopay, !c.ex && state.bizFree), PB = BIZ[id];
+        return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pcb ? '<b>' + fmt(pcb.total / nb) + ' per phone line</b> - ' + PB.full : PB.full + ' <span class="why">· up to ' + PB.max + ' lines</span>', PB.specs, !pcb, "__plan");
+      }).join("") + '</div></div>';
+    b1 += '<div><h4>Line type</h4><div class="radios">' +
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "New line · customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New line · new number", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a line they already have · no added plan charge", false, "g." + g.id + ".lineType") +
+      '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
+    if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
+  } else if (T0.voice) {
     var n = Math.max(c.n, 1);
     /* New customers pick a T-Mix tier. Existing accounts pick the plan they're on now: Experience, T-Mix or an older plan. */
     /* Current: the T-Mix tiers sold today. Retired: plans no longer sold to new customers that an existing account may
@@ -2470,7 +2665,7 @@ function editBody(g, q){
       '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade or Early upgrade makes this an existing-account quote.</p>') + earlyPanel(g, c) + '</div>';
     if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
   } else {
-    b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + CPLANS[g.type].map(function(p){
+    b1 += '<div><h4>Choose ' + T0.label.toLowerCase() + ' plan</h4><div class="radios">' + cplansFor(g.type).map(function(p){
       var dis = p.byod && (tabletAlone(g.type, c) || p.plans.indexOf(c.pid) < 0);
       return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + cplanPrice(p, g.type, c, state.autopay) + '/mo</b> - ' + p.name + (tabletAlone(g.type, c) && !p.byod ? ' <span class="why">· no phone line on the account</span>' : ''), p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
     }).join("") + '</div></div>';
@@ -2865,6 +3060,7 @@ function applyQuote(d){
   });
   if (s.loaded.applied.away) s.away.offer = s.loaded.applied.away;
   else if (s.away.offer === "best") s.away.offer = "none";
+  if (!!s.biz !== isBiz()) { save(); setMode(s.biz ? "biz" : "consumer"); }
   state = s;
   var mx = 0; state.groups.forEach(function(g){ var k = parseInt(String(g.id).slice(1), 10); if (k > mx) mx = k; }); gid = mx + 1;
 }
@@ -2908,6 +3104,8 @@ function startLive(){
     live.offers = offers.length ? offers : null;
     live.devices = devices.length ? devices : null;
     live.meta = d.meta || null;
+    var bo = d.business && Array.isArray(d.business.offers) ? d.business.offers.filter(function(o){ return o && o.id && o.label && o.fam === "biz" && Array.isArray(o.models); }) : [];
+    live.bizOffers = bo.length ? bo : null;
     var pp = d.prepaid, ppOk = pp && Array.isArray(pp.plans) && pp.plans.filter(function(p){ return p && p.name && Array.isArray(p.price); }).length;
     live.prepaid = ppOk ? pp : null;
     live.state = "live";
@@ -2972,7 +3170,7 @@ function quoteHead(q){
     : q.P.full + ", adding " + c.newVoice + " phone line" + (c.newVoice === 1 ? "" : "s") + (ups ? " + " + ups : ""));
   if (!c.ex && !c.n) head = extra ? extra + " watch/tablet line" + (extra === 1 ? "" : "s") : "";
   else if (extra) head += " + " + extra + " watch/tablet line" + (extra === 1 ? "" : "s");
-  if (state.hint.on) head += (head ? " + " : "") + "5G Home Internet";
+  if (state.hint.on) head += (head ? " + " : "") + (state.biz ? "5G Business Internet" : "5G Home Internet");
   if (state.away.on) head += (head ? " + " : "") + "AWAY Internet";
   return head;
 }
@@ -3018,7 +3216,7 @@ function emailText(q, m){
     rows.forEach(function(r){ out.push("- " + r.l + ": " + fmt(r.a) + (r.sub ? " (" + r.sub + ")" : "")); });
   }
   sec("MONTHLY BREAKDOWN", b.W);
-  sec("HOME INTERNET", b.H);
+  sec(state.biz ? "BUSINESS INTERNET" : "HOME INTERNET", b.H);
   sec("DUE TODAY", b.T);
   sec("ONE-TIME BILL CREDITS", b.ONE);
   sec("REBATE CARDS (NOT ON THE BILL)", b.RB);
@@ -3058,7 +3256,7 @@ function emailHtml(q, m){
         '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
     '</td></tr></table>' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">' +
-      sec("Monthly breakdown", b.W) + sec("Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) + sec("Rebate cards (not on the bill)", b.RB) +
+      sec("Monthly breakdown", b.W) + sec(state.biz ? "Business Internet" : "Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) + sec("Rebate cards (not on the bill)", b.RB) +
     '</table>' +
     (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
     (b.visa ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin-top:20px;border:1px solid ' + LINE + ';border-left:4px solid ' + ACC + ';border-radius:8px"><tr><td style="padding:14px 16px;font-size:14px">' +
@@ -3211,6 +3409,7 @@ function setPath(path, val){
    or Experience / an older plan for an existing account. */
 function setPlan(val){
   val = String(val);
+  if (state.biz) { if (BIZ[val]) state.planBiz = val; afterPlanChange(); return; }
   if (val.indexOf("tmix:") === 0) { state.planNew = val.slice(5); if (state.cust === "existing") state.exFam = "tmix"; }
   else if (val.indexOf("exp:") === 0 || state.cust === "existing") {   // retired plans (Experience, Go5G, Essentials) are only for existing accounts
     var wasNew = state.cust !== "existing";
@@ -3333,13 +3532,14 @@ document.addEventListener("click", function(e){
     case "reprice":
       state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; if (x.dev.byodOffer && x.dev.byodOffer !== "none") x.dev.byodOffer = "best"; }); if (state.away.offer && state.away.offer !== "none" && state.away.offer !== "custom") state.away.offer = "best";
       state.loaded = null; toast("Repriced with today's offers."); break;
-    case "unload": state = blankState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
+    case "unload": state = freshState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
     case "close": ui.sheet = null; ui.edit = null; break;
     case "startnew":
       if (!ui.confirm) { ui.confirm = true; clearTimeout(ui._ct); ui._ct = setTimeout(function(){ ui.confirm = false; renderAll(); }, 3500); break; }
-      ui.confirm = false; state = blankState(); ui.sheet = null; resetMail(); toast("Started a new quote."); break;
-    case "example": state = exampleState(); ui.sheet = null; resetMail(); toast("Example quote loaded."); break;
+      ui.confirm = false; state = freshState(); ui.sheet = null; resetMail(); toast("Started a new quote."); break;
+    case "example": state = isBiz() ? bizExampleState() : exampleState(); ui.sheet = null; resetMail(); toast("Example quote loaded."); break;
     case "tab": state.tab = v; break;
+    case "mode": switchMode(); ui.sheet = null; ui.edit = null; resetMail(); toast(isBiz() ? "Quick Quote for Business" : "Quick Quote (consumer)"); break;
     case "pplines": ppState().lines = +v || 1; break;
     case "ppap": ppState().ap = v === "1"; break;
     case "ppplan": ppState().plan = v; break;
@@ -3350,11 +3550,12 @@ document.addEventListener("click", function(e){
       state.cust = v;
       state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new") earlyOf(x).on = false; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; if (x.dev.byodOffer !== "best" && x.dev.byodOffer !== "none") x.dev.byodOffer = ""; });
       state.autoEx = false;
-      if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
+      if (v === "existing" && state.biz) { state.bizFree = false; state.existingLines = Math.max(1, ctxOf(state).upVoice); }
+      else if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
-    case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(11, cx.E + (+v))); break; }
+    case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(cx.max - 1, cx.E + (+v))); break; }
     /* Plan tier buttons and Compare plans list plans of the quote's own family. */
-    case "plan": { var cp0 = ctxOf(state); setPlan(/^(tmix|exp):/.test(v) ? v : (cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v)); break; }
+    case "plan": { var cp0 = ctxOf(state); if (state.biz) { setPlan(v); break; } setPlan(/^(tmix|exp):/.test(v) ? v : (cp0.ex && cp0.fam === "tmix" ? "tmix:" + v : v)); break; }
     case "view": state.view = v; break;
     case "plantab": ui.planTab = v; break;
     case "traytab": ui.trayTab = v; break;
@@ -3508,6 +3709,7 @@ document.addEventListener("keydown", function(e){
   if (e.key === "Escape" && ui.sheet) { ui.sheet = null; ui.edit = null; renderAll(); }
 });
 
+applyMode();
 renderAll();
 startLive();
 flushPending();
