@@ -562,6 +562,23 @@ var BIZ = {
   core:  {name:"CoreMobile",  full:"CoreMobile",  max:30, list:[65,100,120,140,160,150,175,200],  addl:25, specs:"50GB premium data · 5GB hotspot · HD video"}
 };
 var BIZ_ORDER = ["super","pro","core"];
+/* Older business plans existing accounts may be on. Like the consumer retired plans, they quote upgrades only:
+   device offers that name the plan, and no added plan charge. pub = T-Mobile's published monthly totals with AutoPay
+   where known (Experience for Business: t-mobile.com/business/experience-business-plans, 5 lines with the 3rd line
+   free; 1-line prices and Ultimate+: Mobile Internet Resource Center business plan overview, May 2026). Experience
+   for Business and Ultimate+ are still sold in stores; Ultimate, Advanced and Essentials (2022) are retired. */
+BIZ.xbeyond = {name:"Exp. Beyond", full:"Experience Beyond for Business", max:30, legacy:true, store:true, pub:{1:100, 5:260}, specs:"Unlimited premium data · 300GB hotspot · Microsoft 365 or Netflix · T-Satellite · upgrades every year"};
+BIZ.xmore   = {name:"Exp. More",   full:"Experience More for Business",   max:30, legacy:true, store:true, pub:{1:85, 5:200},  specs:"Unlimited premium data · 100GB hotspot · Microsoft 365 or Netflix · upgrades every 2 years"};
+BIZ.ultplus = {name:"Ultimate+",   full:"Business Unlimited Ultimate+",   max:30, legacy:true, store:true, pub:{1:95},         specs:"For iPhone · 200GB hotspot · Apple Business Essentials and AppleCare+ · not sold online"};
+BIZ.ult     = {name:"Ultimate",    full:"Business Unlimited Ultimate",    max:30, legacy:true, specs:"Retired · unlimited premium data · 100GB hotspot · 4K video"};
+BIZ.adv     = {name:"Advanced",    full:"Business Unlimited Advanced",    max:30, legacy:true, specs:"Retired business plan"};
+BIZ.ess     = {name:"Essentials",  full:"Business Unlimited Essentials",  max:30, legacy:true, specs:"Retired business plan"};
+var BIZ_STORE_ORDER = ["xbeyond","xmore","ultplus"], BIZ_RETIRED_ORDER = ["ult","adv","ess"];
+function bizLegacyRef(id, n, autopay){
+  var p = BIZ[id]; if (!p || !p.legacy || !p.pub || !p.pub[n]) return null;
+  var t = p.pub[n] + (autopay ? 0 : 5 * Math.min(n, 8));
+  return {total:t, per:t / n, est:false};
+}
 function bizList(id, n){ var b = BIZ[id], t = b.list; return n <= t.length ? t[n-1] : t[t.length-1] + (n - t.length) * b.addl; }
 /* The 3rd line free credit: the third line's price at 3-5 lines, one line at the per-line rate at 6+. */
 /* Plan price with the 3rd line free taken off, for per-line prices that match the quote total. */
@@ -705,6 +722,7 @@ var LEGACY = {
   essentials: {name:"Essentials", full:"Essentials", max:12, legacy:true, ref:[60,90,90,100,125], refAdd:25, refEstFrom:4}
 };
 function legacyRef(id, n, autopay){
+  if (BIZ[id] && BIZ[id].legacy) return bizLegacyRef(id, n, autopay);
   var p = LEGACY[id]; if (!p || !p.ref || !(n >= 1)) return null;
   var t = p.ref, total = n <= t.length ? t[n-1] : t[t.length-1] + (n - t.length) * p.refAdd;
   if (!autopay) total += 5 * Math.min(n, 8);
@@ -719,12 +737,12 @@ function currentPlanRef(c){
 }
 var LEGACY_ORDER = ["go5gnext","go5gplus","go5g","essentials"];
 Object.keys(LEGACY).forEach(function(k){ EXP[k] = LEGACY[k]; });
-function isLegacy(c){ return c.fam === "exp" && !!(EXP[c.pid] && EXP[c.pid].legacy); }
+function isLegacy(c){ return (c.fam === "exp" && !!(EXP[c.pid] && EXP[c.pid].legacy)) || (c.fam === "biz" && !!(BIZ[c.pid] && BIZ[c.pid].legacy)); }
 
 function planCalc(fam, id, n, autopay, portOn, seg){
   if (!(n >= 1)) return null;
   if (fam === "biz") {
-    var bp = BIZ[id]; if (!bp || n > bp.max) return null;
+    var bp = BIZ[id]; if (!bp || bp.legacy || n > bp.max) return null;
     var bl = bizList(id, n), bb = n <= 5 ? bl - 5 * n : bl, bna = autopay ? 0 : 5 * Math.min(n, 5);
     return {base:bb, price:bb, portSave:0, empSave:0, noAp:bna, total:bb + bna, est:false, list:bl};
   }
@@ -1246,7 +1264,7 @@ function cplanOf(g){ var list = cplansFor(g.type); return list ? (list.filter(fu
 function ctxOf(s){
   var ex = s.cust === "existing";
   var fam = s.biz ? "biz" : ((!ex || s.exFam === "tmix") ? "tmix" : "exp");
-  var pid = fam === "biz" ? (BIZ[s.planBiz] ? s.planBiz : "super") : (fam === "tmix" ? s.planNew : s.planExp);
+  var pid = fam === "biz" ? (BIZ[s.planBiz] && (ex || !BIZ[s.planBiz].legacy) ? s.planBiz : "super") : (fam === "tmix" ? s.planNew : s.planExp);
   var voice = s.groups.filter(function(g){ return TYPES[g.type].voice; });
   var newVoice = sum(voice.filter(function(g){ return g.lineType !== "upgrade"; }).map(function(g){ return g.qty; }));
   var portVoice = sum(voice.filter(function(g){ return g.lineType === "port"; }).map(function(g){ return g.qty; }));
@@ -1263,7 +1281,12 @@ function planVal(c, id, fam){ return fam === "tmix" ? (c.ex ? "tmix:" + id : id)
 function curPlanVal(c){ return planVal(c, c.pid, c.fam); }
 /* Plan options for a dropdown: new customers pick a T-Mix tier; existing accounts pick the plan they're on now. */
 function planOptions(c){
-  if (c.fam === "biz") return BIZ_ORDER.map(function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + BIZ[id].full + '</option>'; }).join("");
+  if (c.fam === "biz") {
+    var bo = function(id){ return '<option value="' + id + '"' + (id === c.pid ? " selected" : "") + '>' + BIZ[id].full + '</option>'; };
+    return '<optgroup label="Current plans">' + BIZ_ORDER.map(bo).join("") + '</optgroup>' +
+      (c.ex ? '<optgroup label="Also sold in stores · upgrade quotes here">' + BIZ_STORE_ORDER.map(bo).join("") + '</optgroup>' +
+              '<optgroup label="Retired · upgrade quotes only">' + BIZ_RETIRED_ORDER.map(bo).join("") + '</optgroup>' : '');
+  }
   function opt(id, fam){ var v = planVal(c, id, fam); return '<option value="' + v + '"' + (v === curPlanVal(c) ? " selected" : "") + '>' + planName(fam, id) + '</option>'; }
   if (!c.ex) return TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("");
   return '<optgroup label="T-Mix">' + TMIX_ORDER.map(function(id){ return opt(id, "tmix"); }).join("") + '</optgroup>' +
@@ -1576,7 +1599,7 @@ function compute(s){
   }
 
   var pc = null, plan = 0, share = 0;
-  if ((c.fam === "tmix" || c.fam === "biz") && c.ex) {
+  if ((c.fam === "tmix" || (c.fam === "biz" && !isLegacy(c))) && c.ex) {
     /* Existing T-Mix or business account: the quote adds only what new lines add to the bill. Upgrades keep their plan. */
     var tb = planCalc(c.fam, c.pid, c.E, s.autopay, false, seg), ta = planCalc(c.fam, c.pid, c.n, s.autopay, false, seg);
     if (ta) addNote = fmt(tb ? tb.total : 0) + " for " + c.E + " → " + fmt(ta.total) + " for " + c.n;
@@ -1589,7 +1612,7 @@ function compute(s){
       if (ta.est) notes.push({t:"warn", m:"Prices for 6+ lines come from pre-launch reports. Confirm before quoting."});
     }
     if (ta && c.fam === "tmix" && picksFor(c.pid, c.n)) notes.push({t:"info", m:"Picks shown are the account's total for " + c.n + " phone line" + (c.n === 1 ? "" : "s") + ". Picks the account already uses on perks or other promos count against them."});
-  } else if (c.fam === "tmix" || c.fam === "biz") {
+  } else if (c.fam === "tmix" || (c.fam === "biz" && !isLegacy(c))) {
     pc = planCalc(c.fam, c.pid, c.n, s.autopay, false, seg);
     if (c.n === 0) { if (!s.groups.length) notes.push({t:"warn", m:"Add a phone line to price " + (c.fam === "biz" ? "the business plan." : "a T-Mix plan.")}); }
     else if (!pc) notes.push({t:"bad", m: seg && SEG[seg].ap && !SEG[seg].ap[c.pid] ? TMIX[c.pid].full + " isn't offered with " + SEG[seg].label + " Savings. Pick another plan." : P.full + " allows up to " + c.max + " phone lines. Remove lines or pick another plan."});
@@ -1608,6 +1631,7 @@ function compute(s){
     }
   } else if (isLegacy(c)) {
     if (c.newVoice > 0) notes.push({t:"bad", m:P.full + " is an older plan: quote upgrades only. Set each phone line's Line type to Upgrade (Box 1)."});
+    if (c.fam === "biz" && c.upVoice > 0 && !currentPlanRef(c)) notes.push({t:"info", m:P.full + ": T-Mobile doesn't publish a price for " + c.E + " line" + (c.E > 1 ? "s" : "") + ", so the plan isn't on this quote. Check the account's current price."});
   } else {
     var before = planCalc("exp", c.pid, c.E, s.autopay, false, seg), after = planCalc("exp", c.pid, c.n, s.autopay, false, seg);
     if (after) addNote = fmt(before ? before.total : 0) + " for " + c.E + " → " + fmt(after.total) + " for " + c.n;
@@ -1625,9 +1649,9 @@ function compute(s){
      at its line count), so the quote reads as what these lines cost each month. Go5G and Essentials use published prices. */
   var curRef = c.ex ? currentPlanRef(c) : null;
   if (curRef && c.upVoice > 0) {
-    W.push({l:EXP[c.pid] && isLegacy(c) ? EXP[c.pid].full + " · " + c.upVoice + " upgrade line" + (c.upVoice > 1 ? "s" : "") : P.full + " · " + c.upVoice + " upgrade line" + (c.upVoice > 1 ? "s" : ""), a:curRef.per * c.upVoice,
+    W.push({l:P.full + " · " + c.upVoice + " upgrade line" + (c.upVoice > 1 ? "s" : ""), a:curRef.per * c.upVoice,
             sub:"current plan · " + (curRef.est ? "≈" : "") + fmt(curRef.per) + "/line at " + c.E + " line" + (c.E > 1 ? "s" : "") + (isLegacy(c) ? " (published price)" : "")});
-    if (isLegacy(c)) notes.push({t:"info", m:EXP[c.pid].full + " is priced at T-Mobile's published price for " + c.E + " line" + (c.E > 1 ? "s" : "") + ". Discounts and older sign-up prices can differ, so confirm the account's price."});
+    if (isLegacy(c)) notes.push({t:"info", m:P.full + " is priced at T-Mobile's published price for " + c.E + " line" + (c.E > 1 ? "s" : "") + ". Discounts and older sign-up prices can differ, so confirm the account's price."});
   }
 
   var budget = c.fam === "tmix" && pc ? picksFor(c.pid, c.n) : 0;
@@ -1831,7 +1855,7 @@ function banner(q){
 /* The existing account's line count and current plan. Shown under Plan discounts and in Box 1 of Edit options. */
 function acctFields(c, pfx){
   var lo = Math.max(1, c.upVoice);
-  var hint = c.fam === "biz" ? "The quote shows what the added lines and devices add to their current bill." : isLegacy(c) ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here."
+  var hint = c.fam === "biz" && !isLegacy(c) ? "The quote shows what the added lines and devices add to their current bill." : isLegacy(c) ? "Older plans are for upgrade quotes: device offers that name this plan, with no added plan charge. Lines can't be added on them here."
     : (c.fam === "tmix" ? "T-Mix accounts opened since Nov 5, 2026. The quote shows what the added lines and devices add to their current bill, and T-Mix offers use the account's Picks."
     : "The quote shows what the added lines and devices add to their current bill.");
   return '<div class="inl" style="margin-top:12px"><span class="flabel" style="margin:0">Phone lines already on the account</span><div class="stepper">' +
@@ -1905,9 +1929,11 @@ function renderStage(q){
     '</div>';
   }
 
-  var order = c.fam === "biz" ? BIZ_ORDER : (c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER));
-  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (c.fam === "biz" ? "Business" : c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
+  var bizOld = c.fam === "biz" && isLegacy(c);
+  var order = bizOld ? BIZ_STORE_ORDER.concat(BIZ_RETIRED_ORDER) : c.fam === "biz" ? BIZ_ORDER : (c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER));
+  h += '<div class="tierbar"><div class="tiers" role="group" aria-label="Plan price tier"><span class="lead">$ ' + (bizOld ? "Older business" : c.fam === "biz" ? "Business" : c.fam === "tmix" ? "T-Mix" : (isLegacy(c) ? "Retired" : "Experience")) + ' <small>' + (isLegacy(c) ? c.E + " line" + (c.E > 1 ? "s" : "") + " · upgrades only" : (c.ex ? "existing account · " + c.E + " on account + " + c.newVoice + " new" : Math.max(c.n,1) + " phone line tier")) + '</small></span>' +
     order.map(function(id){
+      if (bizOld) { var lr = legacyRef(id, Math.max(c.E,1), s.autopay); return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '">' + BIZ[id].name + ' | ' + (lr ? fmt(lr.per) : "Not listed") + '</button>'; }
       var pc = c.fam === "biz" ? bizCalcFree(id, Math.max(c.n,1), s.autopay, !c.ex && s.bizFree) : c.fam === "tmix" ? planCalc("tmix", id, Math.max(c.n,1), s.autopay, false, segOf(s))
              : (LEGACY[id] ? legacyRef(id, Math.max(c.n,1), s.autopay) : planCalc("exp", id, Math.max(c.n,1), s.autopay, false, segOf(s)));
       var nm = c.fam === "biz" ? BIZ[id].name : c.fam === "tmix" ? TMIX[id].name : EXP[id].name;
@@ -2451,7 +2477,7 @@ function bizCompareBody(q){
     {l:"3rd line free credit", n:"New accounts, 3+ voice lines", v:BIZ_ORDER.map(function(id){ var fc = bizFreeCredit(id, Math.max(n, 3)); return fmt0(fc) + "/mo at " + Math.max(n, 3) + " lines"; })},
     {l:"Each line past 8", v:BIZ_ORDER.map(function(id){ return "+" + fmt0(BIZ[id].addl) + "/line"; })}].concat(BIZ_CMP_ROWS);
   return '<p class="fhint" style="margin-top:0">Bold rows differ between plans.</p>' + featTable(cols, rows, false) +
-    '<p class="fhint">AutoPay: $5 off per line on lines 1–5 (bank account or debit card). $35 device connection charge per line; regulatory and telco recovery fee up to $4.49–$5.49 per line, plus taxes and surcharges. Device offers pay out as 24 monthly bill credits. Experience for Business (military and first responders): More $40/line and Beyond $52/line at 5 lines with AutoPay and the 3rd line free. New business accounts through Jan 6, 2027: CoreMobile 10 lines for $150/mo (bring your own device, AutoPay; $15 each line after) and $10,000 for adding 10 SuperMobile lines (36 monthly bill credits). From T-Mobile\'s business plan pages, checked ' + shortDate(BIZ_ASOF) + '.</p>';
+    '<p class="fhint">AutoPay: $5 off per line on lines 1–5 (bank account or debit card). $35 device connection charge per line; regulatory and telco recovery fee up to $4.49–$5.49 per line, plus taxes and surcharges. Device offers pay out as 24 monthly bill credits. Experience for Business (military and first responders): More $40/line and Beyond $52/line at 5 lines with AutoPay and the 3rd line free. New business accounts through Jan 6, 2027: CoreMobile 10 lines for $150/mo (bring your own device, AutoPay; $15 each line after) and $10,000 for adding 10 SuperMobile lines (36 monthly bill credits). Older plans existing business accounts may be on (pick them under Existing business account; upgrade quotes only): Experience Beyond for Business ($100 for 1 line), Experience More for Business ($85 for 1 line) and Business Unlimited Ultimate+ ($95 for 1 line, iPhone) are still sold in stores; Business Unlimited Ultimate, Advanced and Essentials are retired. From T-Mobile\'s business plan pages, checked ' + shortDate(BIZ_ASOF) + '.</p>';
 }
 function planCompareBody(q){
   if (state.biz) return bizCompareBody(q);
@@ -2626,12 +2652,18 @@ function editBody(g, q){
       BIZ_ORDER.map(function(id){
         var pcb = bizCalcFree(id, nb, state.autopay, !c.ex && state.bizFree), PB = BIZ[id];
         return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, pcb ? '<b>' + fmt(pcb.total / nb) + ' per phone line</b> - ' + PB.full : PB.full + ' <span class="why">· up to ' + PB.max + ' lines</span>', PB.specs, !pcb, "__plan");
-      }).join("") + '</div></div>';
+      }).join("") + '</div>' +
+      (c.ex ? [["Also sold in stores · upgrade quotes here", BIZ_STORE_ORDER], ["Retired · upgrade quotes only", BIZ_RETIRED_ORDER]].map(function(grp){
+        return '<p class="fhint" style="margin:12px 0 6px;font-weight:600">' + grp[0] + '</p><div class="radios">' + grp[1].map(function(id){
+          var PB = BIZ[id], lr = legacyRef(id, Math.max(c.E,1), state.autopay);
+          return radio("plan-" + g.id, "pl-" + g.id + "-" + id, id, c.pid, (lr ? '<b>' + fmt(lr.per) + ' per phone line</b> - ' : '') + PB.full, PB.specs + (lr ? " · published price at " + c.E + " line" + (c.E > 1 ? "s" : "") : ""), false, "__plan");
+        }).join("") + '</div>';
+      }).join("") : '') + '</div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "New line · customer keeps their number from another carrier", false, "g." + g.id + ".lineType") +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New line · new number", false, "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-port", "port", g.lineType, "Port", "New line · customer keeps their number from another carrier", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New", "New line · new number", isLegacy(c), "g." + g.id + ".lineType") +
       radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a line they already have · no added plan charge", false, "g." + g.id + ".lineType") +
-      '</div>' + (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
+      '</div>' + (isLegacy(c) ? '<p class="fhint">' + esc(c.P ? c.P.full : BIZ[c.pid].full) + ' quotes upgrades only. New lines go on SuperMobile, ProMobile or CoreMobile.</p>' : c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
     if (c.ex) b1 += '<div><h4>Account</h4>' + acctFields(c, "b1") + '</div>';
   } else if (T0.voice) {
     var n = Math.max(c.n, 1);
@@ -3554,6 +3586,7 @@ document.addEventListener("click", function(e){
       state.groups.forEach(function(x){ delete x.ltBefore; if (v === "new") earlyOf(x).on = false; if (v === "new" && x.lineType === "upgrade") x.lineType = TYPES[x.type].voice ? "port" : "new"; if (x.dev.offer !== "best" && x.dev.offer !== "custom" && x.dev.offer !== "full") x.dev.offer = ""; if (x.dev.byodOffer !== "best" && x.dev.byodOffer !== "none") x.dev.byodOffer = ""; });
       state.autoEx = false;
       if (v === "existing" && state.biz) { state.bizFree = false; state.existingLines = Math.max(1, ctxOf(state).upVoice); }
+      else if (state.biz && BIZ[state.planBiz] && BIZ[state.planBiz].legacy) { state.planBiz = "super"; state.cust = "new"; afterPlanChange(); }
       else if (v === "existing") { if (state.planDiscount === "port") state.planDiscount = "none"; state.exFam = "tmix"; state.existingLines = Math.max(1, ctxOf(state).upVoice); }   // keep the T-Mix plan on screen; start at the fewest lines the account can have
       break;
     case "exlines": { var cx = ctxOf(state); state.existingLines = Math.max(Math.max(1, cx.upVoice), Math.min(cx.max - 1, cx.E + (+v))); break; }
