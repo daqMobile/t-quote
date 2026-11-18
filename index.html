@@ -1707,10 +1707,10 @@ function renderStage(q){
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
       '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa</option>' +
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
-    '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
+    '<span class="bchip">No additional discounts applied</span>' +
+    '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" style="margin-left:auto" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
-    '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button>' +
-    '<span class="bchip">No additional discounts applied</span></div>';
+    '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button></div>';
 
   /* Promotion status sits at the very bottom, out of the way. */
   var foot = '<div class="livefoot">' + liveLine() + '</div>';
