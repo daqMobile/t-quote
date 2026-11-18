@@ -436,6 +436,9 @@ html.locked,html.locked body{overflow:hidden}
 .menu button{border:0;border-bottom:1px solid var(--line);background:none;text-align:left;padding:14px 16px;font-weight:600;font-size:15px}
 .menu button:last-child{border-bottom:0}
 .menu small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.pchgbox{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:8px 0 10px;font-size:14px;background:var(--surface)}
+.pchg{margin:6px 0 0;padding-left:18px;display:grid;gap:3px;font-variant-numeric:tabular-nums}
+.pchg s{color:var(--muted)}
 .menu button.modesw{color:var(--accent);display:flex;align-items:center;gap:12px;padding:20px 18px;font-size:18px}
 .menu button.modesw small{font-size:14.5px;margin-top:2px}
 .menu button.modesw .ico{width:24px;height:24px;flex:none;margin-left:auto}
@@ -2572,8 +2575,18 @@ function devPriceHtml(){
   try { modelPool().forEach(function(m){ if (m.verified && String(m.verified) > last) last = String(m.verified); }); } catch (e) {}
   return '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Device prices</h3>' +
     '<p class="fhint" style="margin-top:4px">Checked automatically every Monday morning, and any day a T-Mobile deal page shows a new price.' + (last ? ' Last confirmed ' + shortDate(last) + '.' : '') + '</p>' +
+    priceChangesHtml(last) +
     '<a class="obtn" href="' + PRICE_CHECK_URL + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;width:max-content">Check device prices now <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>' +
     '<p class="fhint">Opens a page in Claude with one button. New prices reach Quick Quote in about 10 to 20 minutes; reload after that. Promotions aren\'t affected.</p>';
+}
+function priceChangesHtml(last){
+  var rec = priceRec(); if (!rec) return "";
+  var ch = rec.changes || [], chDay = rec.changedAt ? localDay(rec.changedAt) : "";
+  var list = function(){ return '<ul class="pchg">' + ch.map(function(c){ return '<li>' + esc(c.n) + ': ' + (c.from != null ? '<s>' + fmt(c.from) + '</s> → ' : 'new · ') + '<b>' + fmt(c.to) + '</b></li>'; }).join("") + '</ul>'; };
+  if (ch.length && (!last || chDay >= last))
+    return '<div class="pchgbox"><b>' + ch.length + ' price change' + (ch.length > 1 ? 's' : '') + '</b> spotted ' + esc(whenStr(rec.changedAt)) + list() + '</div>';
+  return '<div class="pchgbox"><b>No price changes</b> in the latest check' + (last ? ' (' + shortDate(last) + ')' : '') + '.' +
+    (ch.length ? '<div class="muted" style="margin-top:6px">Earlier changes, spotted ' + esc(whenStr(rec.changedAt)) + ':</div>' + list() : '') + '</div>';
 }
 function settingsBody(){
   return appearanceHtml() + ghSettingsHtml() + devPriceHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
@@ -3135,6 +3148,28 @@ function renderSoon(){
     else renderAll();
   }, 30);
 }
+/* Device price changes. Quick Quote remembers the prices it last loaded on this device and compares on each load,
+   so after a Monday or manual price check it can say what changed, or that nothing did. */
+var PRICE_KEY = KEY + ".prices";
+function priceRec(){ try { return JSON.parse(localStorage.getItem(PRICE_KEY) || "null"); } catch (e) { return null; } }
+function trackPrices(devices){
+  var cur = {}, now = new Date().toISOString(), ch = [];
+  devices.forEach(function(m){ if (m.id && m.status !== "retired") cur[m.id] = {n:m.name, p:Math.round(m.price * 100) / 100}; });
+  var rec = priceRec();
+  if (!rec || !rec.snap) rec = {snap:cur, since:now, changes:[], changedAt:null};
+  else {
+    Object.keys(cur).forEach(function(id){
+      var o = rec.snap[id];
+      if (!o) ch.push({n:cur[id].n, from:null, to:cur[id].p});
+      else if (Math.abs(o.p - cur[id].p) > 0.004) ch.push({n:cur[id].n, from:o.p, to:cur[id].p});
+    });
+    if (ch.length) { rec.changes = ch; rec.changedAt = now; }
+    rec.snap = cur;
+  }
+  try { localStorage.setItem(PRICE_KEY, JSON.stringify(rec)); } catch (e) {}
+  if (ch.length) toast(ch.length === 1 ? ch[0].n + (ch[0].from != null ? " is now " + fmt(ch[0].to) + " (was " + fmt(ch[0].from) + ")." : " added at " + fmt(ch[0].to) + ".") : ch.length + " device prices changed. See Settings → Device prices.");
+}
+function localDay(iso){ var d = new Date(iso); return isNaN(d) ? "" : d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
 /* promos.json sits next to this page. The daily promo check updates it. */
 function startLive(){
   startLive._t = Date.now();
@@ -3149,6 +3184,7 @@ function startLive(){
     devices.forEach(function(m){ if (typeof m.salePrice === "number" && m.salePrice > 0 && m.salePrice < m.price) { m.fullPrice = m.price; m.price = m.salePrice; } });
     live.offers = offers.length ? offers : null;
     live.devices = devices.length ? devices : null;
+    if (devices.length) trackPrices(devices);
     live.meta = d.meta || null;
     var bo = d.business && Array.isArray(d.business.offers) ? d.business.offers.filter(function(o){ return o && o.id && o.label && o.fam === "biz" && Array.isArray(o.models); }) : [];
     live.bizOffers = bo.length ? bo : null;
