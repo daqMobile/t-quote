@@ -15,7 +15,7 @@ Read this first in a new chat about Quick Quote. It replaces re-reading old conv
 - Plain, short replies. No recaps of steps.
 
 ## App structure (index.html)
-- State in localStorage: consumer `tmix-quick-quote.v2`, business `tmix-quick-quote.v2.biz`, screen mode `…v2.mode`, device-price memory `…v2.prices`. `normalizeState()`, `restoreState()`, `applyQuote()` (saved quotes open on their own screen).
+- State in localStorage: consumer `tmix-quick-quote.v2`, business `tmix-quick-quote.v2.biz`, device-price memory `…v2.prices`. The app always opens on the consumer screen (Nik's choice); the business quote waits until he switches. `normalizeState()`, `restoreState()`, `applyQuote()` (saved quotes open on their own screen).
 - `compute(state)` → `{c, W (monthly rows), H (internet rows), T (due today), ONE (one-time credits), RB (rebate cards), monthly, …}`. `ctxOf(s)` gives `c.fam` = `tmix` | `exp` | `biz`, `c.pid`, line counts.
 - Plans: `TMIX`, `EXP`, `LEGACY` (consumer retired: Go5G Next/Plus, Go5G, Essentials; upgrade quotes only via `isLegacy`), `BIZ` (SuperMobile/ProMobile/CoreMobile + older business plans with `legacy:true`), `CPLANS` / `CPLANS_BIZ` (tablet, watch), `planCalc()`, `legacyRef()`.
 - Offers: `offerPool()` (consumer `live.offers || OFFERS`; business `live.bizOffers || BIZ_OFFERS`), `offersFor()`, BYOD (`byod`, `pay:"card"`), plan promotions (`pay:"plan"`, `planMo`, `planMonths`), AWAY (`product:"away"`). Plan discounts are account-wide only (Military, First Responder, 55+, Work Perks, Employee).

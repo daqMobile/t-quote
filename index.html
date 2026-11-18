@@ -546,9 +546,9 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
 "use strict";
 var KEY = "tmix-quick-quote.v2";
 var ASOF = "Nov 9, 2026";
-/* Quick Quote has two screens: consumer (default) and Quick Quote for Business. Each keeps its own quote on this device. */
+/* Quick Quote has two screens: consumer and Quick Quote for Business. Each keeps its own quote on this device.
+   It always opens on the consumer screen; the business quote is waiting when you switch. */
 var MODE_KEY = KEY + ".mode", MODE = "consumer";
-try { if (localStorage.getItem(MODE_KEY) === "biz") MODE = "biz"; } catch (e) {}
 function isBiz(){ return MODE === "biz"; }
 function storeKey(){ return isBiz() ? KEY + ".biz" : KEY; }
 
