@@ -2564,8 +2564,19 @@ function versionLine(){
   var d = new Date(document.lastModified);
   return '<p class="fhint" style="margin-top:4px">This version: ' + (isNaN(d) ? "unknown" : esc(d.toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}))) + '</p>';
 }
+/* Device prices are checked every Monday morning by the promo research. A manual check starts from a private
+   claude.ai page (it starts that scheduled task in device-prices-only mode, then the publish task). */
+var PRICE_CHECK_URL = "https://claude.ai/artifact/UoxzuYmr1eFpsaqAZZ934p";
+function devPriceHtml(){
+  var last = "";
+  try { modelPool().forEach(function(m){ if (m.verified && String(m.verified) > last) last = String(m.verified); }); } catch (e) {}
+  return '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Device prices</h3>' +
+    '<p class="fhint" style="margin-top:4px">Checked automatically every Monday morning, and any day a T-Mobile deal page shows a new price.' + (last ? ' Last confirmed ' + shortDate(last) + '.' : '') + '</p>' +
+    '<a class="obtn" href="' + PRICE_CHECK_URL + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;width:max-content">Check device prices now <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>' +
+    '<p class="fhint">Opens a page in Claude with one button. New prices reach Quick Quote in about 10 to 20 minutes; reload after that. Promotions aren\'t affected.</p>';
+}
 function settingsBody(){
-  return appearanceHtml() + ghSettingsHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
+  return appearanceHtml() + ghSettingsHtml() + devPriceHtml() + '<h3 class="eyebrow" style="margin:10px 0 0;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Charges</h3>' + feesBody();
 }
 function feesBody(){
   var st = state.set;
