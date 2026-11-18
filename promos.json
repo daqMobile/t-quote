@@ -3014,5 +3014,264 @@
     "video": "SD; HD up to 1080p with Data Maximizer off"
    }
   ]
+ },
+ "business": {
+  "asof": "2026-11-18",
+  "offers": [
+   {
+    "dated": false,
+    "detail": "Add a new line on SuperMobile ($95+/mo w/AutoPay). No trade-in needed.",
+    "fam": "biz",
+    "id": "b-16",
+    "label": "iPhone 16 · up to $730 off",
+    "models": [
+     "16"
+    ],
+    "months": 24,
+    "need": "newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "newline",
+    "upTo": 730,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Trade in an eligible phone and add a line on ProMobile or higher ($80+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-17",
+    "label": "iPhone 17 On Us",
+    "models": [
+     "17"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "pro",
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 830,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Upgrade and trade in an eligible phone on SuperMobile ($95+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-17e",
+    "label": "iPhone 17e On Us · upgrade",
+    "models": [
+     "17e"
+    ],
+    "months": 24,
+    "need": "trade",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 830,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-18pro",
+    "label": "iPhone 18 Pro On Us",
+    "models": [
+     "18pro"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1300,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Switch, trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay). 24 monthly bill credits plus a one-time credit.",
+    "fam": "biz",
+    "id": "b-18promax",
+    "label": "iPhone 18 Pro Max On Us",
+    "models": [
+     "18promax"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1200,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-air",
+    "label": "iPhone Air On Us",
+    "models": [
+     "air"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1100,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-duo",
+    "label": "iPhone Duo · up to $1,200 off",
+    "models": [
+     "duo"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1200,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Switch with an eligible trade-in and a new line on SuperMobile ($95+/mo w/AutoPay). 24 monthly bill credits plus a one-time credit.",
+    "fam": "biz",
+    "id": "b-fold8",
+    "label": "Galaxy Z Fold8 · up to $1,100 off",
+    "models": [
+     "fold8",
+     "fold8u"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/offers/samsung-galaxy-5g",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1100,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Add a new mobile internet line ($20+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-ipada16",
+    "label": "iPad (A16) for $299",
+    "models": [
+     "ipada16"
+    ],
+    "months": 24,
+    "need": "newline",
+    "picks": 0,
+    "plans": "any",
+    "source": "https://www.t-mobile.com/business/apple-business-iphone-deals",
+    "status": "active",
+    "tag": "newline",
+    "upTo": 300.99,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Trade in an eligible phone and add a new line on SuperMobile ($95+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-s26",
+    "label": "Galaxy S26 / S26+ · up to $1,100 off",
+    "models": [
+     "s26",
+     "s26p"
+    ],
+    "months": 24,
+    "need": "trade+newline",
+    "picks": 0,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/offers/samsung-galaxy-5g",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 1100,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Qualifying upgrade with an eligible trade-in on ProMobile or higher ($80+/mo w/AutoPay).",
+    "fam": "biz",
+    "id": "b-s26fe",
+    "label": "Galaxy S26 FE · up to $800 off · upgrade",
+    "models": [
+     "s26fe"
+    ],
+    "months": 24,
+    "need": "trade",
+    "picks": 0,
+    "plans": [
+     "pro",
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/offers/samsung-galaxy-5g",
+    "status": "active",
+    "tag": "trade",
+    "upTo": 800,
+    "verified": "2026-11-18"
+   },
+   {
+    "dated": false,
+    "detail": "Port-in on a business account with eligible service ($85/mo w/AutoPay): 20 monthly bill credits of $30.",
+    "fam": "biz",
+    "id": "b-switch600",
+    "label": "$600 for every line you switch",
+    "models": [],
+    "need": "port",
+    "pay": "plan",
+    "picks": 0,
+    "planMo": 30,
+    "planMonths": 20,
+    "plans": [
+     "super"
+    ],
+    "source": "https://www.t-mobile.com/business/wireless-business-plans",
+    "status": "active",
+    "tag": "plan",
+    "upTo": 600,
+    "verified": "2026-11-18"
+   }
+  ]
  }
 }
