@@ -2038,7 +2038,6 @@ function renderPrepaid(){
   var cols = plans.map(function(p){ var x = mo(p, n); return {name:p.name, price:x == null ? "—" : fmt0(x), sub:x == null ? "Not offered at " + lines : (p.d || "")}; });
   var rows = [
     {sec:"Price for " + lines},
-    {l:"With AutoPay", n:"$" + off + " off per account", v:plans.map(function(p){ var x = base(p, n); return x == null ? "Not listed" : p.ap === true ? fmt0(x - off) : p.ap === false ? fmt0(x) + " (no AutoPay discount)" : fmt0(x) + " (listed price)"; })},
     {l:"Per line", v:plans.map(function(p){ var x = mo(p, n); return x == null ? "Not listed" : "$" + (x % n ? (x / n).toFixed(2) : x / n); })},
     {l:"1 · 2 · 3 · 4 · 5 lines", n:apOn ? "With AutoPay where offered" : "Without AutoPay", v:plans.map(function(p){ return [1,2,3,4,5].map(function(k){ var x = mo(p, k); return x == null ? "–" : "$" + x; }).join(" · "); })},
     {l:"Price guarantee", v:f("guar")},
