@@ -28,6 +28,7 @@ Read this first in a new chat about Quick Quote. It replaces re-reading old conv
 - **"Quick Quote promo check"** (`trig_019QSdYBAhA8mWhXGrVKJ3eX`, 7:30 AM, created via API so it can't be edited from chat): publishes the hand-off promos.json to the repo.
 - **Device Price Check page** https://claude.ai/artifact/UoxzuYmr1eFpsaqAZZ934p: one button that fires the research task in device-only mode (mcp capability, Claude Code Remote).
 - Plan prices live in index.html and are never checked by the pipeline (retired plans never); only promotions and device prices are.
+- Prepaid plans can carry `minLines` (10GB "4 lines for $100" = 4: 4 lines activated together, 5 allowed at $130); the Prepaid tab hides a plan below it. Keep it when rewriting the prepaid block.
 - promos.json format: top-level keys meta, offers, devices, prepaid, business; keys sorted inside objects; offers/devices/business.offers sorted by id; indent 1; non-ASCII as-is; trailing newline.
 
 ## Testing

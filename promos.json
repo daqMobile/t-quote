@@ -2998,6 +2998,7 @@
     "hotspot": "Uses the 10GB",
     "id": "10gb",
     "intl": false,
+    "minLines": 4,
     "name": "10GB",
     "price": [
      97,

@@ -2252,7 +2252,9 @@ function hintCompareBody(q){
 }
 /* Prepaid: a reference page only. Prepaid has no financing, and nothing on this tab changes the quote.
    promos.json can carry a "prepaid" block in this same shape; the daily check refreshes it once a week.
-   price: monthly price for 1-5 lines WITHOUT AutoPay (null = not offered). ap: true = $apOff off per account
+   price: monthly price for 1-5 lines WITHOUT AutoPay (null = not offered). minLines: fewest lines to sign up (the
+   10GB "4 lines for $100" plan needs 4 activated together; T-Mobile's 1-3 line prices are only for accounts that drop
+   below 4 later), so the plan is left out below that. ap: true = $apOff off per account
    with AutoPay, false = no AutoPay discount, null = not listed. false in a feature = not included. */
 var PREPAID = {asof:"2026-11-18", apOff:5, perks:"T-Mobile Tuesdays, MLB.TV, Scam Block", activate:"$0 online · $10/line in store",
   plans:[
@@ -2260,7 +2262,7 @@ var PREPAID = {asof:"2026-11-18", apOff:5, perks:"T-Mobile Tuesdays, MLB.TV, Sca
     {id:"unlimited", name:"Unlimited Monthly", price:[50,80,110,140,170], ap:true, d:"Lowest unlimited price", data:"Unlimited · 50GB premium", hotspot:"Unlimited at 3G speeds", video:"SD (up to 2.5 Mbps)", canmex:"+$5/mo add-on", intl:"+$15/mo add-on: calls to landlines in 70+ countries", connect:"$10", guar:"5 years"},
     {id:"plus", name:"Unlimited Plus Monthly", price:[65,95,125,155,185], ap:true, d:"Hotspot, Canada & Mexico, HD passes", data:"Unlimited · 50GB premium", hotspot:"5GB high-speed", video:"SD, HD video passes available", canmex:"Talk & text included", intl:"Texting to 215+ countries", connect:"$10", guar:"5 years"},
     {id:"promo", name:"Unlimited Promo", price:[55,75,null,null,null], ap:null, d:"Limited time: 2 lines for $75", data:"Unlimited · 50GB premium", hotspot:"3GB high-speed", video:null, canmex:"Talk & text included", intl:"Texting to 215+ countries", connect:"$10", guar:"5 years"},
-    {id:"10gb", name:"10GB", price:[97,98,99,100,130], ap:false, d:"4 lines for $100", data:"10GB, then unlimited at 2G (128 kbps)", hotspot:"Uses the 10GB", video:"SD; HD up to 1080p with Data Maximizer off", canmex:false, intl:false, connect:"$25 per voice line, $5 per other line", guar:"5 years"}
+    {id:"10gb", name:"10GB", price:[97,98,99,100,130], ap:false, minLines:4, d:"4 lines for $100", data:"10GB, then unlimited at 2G (128 kbps)", hotspot:"Uses the 10GB", video:"SD; HD up to 1080p with Data Maximizer off", canmex:false, intl:false, connect:"$25 per voice line, $5 per other line", guar:"5 years"}
   ],
   offers:[{"id": "pp-a17-onus", "label": "Galaxy A17 5G On Us", "detail": "Sign up for Unlimited Plus Monthly and put another $85 into the account at a T-Mobile store.", "models": ["a17"], "price": 0, "deposit": 85, "plans": ["plus"], "need": "none", "status": "active", "ends": null, "source": "https://prepaid.t-mobile.com/"}],
   devices:[{"id": "a17-128", "fam": "a17", "mfr": "Samsung", "name": "Galaxy A17 5G 128GB", "price": 279.99, "status": "active"}],
@@ -2290,7 +2292,8 @@ function ppState(){
 }
 function ppData(){ return live.prepaid || PREPAID; }
 function ppPlanList(D){ return (D.plans || []).filter(function(p){ return p && p.name && Array.isArray(p.price); }); }
-function ppBase(p, k){ var x = p.price[k - 1]; return typeof x === "number" ? x : null; }
+function ppMin(p){ var m = parseInt(p.minLines, 10) || parseInt((String(p.d || "").match(/^(\d) lines for \$/) || [])[1], 10) || 1; return Math.max(1, m); }
+function ppBase(p, k){ if (k < ppMin(p)) return null; var x = p.price[k - 1]; return typeof x === "number" ? x : null; }
 function ppMonthly(p, k, apOn, D){ var x = ppBase(p, k); return x == null ? null : (apOn && p.ap === true ? x - (num(D.apOff) || 5) : x); }
 function ppDollars(t, pick){ var m = String(t || "").match(/\$\d+(\.\d+)?/g); if (!m) return null; var v = m.map(function(s){ return parseFloat(s.slice(1)); }); return pick === "max" ? Math.max.apply(null, v) : v[0]; }
 /* Phones: T-Mobile's phone list plus any prepaid-only phones the weekly check adds (prepaid.devices). */
@@ -2435,7 +2438,7 @@ function renderConnect(P){
 function renderPrepaid(){
   var P = ppState(), D = ppData(), n = P.lines, apOn = P.ap;
   if (P.brand === "connect") return renderConnect(P);
-  var plans = ppPlanList(D), cur = ppCalc().plan;
+  var plans = ppPlanList(D).filter(function(p){ return n >= ppMin(p); }), cur = ppCalc().plan;   // plans that need more lines are left out
   var mo = function(p, k){ return ppMonthly(p, k, apOn, D); };
   var lines = n + " line" + (n > 1 ? "s" : "");
   var f = function(k){ return plans.map(function(p){ return p[k] == null ? "Not listed" : p[k]; }); };
