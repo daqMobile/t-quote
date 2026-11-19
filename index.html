@@ -172,7 +172,7 @@ button:disabled{cursor:not-allowed}
 .cmpl .check input{width:16px;height:16px;margin:0}
 .hcmp .hcost{display:block}
 .hcmp thead .hcost .pp{white-space:nowrap}
-.hcmp .hcost.maxed{opacity:.45}
+.hcmp thead .maxed{opacity:.6}
 .stepper output{min-width:40px;height:30px;line-height:28px;text-align:center;border:1px solid var(--line);border-radius:3px;background:var(--surface);font-variant-numeric:tabular-nums}
 
 /* ---------- Tier strip ---------- */
@@ -2504,7 +2504,7 @@ function featTable(cols, rows, diffOnly, corner){
       r.v.map(function(x, i){ return '<td class="' + (cols[i].cur ? "cur" : "") + '">' + (r.raw ? x : cell(x)) + '</td>'; }).join("") + '</tr>';
   });
   var head = '<tr><th scope="col"><span class="muted" style="font-weight:500;font-size:12.5px">' + esc(corner || "Highlighted: on this quote") + '</span></th>' + cols.map(function(cl){
-    return '<th scope="col" class="' + (cl.cur ? "cur" : "") + '"><span class="pn">' + esc(cl.name) + '</span><span class="hcost' + (cl.maxed ? " maxed" : "") + '"><span class="pp">' + cl.price + (cl.noMo ? '' : '<small> /mo</small>') + '</span>' +
+    return '<th scope="col" class="' + (cl.cur ? "cur" : "") + '"><span class="pn' + (cl.maxed ? " maxed" : "") + '">' + esc(cl.name) + '</span><span class="hcost' + (cl.maxed ? " maxed" : "") + '"><span class="pp">' + cl.price + (cl.noMo ? '' : '<small> /mo</small>') + '</span>' +
       '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.sub || "") + '</span>' +
       (cl.note ? '<span class="muted" style="font-size:12px;font-weight:500;display:block">' + esc(cl.note) + '</span>' : '') + '</span>' +
       (cl.cur ? '<span class="yes" style="font-size:12px;display:block;margin-top:6px">✓ On quote</span>' : (cl.choose ? '<button class="obtn" data-act="plan" data-v="' + cl.choose + '">Choose</button>' : '')) + '</th>';
