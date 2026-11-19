@@ -1155,7 +1155,7 @@ function newGroup(type, st){
     early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
     pay:{method:"eip", term: (t === "syncDrive" || (st && st.biz)) ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
-    cplan: t === "tablet" ? "tabPlus" : (t === "watch" ? "watch" : (CPLANS[t] ? CPLANS[t][0].id : null))
+    cplan: t === "tablet" ? "tabUnl" : (t === "watch" ? "watch" : (CPLANS[t] ? CPLANS[t][0].id : null))
   };
 }
 function exampleState(){
