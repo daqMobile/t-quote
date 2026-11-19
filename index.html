@@ -161,6 +161,13 @@ button:disabled{cursor:not-allowed}
 .stepper{display:inline-flex;align-items:center;gap:6px}
 .stepper button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);display:grid;place-items:center;padding:0}
 .stepper button:disabled{border-color:var(--line);color:var(--muted);opacity:.6}
+.cmpl{gap:8px}
+.cmpl .flabel{font-size:12.5px}
+.cmpl .stepper{gap:4px}
+.cmpl .stepper button{width:24px;height:24px;border-width:1.25px}
+.cmpl .stepper .ico{width:14px;height:14px}
+.cmpl .stepper output{min-width:30px;height:24px;line-height:22px;font-size:13px}
+.cmpl .fhint{font-size:12px}
 .stepper output{min-width:40px;height:30px;line-height:28px;text-align:center;border:1px solid var(--line);border-radius:3px;background:var(--surface);font-variant-numeric:tabular-nums}
 
 /* ---------- Tier strip ---------- */
@@ -2235,8 +2242,7 @@ function hintCompareBody(q){
     return '<th scope="col" class="' + (on ? "cur" : "") + '"><span class="pn">' + p.name + '</span><span class="pp">' + fmt0(now) + '<small> /mo</small></span><span class="muted" style="font-size:12px;font-weight:500;display:block">on this quote</span><span style="font-size:12.5px;font-weight:500;display:block;margin-top:6px">' + esc(p.d) + '</span>' +
       (on ? '<span class="obtn" style="display:inline-block;margin-top:8px;font-size:11.5px;padding:7px 12px;border-color:transparent">✓ On quote</span>' : '<button class="obtn" data-act="hplan" data-v="' + id + '">Choose</button>') + '</th>';
   }).join("") + '</tr>';
-  return '<p class="fhint" style="margin-top:0">Bold rows differ between plans.</p>' +
-    '<div class="hcwrap" style="margin-top:12px"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
+  return '<div class="hcwrap"><table class="hcmp"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' +
     '<p class="fhint">"On this quote" prices follow the quote\'s AutoPay and voice line settings. All plans: unlimited data, no annual contract, taxes and fees extra. Gateway: return it undamaged or pay up to $370. Some T-Mobile pages show the phone-plan discount as $15/mo instead of $' + HINT_VOICE + '; confirm in the store system. From T-Mobile\'s Home Internet plan pages, checked ' + shortDate(HINT_CMP_ASOF) + '.</p>';
 }
 /* Prepaid: a reference page only. Prepaid has no financing, and nothing on this tab changes the quote.
@@ -2464,7 +2470,7 @@ function cmpMax(){ return state.biz ? 30 : 12; }
 function cmpN(c){ return ui.cmpLines || cmpBase(c); }
 function cmpLinesCtl(c, top){
   var n = cmpN(c);
-  return '<div class="inl" style="margin-top:' + top + 'px"><span class="flabel" style="margin:0">Phone lines to compare</span><div class="stepper">' +
+  return '<div class="inl cmpl" style="margin-top:' + top + 'px"><span class="flabel" style="margin:0">Phone lines to compare</span><div class="stepper">' +
     '<button data-act="cmplines" data-v="-1" aria-label="Fewer lines to compare"' + (n <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output aria-live="polite">' + n + '</output>' +
     '<button data-act="cmplines" data-v="1" aria-label="More lines to compare"' + (n >= cmpMax() ? " disabled" : "") + '>' + I.plus + '</button></div>' +
     (ui.cmpLines ? '<span class="fhint" style="margin:0">Just for comparing. The quote isn\'t changed.</span>' : '') + '</div>';
@@ -2500,7 +2506,7 @@ function bizCompareBody(q){
       return fmt0(pc.total) + '<small>' + (id === c.pid ? "current" : (d === 0 ? "same as current" : (d > 0 ? "+" : "−") + fmt0(Math.abs(d)) + " vs current")) + '</small>'; })},
     {l:"3rd line free credit", n:"New accounts, 3+ voice lines", v:BIZ_ORDER.map(function(id){ var fc = bizFreeCredit(id, Math.max(n, 3)); return fmt0(fc) + "/mo at " + Math.max(n, 3) + " lines"; })},
     {l:"Each line past 8", v:BIZ_ORDER.map(function(id){ return "+" + fmt0(BIZ[id].addl) + "/line"; })}].concat(BIZ_CMP_ROWS);
-  return cmpLinesCtl(c, 0) + '<p class="fhint" style="margin-top:14px">Bold rows differ between plans.</p>' + featTable(cols, rows, false) +
+  return cmpLinesCtl(c, 0) + featTable(cols, rows, false) +
     '<p class="fhint">AutoPay: $5 off per line on lines 1–5 (bank account or debit card). $35 device connection charge per line; regulatory and telco recovery fee up to $4.49–$5.49 per line, plus taxes and surcharges. Device offers pay out as 24 monthly bill credits. Experience for Business (military and first responders): More $40/line and Beyond $52/line at 5 lines with AutoPay and the 3rd line free. New business accounts through Jan 6, 2027: CoreMobile 10 lines for $150/mo (bring your own device, AutoPay; $15 each line after) and $10,000 for adding 10 SuperMobile lines (36 monthly bill credits). Older plans existing business accounts may be on (pick them under Existing business account; upgrade quotes only): Experience Beyond for Business ($100 for 1 line), Experience More for Business ($85 for 1 line) and Business Unlimited Ultimate+ ($95 for 1 line, iPhone) are still sold in stores; Business Unlimited Ultimate, Advanced and Essentials are retired. From T-Mobile\'s business plan pages, checked ' + shortDate(BIZ_ASOF) + '.</p>';
 }
 function planCompareBody(q){
@@ -2546,8 +2552,7 @@ function planCompareBody(q){
   rows = rows.concat(D.rows);
   var h = '<div class="seg" role="tablist" aria-label="Plan type" style="width:100%">' + CMP_TABS.map(function(t){
       return '<button role="tab" data-act="cmptab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join("") + '</div>';
-  if (tab === "voice" || tab === "retired") h += cmpLinesCtl(c, 14);
-  h += '<p class="fhint" style="margin-top:14px">Bold rows differ between plans.</p>';
+  if (tab === "voice" || tab === "retired") h += cmpLinesCtl(c, 12);
   h += featTable(cols, rows, false);
   if (cols.length > 4) h += '<p class="fhint" style="margin-top:6px">Swipe the table sideways to see all ' + cols.length + ' plans.</p>';
   h += '<p class="fhint">' + esc(D.fine.replace("{tabnv}", TAB_NO_VOICE)) + ' From T-Mobile\'s plan pages, checked ' + shortDate(PLAN_CMP_ASOF) + '.</p>';
