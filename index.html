@@ -2099,6 +2099,7 @@ function drawer(title, sub, body, foot, cls){
 }
 function renderSheet(q){
   var root = $("#sheetRoot"), s = ui.sheet;
+  if (s !== "compare") ui.cmpLines = null;   // lines added in Compare plans are only for comparing; closing goes back to the quote's count
   /* While a panel is open, the page behind it doesn't scroll; only the panel does. */
   document.documentElement.classList.toggle("locked", !!s);
   var SLIDE = ["review","compare","hcompare","visa"], opening = s && !ui.lastSheet, closingFrom = s ? null : ui.lastSheet;
@@ -2130,7 +2131,7 @@ function renderSheet(q){
     live.saved ? '<button class="linkbtn" data-act="sheet" data-v="review">Back to review</button><button class="pbtn" data-act="close">Done</button>'
                : '<button class="linkbtn" data-act="sheet" data-v="review">Back</button><button class="pbtn" data-act="dosave"' + (live.saving ? " disabled" : "") + '>' + (live.saving ? "Saving…" : "Save quote") + '</button>');
   else if (s === "open") html = drawer("Open quote", "Type a Quote ID or pick a recent quote", openBody(), "");
-  else if (s === "compare") html = drawer("Compare plans", "Every plan type side by side · " + Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on this quote", planCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
+  else if (s === "compare") html = drawer("Compare plans", "Every plan type side by side · " + (ui.cmpLines ? "comparing " + ui.cmpLines + " phone line" + (ui.cmpLines > 1 ? "s" : "") : Math.max(q.c.n,1) + " phone line" + (q.c.n > 1 ? "s" : "") + " on this quote"), planCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "hcompare") html = drawer("Compare Home Internet plans", "Rely, Amplified and All-In side by side", hintCompareBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>', "wide");
   else if (s === "visa") html = drawer("T-Mobile Visa", "Everything about the card, from Capital One", visaBody(q), '<span></span><button class="pbtn" data-act="close">Done</button>');
   else if (s === "menu") html = drawer(isBiz() ? "Quick Quote for Business" : "Quick Quote", isBiz() ? "Store quoting tool for T-Mobile for Business" : "Store quoting tool for T-Mobile plans", menuBody(), "", "left");
@@ -2456,6 +2457,18 @@ function renderPrepaid(){
 /* Compare plans (Wireless): every plan type in one panel, a tab each, as a feature table. Rows that differ are bold,
    plans on the quote are highlighted, and on the T-Mix and Retired tabs the price row shows each plan's charge at the
    quote's line count against the current plan, with Choose to switch. */
+/* Phone lines to compare: starts at the quote's line count and can go up or down just for comparing. The quote itself
+   doesn't change; closing the panel goes back to the quote's count (renderSheet clears ui.cmpLines). */
+function cmpBase(c){ return Math.max(c.n, 1); }
+function cmpMax(){ return state.biz ? 30 : 12; }
+function cmpN(c){ return ui.cmpLines || cmpBase(c); }
+function cmpLinesCtl(c, top){
+  var n = cmpN(c);
+  return '<div class="inl" style="margin-top:' + top + 'px"><span class="flabel" style="margin:0">Phone lines to compare</span><div class="stepper">' +
+    '<button data-act="cmplines" data-v="-1" aria-label="Fewer lines to compare"' + (n <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output aria-live="polite">' + n + '</output>' +
+    '<button data-act="cmplines" data-v="1" aria-label="More lines to compare"' + (n >= cmpMax() ? " disabled" : "") + '>' + I.plus + '</button></div>' +
+    (ui.cmpLines ? '<span class="fhint" style="margin:0">Just for comparing. The quote isn\'t changed.</span>' : '') + '</div>';
+}
 var CMP_TABS = [["voice","T-Mix"],["retired","Retired"],["tablet","Tablet"],["watch","Watch"],["sync","SyncUP"]];
 function featTable(cols, rows, diffOnly, corner){
   function same(v){ return v.every(function(x){ return String(x) === String(v[0]); }); }
@@ -2477,22 +2490,22 @@ function featTable(cols, rows, diffOnly, corner){
   return '<div class="hcwrap" style="margin-top:12px"><table class="hcmp many" style="min-width:' + (180 + cols.length * 132) + 'px"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
 }
 function bizCompareBody(q){
-  var s = state, c = q.c, n = Math.max(c.n, 1), lines = n + " line" + (n > 1 ? "s" : "");
-  var cols = BIZ_ORDER.map(function(id){ var pc1 = planCalc("biz", id, 1, true); return {id:id, name:BIZ[id].full, price:fmt0(pc1.total), sub:"1 line with AutoPay", cur:c.pid === id, choose: planCalc("biz", id, n, s.autopay) ? id : null}; });
+  var s = state, c = q.c, base = cmpBase(c), n = cmpN(c), lines = n + " line" + (n > 1 ? "s" : "");
+  var cols = BIZ_ORDER.map(function(id){ var pc1 = planCalc("biz", id, 1, true); return {id:id, name:BIZ[id].full, price:fmt0(pc1.total), sub:"1 line with AutoPay", cur:c.pid === id, choose: planCalc("biz", id, base, s.autopay) ? id : null}; });
   var cur = planCalc("biz", c.pid, n, s.autopay);
   var rows = [{sec:"Price"},
-    {l:"At " + lines + " on this quote", n:(s.autopay ? "With AutoPay" : "Without AutoPay") + (s.bizFree && !c.ex && n >= 3 ? " · before 3rd line free" : ""), raw:true, v:BIZ_ORDER.map(function(id){
+    {l:"At " + lines + (ui.cmpLines ? "" : " on this quote"), n:(s.autopay ? "With AutoPay" : "Without AutoPay") + (s.bizFree && !c.ex && n >= 3 ? " · before 3rd line free" : ""), raw:true, v:BIZ_ORDER.map(function(id){
       var pc = planCalc("biz", id, n, s.autopay); if (!pc) return '<span class="no">Up to ' + BIZ[id].max + ' lines</span>';
       var d = cur ? pc.total - cur.total : 0;
       return fmt0(pc.total) + '<small>' + (id === c.pid ? "current" : (d === 0 ? "same as current" : (d > 0 ? "+" : "−") + fmt0(Math.abs(d)) + " vs current")) + '</small>'; })},
     {l:"3rd line free credit", n:"New accounts, 3+ voice lines", v:BIZ_ORDER.map(function(id){ var fc = bizFreeCredit(id, Math.max(n, 3)); return fmt0(fc) + "/mo at " + Math.max(n, 3) + " lines"; })},
     {l:"Each line past 8", v:BIZ_ORDER.map(function(id){ return "+" + fmt0(BIZ[id].addl) + "/line"; })}].concat(BIZ_CMP_ROWS);
-  return '<p class="fhint" style="margin-top:0">Bold rows differ between plans.</p>' + featTable(cols, rows, false) +
+  return cmpLinesCtl(c, 0) + '<p class="fhint" style="margin-top:14px">Bold rows differ between plans.</p>' + featTable(cols, rows, false) +
     '<p class="fhint">AutoPay: $5 off per line on lines 1–5 (bank account or debit card). $35 device connection charge per line; regulatory and telco recovery fee up to $4.49–$5.49 per line, plus taxes and surcharges. Device offers pay out as 24 monthly bill credits. Experience for Business (military and first responders): More $40/line and Beyond $52/line at 5 lines with AutoPay and the 3rd line free. New business accounts through Jan 6, 2027: CoreMobile 10 lines for $150/mo (bring your own device, AutoPay; $15 each line after) and $10,000 for adding 10 SuperMobile lines (36 monthly bill credits). Older plans existing business accounts may be on (pick them under Existing business account; upgrade quotes only): Experience Beyond for Business ($100 for 1 line), Experience More for Business ($85 for 1 line) and Business Unlimited Ultimate+ ($95 for 1 line, iPhone) are still sold in stores; Business Unlimited Ultimate, Advanced and Essentials are retired. From T-Mobile\'s business plan pages, checked ' + shortDate(BIZ_ASOF) + '.</p>';
 }
 function planCompareBody(q){
   if (state.biz) return bizCompareBody(q);
-  var s = state, c = q.c, n = Math.max(c.n, 1), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired");
+  var s = state, c = q.c, base = cmpBase(c), n = cmpN(c), tab = ui.cmpTab || (c.fam === "tmix" ? "voice" : "retired");
   var D = PLAN_CMP[tab], cols, rows = [];
   var onQuote = function(type, id){ return s.groups.some(function(g){ return g.type === type && cplanOf(g).id === id; }); };
   var lines = n + " line" + (n > 1 ? "s" : "");
@@ -2510,18 +2523,18 @@ function planCompareBody(q){
   }
   var priceNote = function(fam){ return mine(fam) ? (s.autopay ? "With AutoPay" : "Without AutoPay") + (sg(fam) ? " · " + SEG[sg(fam)].label + " Savings" : "") : "With AutoPay"; };
   if (tab === "voice") {
-    cols = D.cols.map(function(id){ var p = TMIX[id]; return {id:id, name:p.full, price:fmt0(p.ap[0]), sub:"1 line with AutoPay", cur: c.fam === "tmix" && c.pid === id, choose: planCalc("tmix", id, n, ap("tmix"), false, sg("tmix")) ? "tmix:" + id : null}; });
+    cols = D.cols.map(function(id){ var p = TMIX[id]; return {id:id, name:p.full, price:fmt0(p.ap[0]), sub:"1 line with AutoPay", cur: c.fam === "tmix" && c.pid === id, choose: planCalc("tmix", id, base, ap("tmix"), false, sg("tmix")) ? "tmix:" + id : null}; });
     rows.push({sec:"Price & Picks"});
-    rows.push({l:"At " + lines + (c.fam === "tmix" ? " on this quote" : ""), n:priceNote("tmix"), raw:true, v:D.cols.map(function(id){ return costCell("tmix", id); })});
+    rows.push({l:"At " + lines + (c.fam === "tmix" && !ui.cmpLines ? " on this quote" : ""), n:priceNote("tmix"), raw:true, v:D.cols.map(function(id){ return costCell("tmix", id); })});
     rows.push({l:"Picks at " + lines, v:D.cols.map(function(id){ var k = n <= TMIX[id].max ? picksFor(id, n) : 0; return k ? String(k) : "None"; })});
     rows.push({l:"Most lines", v:D.cols.map(function(id){ return String(TMIX[id].max); })});
   } else if (tab === "retired") {
     cols = D.cols.map(function(id){
       var p = EXP[id] || LEGACY[id], one = p.ap ? p.ap[0] : (p.ref ? p.ref[0] : 0);
-      return {id:id, name:p.full, price:fmt0(one), sub: p.legacy ? "1 line · last published" : "1 line with AutoPay", cur: c.fam === "exp" && c.pid === id, choose: (LEGACY[id] || planCalc("exp", id, n, ap("exp"), false, sg("exp"))) ? "exp:" + id : null};
+      return {id:id, name:p.full, price:fmt0(one), sub: p.legacy ? "1 line · last published" : "1 line with AutoPay", cur: c.fam === "exp" && c.pid === id, choose: (LEGACY[id] || planCalc("exp", id, base, ap("exp"), false, sg("exp"))) ? "exp:" + id : null};
     });
     rows.push({sec:"Price"});
-    rows.push({l:"At " + lines + (c.fam === "exp" ? " on this quote" : ""), n:priceNote("exp"), raw:true, v:D.cols.map(function(id){ return costCell("exp", id); })});
+    rows.push({l:"At " + lines + (c.fam === "exp" && !ui.cmpLines ? " on this quote" : ""), n:priceNote("exp"), raw:true, v:D.cols.map(function(id){ return costCell("exp", id); })});
   } else {
     var type = tab === "sync" ? null : tab;
     cols = D.cols.map(function(id){
@@ -2533,6 +2546,7 @@ function planCompareBody(q){
   rows = rows.concat(D.rows);
   var h = '<div class="seg" role="tablist" aria-label="Plan type" style="width:100%">' + CMP_TABS.map(function(t){
       return '<button role="tab" data-act="cmptab" data-v="' + t[0] + '" aria-pressed="' + (tab === t[0]) + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join("") + '</div>';
+  if (tab === "voice" || tab === "retired") h += cmpLinesCtl(c, 14);
   h += '<p class="fhint" style="margin-top:14px">Bold rows differ between plans.</p>';
   h += featTable(cols, rows, false);
   if (cols.length > 4) h += '<p class="fhint" style="margin-top:6px">Swipe the table sideways to see all ' + cols.length + ' plans.</p>';
@@ -3701,11 +3715,12 @@ document.addEventListener("click", function(e){
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
     case "cmptab": ui.cmpTab = v; break;
+    case "cmplines": { var cb = cmpBase(ctxOf(state)), cl = Math.max(1, Math.min(cmpMax(), (ui.cmpLines || cb) + (+v))); ui.cmpLines = cl === cb ? null : cl; break; }
     case "awayon": state.away.on = !state.away.on; if (state.away.on && ui.offersHidden) ui.offersHidden.away = false; break;
     case "aplan": state.away.plan = v; if (!state.away.on && ui.offersHidden) ui.offersHidden.away = false; state.away.on = true; break;
     default: return;
   }
-  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear","pplines","ppap","ppplan","ppbrand"].indexOf(act) < 0 && act !== "example") state.example = false;
+  if (["sheet","close","build","tab","discounts","view","tray","traytab","tagf","mfr","edit","startnew","mstyle","ghclear","pplines","ppap","ppplan","ppbrand","cmplines"].indexOf(act) < 0 && act !== "example") state.example = false;
   var focusId = document.activeElement && document.activeElement.id;
   renderAll();
   if (act === "sheet" || act === "edit") { var t = $("#dTitle"); if (t) t.focus({preventScroll:true}); }
