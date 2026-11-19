@@ -261,6 +261,10 @@ button:disabled{cursor:not-allowed}
 .traycount{font-size:13px;color:var(--muted)}
 .traytop{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%}
 .traytabs{flex:none}
+/* Devices/SyncUP switch centered in the tray, with the count beside it on the right */
+.traytop:has(.traytabs){display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:16px}
+.traytop .traytabs{grid-column:2}
+.traytop:has(.traytabs) .traycount{grid-column:3;justify-self:start}
 .traytabs button{padding:5px 18px;font-size:14px;line-height:1.3}
 .trayin:has(.traytop){padding-top:10px;gap:9px}
 .traytabs .tcount{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--badge);color:var(--badge-ink);font-size:11px;font-weight:700}
