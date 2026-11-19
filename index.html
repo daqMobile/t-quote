@@ -261,7 +261,7 @@ button:disabled{cursor:not-allowed}
 .traycount{font-size:13px;color:var(--muted)}
 .traytop{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%}
 .traytabs{flex:none}
-.traytabs button{padding:3px 14px;font-size:12.5px;line-height:1.3}
+.traytabs button{padding:5px 18px;font-size:14px;line-height:1.3}
 .trayin:has(.traytop){padding-top:10px;gap:9px}
 .traytabs .tcount{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--badge);color:var(--badge-ink);font-size:11px;font-weight:700}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,190px));justify-content:center;gap:16px;width:100%}
@@ -273,6 +273,10 @@ button:disabled{cursor:not-allowed}
 .tile .plus .ico{width:15px;height:15px;stroke-width:3}
 .tile .badge{top:8px;right:8px}
 .tile:disabled{opacity:.45}
+/* Tile names stay on one line so every tile (and the tray) is the same height on both tabs; the longer SyncUP names are
+   a little smaller so they fit (iPad Safari draws them wider than Chrome). */
+.tile .tlab{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;line-height:23.2px}   /* 16px × 1.45, as before */
+.tiles.three .tile{font-size:14px}
 
 /* ---------- Home internet ---------- */
 .hint-plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px}
@@ -1983,7 +1987,7 @@ function renderStage(q){
       '<span class="traycount">' + q.devices + '/20 devices added</span></div>' +
       '<div class="tiles' + (ttab === "sync" ? " three" : "") + '">' + tiles.map(function(t){
         var dis = full || (TYPES[t].voice && voiceFull);
-        return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span>' + TYPES[t].label + '</button>';
+        return '<button class="tile" data-act="add" data-v="' + t + '"' + (dis ? " disabled" : "") + ' aria-label="Add a ' + TYPES[t].label.toLowerCase() + '"><span class="badge">' + counts[t] + '</span><span class="tico">' + svgIcon(t, "dev") + '<span class="plus">' + I.plus + '</span></span><span class="tlab">' + TYPES[t].label + '</span></button>';
       }).join("") + '</div>' +
       (voiceFull && !full ? '<span class="traycount">' + esc(q.P.full) + ' is at its ' + c.max + '-line limit.</span>' : '') +
     '</div></section>' + foot + '<div class="trayspace" aria-hidden="true"></div>';
