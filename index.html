@@ -395,6 +395,19 @@ html.locked,html.locked body{overflow:hidden}
 .preview{border:1px solid var(--line);border-radius:3px;background:var(--surface);padding:12px 14px;display:flex;justify-content:space-between;gap:12px;font-size:14.5px}
 .preview i{color:var(--muted);font-size:13px;display:block;text-align:right}
 .subpanel{background:var(--sunk);border-radius:3px;padding:14px;display:flex;flex-direction:column;gap:14px;margin-left:30px}
+.aons{border:1px solid var(--line);border-radius:3px;background:var(--surface);display:flex;flex-direction:column}
+.aon{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-top:1px solid var(--line);font-size:14.5px;cursor:pointer}
+.aon:first-child{border-top:0}
+.aon input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.aon .an{flex:1;min-width:0}
+.aon .an small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.4}
+.aon .ah{display:block;margin-top:2px}
+.aon .ap{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.aon .ap small{font-weight:400;color:var(--muted);font-size:12px}
+.aon.inc{background:var(--sunk);cursor:default}
+.aon.inc .ap{color:var(--good)}
+.aon.na{opacity:.6}
+.aon .why{color:var(--warn);font-weight:600}
 .ebar{position:relative;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
 .ebar span{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:5px}
 .ebar i{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
@@ -842,6 +855,51 @@ function p360Info(g){
   var t = P360_TIER[m.fam] || m.p360 || null;
   return {name:m.name, tier:t ? String(t) : null, likely:t ? null : (P360_LIKELY[m.fam] || null)};
 }
+/* Add-on features: monthly extras for each phone line, chosen in Edit options (Add-on Features box). Checked Nov 20, 2026:
+   T-Satellite $10/line, or Picks on T-Mix; included with Experience Beyond (t-mobile.com/coverage/satellite-phone-service)
+   and Go5G Next (T-Mobile's plan page). Scam Shield Premium $4/line (t-mobile.com/benefits/scam-shield); included with
+   Experience More/Beyond and Go5G Plus/Next. Stateside International Talk $15/line, Extra 10GB hotspot $10/line and PlusUP
+   $15/line from T-Mobile's add-on listings (bestphoneplans.net). Business: t-mobile.com/business/wireless-business-plans.
+   Plans are "fam:id" (tmix:more and exp:more are different plans) or a whole family ("tmix", "exp", "biz").
+   inc = plans that already include it; on = plans that can add it ("all" = every plan); excl = can't be on the same line;
+   smart = smartphones only; pick = the Account Picks perk that covers it on T-Mix; check = confirm in the store system. */
+var ADDONS_ASOF = "2026-11-20";
+var ADDONS = [
+  {id:"tsat", name:"T-Satellite", price:10, smart:true, pick:"tsat", on:"all", inc:["exp:beyond","exp:go5gnext","biz:super","biz:xbeyond"],
+   d:"Texts, photos and select apps by satellite where there's no cell signal. Most smartphones from the last 4 years."},
+  {id:"ssp", name:"Scam Shield Premium", price:4, on:"all", inc:["exp:beyond","exp:more","exp:go5gnext","exp:go5gplus","biz:super","biz:xbeyond","biz:xmore","biz:ultplus","biz:ult"],
+   d:"Sends call types like telemarketers to voicemail. Reverse number lookup and voicemail to text."},
+  {id:"sitalk", name:"Stateside International Talk", price:15, on:["tmix","exp"],
+   d:"Unlimited calls from the U.S., Canada and Mexico to landlines in 70+ countries and mobiles in 30+."},
+  {id:"hs10", name:"Extra 10GB hotspot", price:10, on:["tmix:standard","tmix:saver","exp:essentials","exp:go5g"], excl:["plusup"],
+   d:"10GB more high-speed hotspot data each month, then 3G speeds."},
+  {id:"plusup", name:"PlusUP", price:15, on:["tmix:standard","tmix:saver","exp:essentials"], excl:["hs10"], check:true,
+   d:"Unlimited premium data, 4K UHD video, 50GB high-speed hotspot and 5GB high-speed data in 215+ countries."},
+  {id:"tprot", name:"Threat Protect", price:1.99, on:["biz:core"], inc:["biz:super","biz:pro"],
+   d:"Blocks malicious websites and risky Wi-Fi on the line."},
+  {id:"bhs300", name:"Hotspot boost to 300GB", price:10, on:["biz:pro"], check:true,
+   d:"300GB high-speed hotspot in total, then 3G speeds."},
+  {id:"bhs200", name:"Hotspot boost to 200GB", price:15, on:["biz:core"], check:true,
+   d:"200GB high-speed hotspot in total, then 3G speeds."}
+];
+function addonsOf(g){ if (!g.addons || typeof g.addons !== "object" || Array.isArray(g.addons)) g.addons = {}; return g.addons; }
+/* What an add-on is on this line: paid (can add it), inc (the plan includes it), pick (a T-Mix Pick covers it), na (not offered). */
+function addonStatus(a, g, c, perks){
+  var key = c.fam + ":" + c.pid;
+  function has(list){ return list === "all" || (Array.isArray(list) && (list.indexOf(c.fam) > -1 || list.indexOf(key) > -1)); }
+  var pn = planName(c.fam, c.pid);
+  if (a.smart && g.type !== "phone") return {st:"na", why:"Smartphones only"};
+  if (has(a.inc)) return {st:"inc", why:"Included with " + pn};
+  if (!has(a.on)) return {st:"na", why:"Not offered on " + pn};
+  if (a.pick && c.fam === "tmix" && (perks || []).indexOf(a.pick) > -1) return {st:"pick", why:"Covered by the account's " + a.name + " Pick"};
+  return {st:"paid"};
+}
+/* The add-ons charged on one line of this group. */
+function addonCharges(g, c, perks){
+  if (!TYPES[g.type] || !TYPES[g.type].voice) return [];
+  var on = addonsOf(g);
+  return ADDONS.filter(function(a){ return on[a.id] && addonStatus(a, g, c, perks).st === "paid"; });
+}
 /* Connected-device plans. ap = AutoPay price; +$5 without AutoPay (watch, tablet and other lines). */
 var CPLANS = {
   watch: [
@@ -1155,6 +1213,7 @@ function newGroup(type, st){
     early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
     pay:{method:"eip", term: (t === "syncDrive" || (st && st.biz)) ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
+    addons:{},
     cplan: t === "tablet" ? "tabUnl" : (t === "watch" ? "watch" : (CPLANS[t] ? CPLANS[t][0].id : null))
   };
 }
@@ -1243,6 +1302,7 @@ function normalizeState(){
     if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (g.lineType !== "upgrade" || !TYPES[g.type] || !TYPES[g.type].voice) earlyOf(g).on = false;
+    addonsOf(g);   // quotes from before add-ons (Nov 20, 2026) have none
   });
   afterPlanChange();
 }
@@ -1778,6 +1838,13 @@ function compute(s){
     if (d.due) T.push({l:label + " · " + d.name + " paid in full", a:d.due * q});
     var pr = P360.filter(function(x){ return x.v === g.p360; })[0];
     if (pr && pr.p) { var pl = "Protection 360" + (pr.short ? " (" + pr.short + ")" : ""); out.lines.push({l:pl, a:pr.p}); W.push({l:label + " · " + pl, a:pr.p * q}); }
+    /* Add-on features (phone lines): a monthly charge per line, shown with the plan on the card. */
+    addonCharges(g, c, s.perks).forEach(function(a){
+      out.lines.push({l:a.name, a:a.price, plan:true, addon:true});
+      W.push({l:label + " · " + a.name, a:a.price * q, sub:(q > 1 ? q + " × " + fmt(a.price) + " · " : "") + "add-on"});
+      if (a.check) notes.push({t:"info", m:label + ": " + a.name + (a.id === "plusup" ? " for T-Mix and Essentials lines comes from T-Mobile's add-on listings."
+        : " is listed on T-Mobile's business plans page without saying which plan it's for.") + " Confirm it in the store system."});
+    });
     if (g.credit.monthlyOn && num(g.credit.amt)) {
       var ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[g.credit.type] || "Line";
       out.lines.push({l:ct + " credit", a:-num(g.credit.amt), c:"cr", sub:"for " + (+g.credit.months || 1) + " months"});
@@ -2017,7 +2084,8 @@ function card(g, i, q){
     '<div class="stepper"><button data-act="qty" data-g="' + g.id + '" data-v="-1" aria-label="Fewer"' + (g.qty <= 1 ? " disabled" : "") + '>' + I.minus + '</button><output>' + g.qty + '</output><button data-act="qty" data-g="' + g.id + '" data-v="1" aria-label="More"' + (q.devices >= 20 || (T0.voice && g.lineType !== "upgrade" && q.c.newVoice >= q.c.max - q.c.E) ? " disabled" : "") + '>' + I.plus + '</button></div></div></div>' +
     '<div class="cbody"><button class="editbtn" data-act="edit" data-v="' + g.id + '">Edit options</button>' + planSel +
     '<div class="cost"><span class="h">Monthly cost</span>' +
-      (planLines.length ? planLines.map(costRow).join("") : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Plan · no change" + planRefTxt(c) : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
+      (planLines.some(function(x){ return !x.addon; }) ? "" : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Plan · no change" + planRefTxt(c) : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
+      planLines.map(costRow).join("") +
       '<small>' + lt + '</small></div>' +
     '<div class="cost"><span class="h">' + esc(d.name) + '</span>' + (devLines.length ? devLines.map(costRow).join("") : '<div class="r"><span>Monthly cost</span><span>' + fmt(0) + '</span></div>') +
       (d.due ? '<small>' + fmt(d.due) + ' due today (paid in full)</small>' : '') +
@@ -2859,6 +2927,9 @@ function editBody(g, q){
   b4 += '<label class="check' + (empW ? " dis" : "") + '" for="cc-' + g.id + '"><input id="cc-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.pay.connect" data-t="bool"' + (g.pay.connect && !empW ? " checked" : "") + (empW ? " disabled" : "") + '><span>Device connection charge applies (' + fmt0(num(state.set.connect)) + ' per line)<br><small class="muted">' + (empW ? "Waived with employee pricing." : "Applies to new lines and upgrades. Uncheck only where it\'s waived.") + '</small></span></label>';
   b += box(bn++, "Payment Type", b4);
 
+  /* Add-on features (phone lines): between Payment Type and Line Credits. */
+  if (T0.voice) b += box(bn++, "Add-on Features", addonBlock(g, c));
+
   /* Box 5: Line credits */
   var cr = g.credit;
   var b5 = '<p class="info warn">' + I.info + 'This credit applies to the line charges. Credits may take up to 2 bill cycles to appear.</p><h4>Apply a line credit?</h4>' +
@@ -2874,6 +2945,28 @@ function editBody(g, q){
   if (cr.oneOn) b5 += '<div class="subpanel"><div><label class="flabel" for="coa-' + g.id + '">How much is the credit?</label><span class="money"><input class="tin sm" id="coa-' + g.id + '" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" data-k="g.' + g.id + '.credit.oneAmt" data-t="num" value="' + (cr.oneAmt || "") + '"></span></div></div>';
   b += box(bn++, "Line Credits", b5);
   return b;
+}
+/* Add-on Features box: what this plan can add (checkboxes), what it already includes, and the per-line total.
+   Add-ons the plan doesn't offer are left out, unless one was chosen before a plan change. */
+function addonBlock(g, c){
+  var on = addonsOf(g), rows = "", paid = 0, pn = planName(c.fam, c.pid);
+  ADDONS.forEach(function(a){
+    var st = addonStatus(a, g, c, state.perks), id = "ao-" + g.id + "-" + a.id, sub = esc(a.d);
+    if (st.st === "na" && !on[a.id]) return;
+    if (st.st === "paid" && on[a.id]) paid += a.price;
+    if (a.pick && c.fam === "tmix" && st.st === "paid" && picksFor(c.pid, Math.max(c.n, 1))) sub += '<span class="ah">Or choose it as a Pick under Account Picks.</span>';
+    if (a.check && st.st === "paid") sub += '<span class="ah">Confirm it in the store system.</span>';
+    if (st.st !== "paid") sub += '<span class="ah' + (st.st === "na" ? " why" : "") + '">' + esc(st.why) + (st.st === "na" ? ", so it isn't on the quote." : ".") + '</span>';
+    var lock = st.st === "inc" || st.st === "pick";
+    rows += '<label class="aon' + (lock ? " inc" : "") + (st.st === "na" ? " na" : "") + '" for="' + id + '"><input type="checkbox" id="' + id + '"' +
+      (lock ? " checked disabled" : ' data-k="g.' + g.id + '.addons.' + a.id + '" data-t="bool"' + (on[a.id] ? " checked" : "")) + '>' +
+      '<span class="an"><b>' + esc(a.name) + '</b><small>' + sub + '</small></span>' +
+      '<span class="ap">' + (lock ? "Included" : st.st === "na" ? "Not offered" : fmt(a.price) + '<small>/mo</small>') + '</span></label>';
+  });
+  var h = '<p class="info">' + I.info + 'Monthly, per line' + (g.qty > 1 ? ' · applies to all ' + g.qty + ' lines in this group' : '') + '. AutoPay doesn\'t change add-on prices.</p>';
+  h += rows ? '<div class="aons">' + rows + '</div>' : '<p class="info">' + esc(pn) + ' has no add-ons in Quick Quote.</p>';
+  if (paid) h += '<div class="preview"><span>Add-ons</span><span>' + fmt(paid) + '/mo<i>per line' + (g.qty > 1 ? ' · ×' + g.qty + ' lines = ' + fmt(paid * g.qty) : '') + '</i></span></div>';
+  return h;
 }
 function creditPreview(g){
   var cr = g.credit, ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[cr.type], mo = +cr.months || 1;
@@ -3173,6 +3266,7 @@ function applyQuote(d){
   if (s.planDiscount === "port") s.planDiscount = "none";   // older quotes: the number-transfer price is a per-line offer now
   s.loaded = {id:d.id, savedAt:d.savedAt, note:d.note || "", offers:d.offers || {}, devices:d.devices || {}, applied:d.applied || {}, monthly:d.monthly, today:d.today};
   s.groups.forEach(function(g){
+    addonsOf(g);
     if (s.loaded.applied[g.id]) g.dev.offer = s.loaded.applied[g.id];
     else if (g.dev.offer === "best") g.dev.offer = "full";
     if (s.loaded.applied[g.id + ".byod"]) g.dev.byodOffer = s.loaded.applied[g.id + ".byod"];
@@ -3793,6 +3887,9 @@ document.addEventListener("change", function(e){
   setPath(el.dataset.k, val);
   if (/^pp\.phones\.\d+\.dev$/.test(el.dataset.k)) setPath(el.dataset.k.replace(/dev$/, "deal"), "");
   if (el.dataset.k === "__plan") afterPlanChange();
+  /* Add-ons that can't share a line (Extra 10GB hotspot and PlusUP): choosing one clears the other. */
+  var am = val === true && /^g\.([^.]+)\.addons\.(\w+)$/.exec(el.dataset.k), ag = am && grp(am[1]);
+  if (ag) ADDONS.forEach(function(a){ if (a.id === am[2]) (a.excl || []).forEach(function(x){ addonsOf(ag)[x] = false; }); });
   /* Choosing a promotion folds the offer list; "Show offers" opens it again. */
   var om = el.type === "radio" && /^g\.([^.]+)\.dev\.(offer|byodOffer)$/.exec(el.dataset.k);
   if (om) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[om[1]] = true; }

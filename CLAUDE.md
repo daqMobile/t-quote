@@ -20,6 +20,7 @@ Read this first in a new chat about Quick Quote. It replaces re-reading old conv
 - Plans: `TMIX`, `EXP`, `LEGACY` (consumer retired: Go5G Next/Plus, Go5G, Essentials; upgrade quotes only via `isLegacy`), `BIZ` (SuperMobile/ProMobile/CoreMobile + older business plans with `legacy:true`), `CPLANS` / `CPLANS_BIZ` (tablet, watch), `planCalc()`, `legacyRef()`.
 - Offers: `offerPool()` (consumer `live.offers || OFFERS`; business `live.bizOffers || BIZ_OFFERS`), `offersFor()`, BYOD (`byod`, `pay:"card"`), plan promotions (`pay:"plan"`, `planMo`, `planMonths`), AWAY (`product:"away"`). Plan discounts are account-wide only (Military, First Responder, 55+, Work Perks, Employee).
 - Screens: Quick Quote (consumer) and Quick Quote for Business, switched from the top-left menu (`switchMode()`, `data-mode="biz"` = darker magenta). Tabs: Wireless, Home/Business Internet, Prepaid (consumer only; sub-tabs T-Mobile Prepaid with a prepaid quote, and Connect by T-Mobile).
+- Add-on features: `ADDONS` (per phone line, monthly; `inc` = plans that include it, `on` = plans that can add it, as `fam:id` or a family), `addonStatus()`, `addonCharges()`, stored as `g.addons` ({id:true}). Edit options box "Add-on Features" sits after Payment Type, before Line Credits, phone lines only. T-Satellite on T-Mix can instead be the account's T-Satellite Pick.
 - Side panels via `drawer()` / `renderSheet()`; slide animations for review, compare, hcompare, visa, email, save.
 - Settings → Device prices: last confirmed date, "Check device prices now" link (`PRICE_CHECK_URL`), and price changes Quick Quote spotted (`trackPrices()`).
 
@@ -39,4 +40,5 @@ Read this first in a new chat about Quick Quote. It replaces re-reading old conv
 ## Open questions (ask Nik before changing)
 - Business: 6+ line AutoPay handling is inferred from T-Mobile's ads; wearable line price unpublished ($10 placeholder, flagged on quotes); business device prices can differ from consumer list prices; Experience for Business / Ultimate+ need full price grids to quote new lines.
 - Watch Plan Plus Canada/Mexico data (5GB vs 15GB) and the Home Internet voice-line discount ($20 vs $15) are unconfirmed.
+- Add-ons: T-Mobile's satellite page says T-Satellite costs 2 Picks on T-Mix; `PERKS` counts 1. PlusUP on T-Mix/Essentials and the business hotspot boosts (ProMobile 300GB +$10, CoreMobile 200GB +$15, plan mapping inferred) are flagged "confirm in the store system".
 - Quote email subject: offer to drop "T-Mobile" from the default subject (spam filtering) was never answered.
