@@ -408,6 +408,12 @@ html.locked,html.locked body{overflow:hidden}
 .aon.inc .ap{color:var(--good)}
 .aon.na{opacity:.6}
 .aon .why{color:var(--warn);font-weight:600}
+.aon.pass{cursor:default;align-items:center}
+.aon.pass .ap{display:flex;align-items:center;gap:14px}
+.aon.pass .stepper output{min-width:28px;text-align:center;font-weight:700;font-size:16px}
+.aon.pass.on{background:var(--accent-soft)}
+.cost small.pnote{display:block;color:var(--accent);font-weight:600}
+@media (max-width:640px){.aon.pass{flex-wrap:wrap}.aon.pass .ap{width:100%;justify-content:flex-end}}
 .ebar{position:relative;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
 .ebar span{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:5px}
 .ebar i{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--ink)}
@@ -882,6 +888,28 @@ var ADDONS = [
   {id:"bhs200", name:"Hotspot boost to 200GB", price:15, on:["biz:core"], check:true,
    d:"200GB high-speed hotspot in total, then 3G speeds."}
 ];
+/* International passes: one-time charges per line, billed when the pass is added (not monthly, not due at the sale).
+   T-Mobile's International Pass page, as reported Nov 2026 (prices since June 2026): 1 Day $10 / 2GB, 10 Day $50 / 15GB,
+   30 Day $75 / 30GB, each with unlimited calling in 215+ countries and destinations and hotspot use. Any qualifying
+   postpaid plan. Without a pass, calls abroad are $0.50/min. Adding a new pass ends what's left of the current one. */
+var PASSES_ASOF = "2026-11-20", PASS_MAX = 10, INTL_CALL_RATE = 0.5;
+var PASSES = [
+  {id:"intl1",  name:"1 Day International Pass",  price:10, d:"2GB high-speed data and unlimited calling, for up to 24 hours."},
+  {id:"intl10", name:"10 Day International Pass", price:50, d:"15GB high-speed data and unlimited calling, for up to 10 days."},
+  {id:"intl30", name:"30 Day International Pass", price:75, d:"30GB high-speed data and unlimited calling, for up to 30 days."}
+];
+/* High-speed data abroad each plan already includes (215+ countries unless noted). false = texting only, no high-speed data. */
+var INTL_DATA = {"tmix:loaded":"15GB of high-speed data abroad", "tmix:more":"5GB of high-speed data abroad", "tmix:standard":false, "tmix:saver":false,
+  "exp:beyond":"15GB of high-speed data abroad", "exp:more":"5GB of high-speed data abroad", "exp:go5gnext":"15GB of high-speed data abroad",
+  "exp:go5gplus":"5GB of high-speed data abroad", "exp:go5g":false, "exp:essentials":false,
+  "biz:super":"5GB of high-speed data abroad", "biz:pro":"5GB of high-speed data in select Central European countries only",
+  "biz:core":"5GB of high-speed data in select Central European countries only"};
+function passesOf(g){ if (!g.passes || typeof g.passes !== "object" || Array.isArray(g.passes)) g.passes = {}; return g.passes; }
+function passCharges(g){
+  if (!TYPES[g.type] || !TYPES[g.type].voice) return [];
+  var ps = passesOf(g);
+  return PASSES.filter(function(p){ return (+ps[p.id] || 0) > 0; }).map(function(p){ return {p:p, n:Math.min(PASS_MAX, Math.round(+ps[p.id]))}; });
+}
 function addonsOf(g){ if (!g.addons || typeof g.addons !== "object" || Array.isArray(g.addons)) g.addons = {}; return g.addons; }
 /* What an add-on is on this line: paid (can add it), inc (the plan includes it), pick (a T-Mix Pick covers it), na (not offered). */
 function addonStatus(a, g, c, perks){
@@ -1213,7 +1241,7 @@ function newGroup(type, st){
     early:{on:false, prog:"jump", cost:0, bal:0, months:0, pay:0},
     pay:{method:"eip", term: (t === "syncDrive" || (st && st.biz)) ? 24 : 36, connect:true, down:0},
     credit:{monthlyOn:false, type:"port", amt:0, months:36, oneOn:false, oneAmt:0},
-    addons:{},
+    addons:{}, passes:{},
     cplan: t === "tablet" ? "tabUnl" : (t === "watch" ? "watch" : (CPLANS[t] ? CPLANS[t][0].id : null))
   };
 }
@@ -1302,7 +1330,7 @@ function normalizeState(){
     if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (g.lineType !== "upgrade" || !TYPES[g.type] || !TYPES[g.type].voice) earlyOf(g).on = false;
-    addonsOf(g);   // quotes from before add-ons (Nov 20, 2026) have none
+    addonsOf(g); passesOf(g);   // quotes from before add-ons and passes (Nov 20, 2026) have none
   });
   afterPlanChange();
 }
@@ -1683,7 +1711,7 @@ function devMath(g, c){
 
 /* ================= Quote math ================= */
 function compute(s){
-  var W = [], T = [], ONE = [], RB = [], notes = [], groupsOut = {}, empConn = 0, empConnLines = 0, addNote = "";
+  var W = [], T = [], ONE = [], RB = [], TR = [], notes = [], groupsOut = {}, empConn = 0, empConnLines = 0, addNote = "";
   var c = ctxOf(s), P = c.fam === "biz" ? BIZ[c.pid] : (c.fam === "tmix" ? TMIX[c.pid] : EXP[c.pid]), seg = segOf(s);
   if (seg && SEG[seg].ap) P = Object.assign({}, P, {full: P.full + " w/ " + SEG[seg].label + " Savings"});
   if (seg === "workperks" && c.fam === "exp") {
@@ -1845,6 +1873,11 @@ function compute(s){
       if (a.check) notes.push({t:"info", m:label + ": " + a.name + (a.id === "plusup" ? " for T-Mix and Essentials lines comes from T-Mobile's add-on listings."
         : " is listed on T-Mobile's business plans page without saying which plan it's for.") + " Confirm it in the store system."});
     });
+    /* International passes: one-time, per line, billed when added. */
+    passCharges(g).forEach(function(x){
+      var pk = [q > 1 ? q + " lines" : "", x.n > 1 ? x.n + " passes" + (q > 1 ? " each" : "") : ""].filter(Boolean);
+      TR.push({l:label + " · " + x.p.name, a:x.p.price * x.n * q, sub:pk.length ? pk.join(" × ") + " × " + fmt(x.p.price) : "one-time"});
+    });
     if (g.credit.monthlyOn && num(g.credit.amt)) {
       var ct = {port:"Port-In", aal:"Add a Line", upgrade:"Upgrade"}[g.credit.type] || "Line";
       out.lines.push({l:ct + " credit", a:-num(g.credit.amt), c:"cr", sub:"for " + (+g.credit.months || 1) + " months"});
@@ -1920,7 +1953,7 @@ function compute(s){
   if (s.hint.on && !s.biz) notes.push({t:"info", m:"Home Internet prices are from T-Mobile's current offer page. Confirm the plan lineup before quoting."});
 
   var wTotal = sum(W.map(function(r){ return r.a; })), hTotal = sum(H.map(function(r){ return r.a; }));
-  return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, RB:RB, monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
+  return {c:c, P:P, pc:pc, plan:plan, share:share, upShare:!!(curRef && c.upVoice > 0), W:W, H:H, T:T, ONE:ONE, RB:RB, TR:TR, travel:sum(TR.map(function(r){ return r.a; })), monthly:wTotal + hTotal, today:sum(T.map(function(r){ return r.a; })),
           budget:budget, used:used, perkRows:perkRows, promoPicks:promoPicks, notes:notes, groups:groupsOut, devices:sum(s.groups.map(function(g){ return g.qty; }))};
 }
 
@@ -2086,12 +2119,17 @@ function card(g, i, q){
     '<div class="cost"><span class="h">Monthly cost</span>' +
       (planLines.some(function(x){ return !x.addon; }) ? "" : '<div class="r"><span>' + (g.lineType === "upgrade" ? "Plan · no change" + planRefTxt(c) : "Plan") + '</span><span>' + (g.lineType === "upgrade" ? fmt(0) : "—") + '</span></div>') +
       planLines.map(costRow).join("") +
-      '<small>' + lt + '</small></div>' +
+      '<small>' + lt + '</small>' + passNote(g) + '</div>' +
     '<div class="cost"><span class="h">' + esc(d.name) + '</span>' + (devLines.length ? devLines.map(costRow).join("") : '<div class="r"><span>Monthly cost</span><span>' + fmt(0) + '</span></div>') +
       (d.due ? '<small>' + fmt(d.due) + ' due today (paid in full)</small>' : '') +
       '<div class="r tot"><span>Per line</span><span>' + fmt(o.unit) + (g.qty > 1 ? ' · ×' + g.qty + ' = ' + fmt(o.unit * g.qty) : '') + '</span></div></div>' +
     (o.warn ? '<span class="cwarn">' + esc(o.warn) + '</span>' : '') +
     '</div></article>';
+}
+function passNote(g){
+  var x = passCharges(g); if (!x.length) return "";
+  return '<small class="pnote">' + esc(x.map(function(y){ return y.p.name.replace(" International Pass", " pass") + (y.n > 1 ? " ×" + y.n : ""); }).join(", ")) +
+    ' · ' + fmt(sum(x.map(function(y){ return y.p.price * y.n; }))) + ' one-time per line</small>';
 }
 function planRefTxt(c){
   var r = currentPlanRef(c);
@@ -2253,6 +2291,8 @@ function reviewBody(q){
     '<div class="rsub">plus taxes &amp; fees</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
+    (q.TR.length ? '<div class="rule"></div><div class="rsec">International passes · one-time, on the bill</div>' + q.TR.map(rrow).join("") +
+      '<div class="rtotal"><span class="lbl">Passes</span><span class="mid">' + fmt(q.travel) + '</span></div><div class="rsub">billed when added · not monthly</div>' : '') +
     (q.ONE.length ? '<div class="rule"></div><div class="rsec">One-time bill credits</div>' + q.ONE.map(rrow).join("") : '') +
     (q.RB.length ? '<div class="rule"></div><div class="rsec">Rebate cards · not on the bill</div>' + q.RB.map(rrow).join("") : '');
   if (s.visa) h += '<div class="rule"></div><div class="rsec">T-Mobile Visa</div><div class="rr"><span class="l">' + esc(VISA.head) +
@@ -2966,6 +3006,26 @@ function addonBlock(g, c){
   var h = '<p class="info">' + I.info + 'Monthly, per line' + (g.qty > 1 ? ' · applies to all ' + g.qty + ' lines in this group' : '') + '. AutoPay doesn\'t change add-on prices.</p>';
   h += rows ? '<div class="aons">' + rows + '</div>' : '<p class="info">' + esc(pn) + ' has no add-ons in Quick Quote.</p>';
   if (paid) h += '<div class="preview"><span>Add-ons</span><span>' + fmt(paid) + '/mo<i>per line' + (g.qty > 1 ? ' · ×' + g.qty + ' lines = ' + fmt(paid * g.qty) : '') + '</i></span></div>';
+  return h + passBlock(g, c);
+}
+/* International passes, under the monthly add-ons: a count per pass for each line (one-time charges on the bill). */
+function passBlock(g, c){
+  var ps = passesOf(g), inc = INTL_DATA[c.fam + ":" + c.pid], pn = planName(c.fam, c.pid), tot = 0;
+  var hint = (inc ? pn + " includes " + inc + " each month. " : inc === false ? pn + " includes texting abroad but no high-speed data. " : "") +
+    "A pass adds high-speed data and unlimited calling. Without one, calls abroad are " + fmt(INTL_CALL_RATE) + "/min.";
+  var rows = PASSES.map(function(p){
+    var n = Math.min(PASS_MAX, Math.max(0, Math.round(+ps[p.id] || 0)));
+    tot += p.price * n;
+    return '<div class="aon pass' + (n ? " on" : "") + '"><span class="an"><b>' + esc(p.name) + '</b><small>' + esc(p.d) + '</small></span>' +
+      '<span class="ap">' + fmt(p.price) + '<small> each</small>' +
+      '<span class="stepper"><button data-act="pass" data-g="' + g.id + '" data-v="' + p.id + ':-1" aria-label="One fewer ' + esc(p.name) + '"' + (n ? "" : " disabled") + '>' + I.minus + '</button>' +
+      '<output aria-live="polite">' + n + '</output>' +
+      '<button data-act="pass" data-g="' + g.id + '" data-v="' + p.id + ':1" aria-label="One more ' + esc(p.name) + '"' + (n >= PASS_MAX ? " disabled" : "") + '>' + I.plus + '</button></span></span></div>';
+  }).join("");
+  var h = '<div><h4>International passes <span class="muted" style="font-weight:400">· one-time, per line</span></h4>' +
+    '<p class="info">' + I.info + esc(hint) + '</p></div><div class="aons">' + rows + '</div>';
+  if (tot) h += '<div class="preview"><span>Passes · one-time, on the bill</span><span>' + fmt(tot) + '<i>per line' + (g.qty > 1 ? ' · ×' + g.qty + ' lines = ' + fmt(tot * g.qty) : '') + '</i></span></div>';
+  h += '<p class="fhint" style="margin-top:-6px">Passes don\'t stack: adding a new pass ends what\'s left of the current one. Count one pass per trip, or one 1 Day pass per day.</p>';
   return h;
 }
 function creditPreview(g){
@@ -3199,7 +3259,7 @@ function quoteDoc(id, note){
   var st = JSON.parse(JSON.stringify(state)); delete st.loaded; st.example = false;
   var headline = acctLine(q.c, q.P, ", ");
   return {id:id, savedAt:new Date().toISOString(), note:String(note || "").slice(0, 80), headline:headline, monthly:round2(q.monthly), today:round2(q.today),
-          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE, RB:q.RB}};
+          state:st, applied:applied, offers:offers, devices:devices, frozen:{W:q.W, H:q.H, T:q.T, ONE:q.ONE, RB:q.RB, TR:q.TR}};
 }
 function doSave(note){
   if (live.saving) return;
@@ -3266,7 +3326,7 @@ function applyQuote(d){
   if (s.planDiscount === "port") s.planDiscount = "none";   // older quotes: the number-transfer price is a per-line offer now
   s.loaded = {id:d.id, savedAt:d.savedAt, note:d.note || "", offers:d.offers || {}, devices:d.devices || {}, applied:d.applied || {}, monthly:d.monthly, today:d.today};
   s.groups.forEach(function(g){
-    addonsOf(g);
+    addonsOf(g); passesOf(g);
     if (s.loaded.applied[g.id]) g.dev.offer = s.loaded.applied[g.id];
     else if (g.dev.offer === "best") g.dev.offer = "full";
     if (s.loaded.applied[g.id + ".byod"]) g.dev.byodOffer = s.loaded.applied[g.id + ".byod"];
@@ -3434,11 +3494,12 @@ function mailBits(q, m){
     head: quoteHead(q),
     monthLabel: c.ex && !q.upShare ? "Added to your monthly bill" : "Estimated monthly",
     taxNote: "Plus taxes and fees",
-    W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), ONE: emailRows(q.ONE), RB: emailRows(q.RB),
+    W: emailRows(q.W), H: emailRows(q.H), T: emailRows(q.T), TR: emailRows(q.TR), ONE: emailRows(q.ONE), RB: emailRows(q.RB),
     perks: c.fam === "tmix" ? q.perkRows.map(function(p){ return p.name; }) : [],
     visa: !!state.visa,
     fine: "This is an estimate using pricing as of " + dateStr() + ". Taxes and fees aren't included because they can change. Final pricing is set at purchase. Promotional credits come as monthly bill credits and need the plan and terms we discussed." +
-      (q.RB.length ? " Rebate cards come as a virtual prepaid Mastercard after you switch; they aren't bill credits." : "")
+      (q.RB.length ? " Rebate cards come as a virtual prepaid Mastercard after you switch; they aren't bill credits." : "") +
+      (q.TR.length ? " International passes are one-time charges on your bill when they're added, not monthly charges." : "")
   };
 }
 function emailText(q, m){
@@ -3455,6 +3516,7 @@ function emailText(q, m){
   sec("MONTHLY BREAKDOWN", b.W);
   sec(state.biz ? "BUSINESS INTERNET" : "HOME INTERNET", b.H);
   sec("DUE TODAY", b.T);
+  sec("INTERNATIONAL PASSES (ONE-TIME, ON THE BILL)", b.TR);
   sec("ONE-TIME BILL CREDITS", b.ONE);
   sec("REBATE CARDS (NOT ON THE BILL)", b.RB);
   if (b.perks.length) out.push("", "INCLUDED WITH YOUR PICKS", b.perks.join(", "));
@@ -3493,7 +3555,7 @@ function emailHtml(q, m){
         '<td align="right" style="padding-top:12px;font-size:20px;font-weight:700;white-space:nowrap">' + fmt(q.today) + '</td></tr></table>' +
     '</td></tr></table>' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">' +
-      sec("Monthly breakdown", b.W) + sec(state.biz ? "Business Internet" : "Home Internet", b.H) + sec("Due today", b.T) + sec("One-time bill credits", b.ONE) + sec("Rebate cards (not on the bill)", b.RB) +
+      sec("Monthly breakdown", b.W) + sec(state.biz ? "Business Internet" : "Home Internet", b.H) + sec("Due today", b.T) + sec("International passes (one-time, on the bill)", b.TR) + sec("One-time bill credits", b.ONE) + sec("Rebate cards (not on the bill)", b.RB) +
     '</table>' +
     (b.perks.length ? '<p style="margin:20px 0 0;font-size:14px"><span style="' + CAP + '">INCLUDED WITH YOUR PICKS</span><br>' + esc(b.perks.join(" · ")) + '</p>' : '') +
     (b.visa ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;margin-top:20px;border:1px solid ' + LINE + ';border-left:4px solid ' + ACC + ';border-radius:8px"><tr><td style="padding:14px 16px;font-size:14px">' +
@@ -3582,6 +3644,7 @@ function quoteText(){
   out.push(""); out.push("DUE TODAY");
   q.T.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); });
   out.push(pad("Total due today", fmt(q.today)) + "  + tax");
+  if (q.TR.length) { out.push(""); out.push("INTERNATIONAL PASSES (ONE-TIME, ON THE BILL)"); q.TR.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); out.push(pad("Total passes", fmt(q.travel))); }
   if (q.ONE.length) { out.push(""); out.push("ONE-TIME BILL CREDITS"); q.ONE.forEach(function(r){ out.push(pad(r.l, fmt(r.a))); }); }
   if (q.RB.length) { out.push(""); out.push("REBATE CARDS (NOT ON THE BILL)"); q.RB.forEach(function(r){ out.push(pad(r.l, "up to " + fmt(-r.a))); }); }
   if (state.visa) out.push("", "T-MOBILE VISA: " + VISA.head + " " + VISA.body);
@@ -3844,6 +3907,7 @@ document.addEventListener("click", function(e){
     case "pay": if (g) g.pay.method = v; break;
     case "offtog": { var otk = g ? g.id : b.getAttribute("data-g"); if (otk) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[otk] = !ui.offersHidden[otk]; } } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
+    case "pass": if (g) { var pv = v.split(":"), ps = passesOf(g); ps[pv[0]] = Math.max(0, Math.min(PASS_MAX, (+ps[pv[0]] || 0) + (+pv[1] || 0))); } break;
     case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
