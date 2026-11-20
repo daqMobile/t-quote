@@ -461,6 +461,34 @@ html.locked,html.locked body{overflow:hidden}
 .ppsum{margin-top:16px;border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:var(--sunk)}
 .ppsum .r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 0;font-size:14.5px;font-variant-numeric:tabular-nums}
 .ppsum .r small{display:block;color:var(--muted);font-size:12px}
+/* Picks + Cash tab: boxes laid out like T-Mobile's Picks menu (1, 2, 3, 4 Picks side by side), cards toggle a choice. */
+.pkwrap{display:grid;gap:16px;padding-top:16px}
+.pkhead{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-start;justify-content:space-between}
+.pkintro{display:grid;gap:10px;min-width:0;justify-items:start}
+.pkintro .pphead{margin:0}
+.pkstat{display:grid;gap:6px;justify-items:end;text-align:right;font-size:14px;min-width:0}
+.pkstat .big{font-family:var(--display);font-size:30px;font-weight:700;line-height:1}
+.pkstat .meter{justify-content:flex-end;max-width:380px}
+.pkover{color:var(--bad);font-weight:600}
+.pkcash{font-size:15px}
+.pkcash b{font-family:var(--display);font-size:18px}
+.pkrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+.pkbox{flex:var(--n) 1 calc(var(--n) * 140px);min-width:0;border:1.5px solid var(--accent);border-radius:10px;padding:12px 12px 14px;background:var(--surface)}
+.pkbox h3{margin:0 0 10px;font-family:var(--display);font-size:19px;color:var(--accent)}
+.pknote{margin:-4px 0 10px;font-size:13px;color:var(--muted);line-height:1.4}
+.pkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px}
+.pkcard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;min-height:88px;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 28px 10px 11px;font:inherit;color:inherit;cursor:pointer}
+.pkcard .nm{font-weight:650;font-size:14.5px;line-height:1.25}
+.pkcard .pr{font-size:13px;font-variant-numeric:tabular-nums}
+.pkcard .tg{font-size:12px;color:var(--muted)}
+.pkcard .pkbw{margin-top:auto;padding-top:6px}
+.pkcard .pkb{display:inline-block;white-space:nowrap;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--accent);font-size:12px;font-weight:700}
+.pkcard[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.pkcard[aria-pressed="true"] .pkb{background:var(--accent);color:var(--accent-ink)}
+.pkcard .ck{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.pkcard .ck .ico{width:13px;height:13px;stroke-width:3}
+.pkcard:disabled{opacity:.45;cursor:default}
+.pkfoot{margin:4px 0 0;padding-left:18px;display:grid;gap:5px;font-size:13.5px;color:var(--muted);line-height:1.45;max-width:110ch}
 .ppsum .r.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700;font-size:16px}
 .ppbig{display:flex;flex-wrap:wrap;gap:16px 40px;margin-bottom:12px}
 .ppbig b{display:block;font-family:var(--display);font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -829,17 +857,41 @@ function picksFor(id, n){
   return Math.min(20, 15 + (n-6));
 }
 
+/* Picks menu, from T-Mobile's retail training sheet (Nik, Nov 20, 2026). One choice per service ("fam"): picking another
+   tier of the same service, with Picks, Picks + Cash or paid, swaps it. price = the menu's monthly value.
+   kind "pc" (Picks + Cash): Picks toward a higher tier plus a monthly charge. Hulu $9 and Paramount+ $5 are on the sheet;
+   the Netflix amounts show as "$X" there, so they're worked out the same way (tier price minus the price of the tier the
+   Picks cover) and flagged est. kind "cash" (Cash only, partner paid): no Pick, the full price on the bill, existing
+   customers only. Everything else is a plain Pick. */
 var PERKS = [
-  {id:"appletv",name:"Apple TV",cost:1},{id:"dashpass",name:"DashPass",cost:1},{id:"delta",name:"Delta SkyMiles 500/mo",cost:1},
-  {id:"gaiplus",name:"Google AI Plus",cost:1},{id:"hulu",name:"Hulu (With Ads)",cost:1},{id:"netflixAds",name:"Netflix Standard w/ ads",cost:1},
-  {id:"pandoraPlus",name:"Pandora Plus",cost:1},{id:"paramount",name:"Paramount+ Essential",cost:1},{id:"sirius",name:"SiriusXM All Access (app)",cost:1},
-  {id:"ytLite",name:"YouTube Premium Lite",cost:1},
-  {id:"appleMusic",name:"Apple Music Individual",cost:2},{id:"gaipro",name:"Google AI Pro",cost:2},{id:"pandoraPrem",name:"Pandora Premium",cost:2},
-  {id:"xboxPrem",name:"Xbox Game Pass Premium",cost:2},{id:"yt",name:"YouTube Premium",cost:2},
-  {id:"netflixStd",name:"Netflix Standard",cost:3},{id:"xboxUlt",name:"Xbox Game Pass Ultimate",cost:3},
-  {id:"espn",name:"ESPN Unlimited",cost:4},{id:"netflixPrem",name:"Netflix Premium",cost:4},
-  {id:"tsat",name:"T-Satellite",cost:1,tm:true},{id:"ovc",name:"Optimized Video Calling",cost:1,tm:true,loadedFree:true}
+  {id:"appletv",name:"Apple TV",cost:1,fam:"appletv",price:14.99,tag:"No Ads"},{id:"netflixAds",name:"Netflix Standard with Ads",cost:1,fam:"netflix",price:8.99,tag:"Ad Supported"},
+  {id:"hulu",name:"Hulu with Ads",cost:1,fam:"hulu",price:12.49,tag:"Ad Supported"},{id:"paramount",name:"Paramount+ Essential",cost:1,fam:"paramount",price:8.99,tag:"Ad Supported"},
+  {id:"dashpass",name:"DoorDash DashPass",cost:1,fam:"doordash",price:9.99},{id:"delta",name:"Delta SkyMiles 500/mo",cost:1,fam:"delta",tag:"500 miles a month"},
+  {id:"pandoraPlus",name:"Pandora Plus",cost:1,fam:"pandora",price:5.99,tag:"Ad-Free Radio"},{id:"sirius",name:"SiriusXM All Access (app)",cost:1,fam:"sirius",price:11.99,tag:"Streaming · No Ads"},
+  {id:"gaiplus",name:"Google AI Plus",cost:1,fam:"google",price:9.99,tag:"Gemini · 2 TB"},{id:"ytLite",name:"YouTube Premium Lite",cost:1,fam:"youtube",price:8.99},
+  {id:"appleMusic",name:"Apple Music Individual",cost:2,fam:"applemusic",price:11.99,tag:"No Ads"},{id:"pandoraPrem",name:"Pandora Premium",cost:2,fam:"pandora",price:11.99,tag:"On Demand"},
+  {id:"xboxPrem",name:"Xbox Game Pass Premium",cost:2,fam:"xbox",price:14.99},{id:"gaipro",name:"Google AI Pro",cost:2,fam:"google",price:19.99,tag:"Gemini Pro"},
+  {id:"yt",name:"YouTube Premium",cost:2,fam:"youtube",price:15.99},
+  {id:"netflixStd",name:"Netflix Standard",cost:3,fam:"netflix",price:19.99,tag:"No Ads"},{id:"xboxUlt",name:"Xbox Game Pass Ultimate",cost:3,fam:"xbox",price:22.99},
+  {id:"netflixPrem",name:"Netflix Premium",cost:4,fam:"netflix",price:26.99,tag:"No Ads"},{id:"espn",name:"ESPN Unlimited",cost:4,fam:"espn",price:31.99},
+  {id:"tsat",name:"T-Satellite",cost:1,tm:true,fam:"tsat",price:10},{id:"ovc",name:"Optimized Video Calling",cost:1,tm:true,loadedFree:true,fam:"ovc",price:10},
+  {id:"pcNetflixStd",kind:"pc",name:"Netflix Standard",cost:1,cash:11,est:true,fam:"netflix",price:19.99,tag:"No Ads"},
+  {id:"pcNetflixPrem1",kind:"pc",name:"Netflix Premium",cost:1,cash:18,est:true,fam:"netflix",price:26.99,tag:"No Ads"},
+  {id:"pcNetflixPrem3",kind:"pc",name:"Netflix Premium",cost:3,cash:7,est:true,fam:"netflix",price:26.99,tag:"No Ads"},
+  {id:"pcHuluPrem",kind:"pc",name:"Hulu Premium",cost:1,cash:9,fam:"hulu",price:21.49,tag:"No Ads"},
+  {id:"pcParamountPrem",kind:"pc",name:"Paramount+ Premium",cost:1,cash:5,fam:"paramount",price:13.99,tag:"No Ads"},
+  {id:"payGaiPlus",kind:"cash",name:"Google AI Plus 2TB",cost:0,cash:9.99,fam:"google"},{id:"payGaiPro",kind:"cash",name:"Google AI Pro",cost:0,cash:19.99,fam:"google"},
+  {id:"payEspn",kind:"cash",name:"ESPN Unlimited",cost:0,cash:31.99,fam:"espn"},
+  {id:"payXboxPrem",kind:"cash",name:"Xbox Game Pass Premium",cost:0,cash:14.99,fam:"xbox"},{id:"payXboxUlt",kind:"cash",name:"Xbox Game Pass Ultimate",cost:0,cash:22.99,fam:"xbox"},
+  {id:"paySirius",kind:"cash",name:"SiriusXM All Access (app only)",cost:0,cash:11.99,fam:"sirius"},
+  {id:"payYtLite",kind:"cash",name:"YouTube Premium Lite",cost:0,cash:8.99,fam:"youtube"},{id:"payYt",kind:"cash",name:"YouTube Premium",cost:0,cash:15.99,fam:"youtube"},
+  {id:"payHulu",kind:"cash",name:"Hulu with Ads",cost:0,cash:12.49,fam:"hulu"},{id:"payHuluPrem",kind:"cash",name:"Hulu Premium",cost:0,cash:21.49,fam:"hulu"}
 ];
+function perkById(id){ return PERKS.filter(function(p){ return p.id === id; })[0] || null; }
+/* Picks one choice uses on this plan (Optimized Video Calling is included with Loaded). */
+function perkPicks(p, c){ return (p.loadedFree && c.pid === "loaded") ? 0 : (p.cost || 0); }
+/* Whether a chosen item counts on this quote: Picks and Picks + Cash need a T-Mix plan; Cash only needs an existing account. */
+function perkActive(p, c){ return p.kind === "cash" ? !!c.ex : c.fam === "tmix"; }
 var P360 = [
   {v:"0",label:"No protection",p:0},{v:"1",label:"Tier 1 · $7/mo",p:7},{v:"2",label:"Tier 2 · $9/mo",p:9},{v:"3",label:"Tier 3 · $13/mo",p:13},
   {v:"4",label:"Tier 4 · $16/mo",p:16},{v:"5",label:"Tier 5 · $19/mo",p:19},{v:"byod",label:"BYOD · $19/mo",p:19},{v:"6",label:"Tier 6 · $26/mo",p:26},
@@ -1322,7 +1374,7 @@ state.discountsOpen = false;   // Plan discounts starts closed every time the to
 /* A restored quote is checked before use: unknown plans or discounts fall back to defaults, and lines follow the plan
    (Upgrade on Go5G / Essentials, back to Port or New otherwise). */
 function normalizeState(){
-  if (state.biz) { if (!BIZ[state.planBiz]) state.planBiz = "super"; state.visa = false; state.perks = []; state.planDiscount = "none"; state.away.on = false; if (state.tab === "prepaid") state.tab = "wireless"; }
+  if (state.biz) { if (!BIZ[state.planBiz]) state.planBiz = "super"; state.visa = false; state.perks = []; state.planDiscount = "none"; state.away.on = false; if (state.tab === "prepaid" || state.tab === "picks") state.tab = "wireless"; }
   if (!TMIX[state.planNew] || TMIX[state.planNew].legacy) state.planNew = topPlan(TMIX);
   if (!EXP[state.planExp]) state.planExp = topPlan(EXP);
   if (state.exFam !== "exp" && state.exFam !== "tmix") state.exFam = "exp";
@@ -1965,8 +2017,19 @@ function compute(s){
   if (conn && num(s.set.connect)) T.unshift({l:"Device connection charge", a:conn * num(s.set.connect), sub:conn + " × " + fmt(num(s.set.connect))});
   else if (empWaive && s.groups.length) T.unshift({l:"Device connection charge", a:0, sub:"waived with employee pricing"});
 
-  var perkRows = c.fam === "tmix" ? s.perks.map(function(id){ return PERKS.filter(function(p){ return p.id === id; })[0]; }).filter(Boolean)
-    .map(function(p){ return {name:p.name, eff:(p.loadedFree && c.pid === "loaded") ? 0 : p.cost}; }) : [];
+  /* Picks, Picks + Cash and Cash only (Picks + Cash tab, Account Picks in Edit options). The monthly part of Picks + Cash
+     and paid subscriptions goes on the bill as its own row. */
+  var chosen = (s.biz ? [] : s.perks).map(perkById).filter(Boolean);
+  var perkRows = chosen.filter(function(p){ return p.kind !== "cash" && perkActive(p, c); })
+    .map(function(p){ return {name:p.kind === "pc" ? p.name + " (Picks + Cash)" : p.name, eff:perkPicks(p, c), cash:p.cash || 0}; });
+  var cashPerks = chosen.filter(function(p){ return p.cash && perkActive(p, c); });
+  cashPerks.forEach(function(p){
+    W.push(p.kind === "pc" ? {l:p.name + " · Picks + Cash", a:p.cash, sub:p.cost + " Pick" + (p.cost > 1 ? "s" : "") + " + " + fmt(p.cash) + "/mo"}
+                           : {l:p.name + " · paid subscription", a:p.cash, sub:"no Pick · on the T-Mobile bill"});
+  });
+  if (cashPerks.some(function(p){ return p.est; })) notes.push({t:"info", m:"Netflix Picks + Cash amounts are worked out from the Picks menu prices (the training sheet shows $X). Confirm them in the store system."});
+  var cashOff = chosen.filter(function(p){ return p.kind === "cash" && !c.ex; });
+  if (cashOff.length) notes.push({t:"warn", m:"Paid subscriptions with no Pick are for existing customers, so " + cashOff.map(function(p){ return p.name; }).join(", ") + (cashOff.length > 1 ? " aren't" : " isn't") + " in this new-account total. A new account takes them as Picks."});
   var used = sum(perkRows.map(function(p){ return p.eff; })) + promoPicks;
   if (c.fam === "tmix" && used > budget) notes.unshift({t:"bad", m: budget === 0 ? "This plan has no Picks, so perks and Pick-based phone offers can't apply." : "Picks over by " + (used - budget) + ". Drop a perk or offer, or move up a plan."});
   if (c.fam === "tmix" && c.pid === "loaded" && picksFor("loaded", c.n) && c.n >= 5) notes.push({t:"info", m:"Loaded Pick counts above 4 lines are an estimate."});
@@ -2033,12 +2096,15 @@ function segOpt(v, label){
 }
 function renderStage(q){
   var s = state, c = q.c, h = banner(q);
-  if (s.biz && s.tab === "prepaid") s.tab = "wireless";
+  if (s.biz && (s.tab === "prepaid" || s.tab === "picks")) s.tab = "wireless";
+  var pkCount = s.biz ? 0 : q.perkRows.length + sum(s.perks.map(perkById).filter(function(p){ return p && p.kind === "cash" && perkActive(p, c); }).map(function(){ return 1; }));
   h += '<div class="tabs" role="tablist">' +
     '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
     '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">' + (s.biz ? "Business Internet (" + (s.hint.on ? 1 : 0) : "Home Internet (" + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0))) + ')</button>' +
-    (s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button>') + '</div>';
+    (s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button>' +
+      '<button class="tab" role="tab" data-act="tab" data-v="picks" aria-selected="' + (s.tab === "picks") + '">Picks + Cash (' + pkCount + ')</button>') + '</div>';
   if (s.tab === "prepaid") { $("#stage").innerHTML = h + renderPrepaid(); return; }
+  if (s.tab === "picks") { $("#stage").innerHTML = h + renderPicks(q); return; }
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
@@ -3130,18 +3196,87 @@ function byodList(g, q){
   h += '</div><p class="info">' + I.info + 'Rebate cards come after the switch as a virtual prepaid Mastercard and don\'t change the monthly total. Plan credits come off the monthly bill.</p></div>';
   return h;
 }
+/* ================= Picks + Cash tab =================
+   The Picks menu from T-Mobile's training sheet: Picks by Pick count, Picks + Cash (Picks toward a higher tier plus a
+   monthly charge), T-Mobile services and Cash only (partner paid, no Pick, existing customers). Choices live in the same
+   state.perks as Account Picks in Edit options, so the plan, Picks count and monthly total match the Wireless tab. */
+var PK_BOXES = [
+  {t:"1 Pick", n:4, f:function(p){ return !p.kind && !p.tm && p.cost === 1; }},
+  {t:"2 Picks", n:2, f:function(p){ return !p.kind && !p.tm && p.cost === 2; }},
+  {t:"3 Picks", n:1, f:function(p){ return !p.kind && !p.tm && p.cost === 3; }},
+  {t:"4 Picks", n:1, f:function(p){ return !p.kind && !p.tm && p.cost === 4; }}
+];
+var PK_CHECK = '<svg class="ico" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+function renderPicks(q){
+  var s = state, c = q.c, tmix = c.fam === "tmix", budget = q.budget, used = q.used;
+  var pickOk = tmix && budget > 0;
+  var active = s.perks.map(perkById).filter(function(p){ return p && p.cash && perkActive(p, c); });
+  var cashMo = sum(active.map(function(p){ return p.cash; }));
+  function card(p){
+    var on = s.perks.indexOf(p.id) > -1, incl = !!p.loadedFree && c.pid === "loaded" && tmix;
+    var dis = p.kind === "cash" ? !c.ex : (!pickOk || incl);
+    var badge = p.kind === "pc" ? p.cost + " Pick" + (p.cost > 1 ? "s" : "") + " + " + fmt0(p.cash) + "/mo"
+      : p.kind === "cash" ? fmt0(p.cash) + "/mo" : incl ? "Included with Loaded" : p.tm ? p.cost + " Pick" : "";
+    return '<button class="pkcard" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (on && !incl) + '"' + (dis ? " disabled" : "") + '>' +
+      '<span class="nm">' + esc(p.name) + '</span>' +
+      (p.price != null && p.kind !== "cash" ? '<span class="pr">' + fmt0(p.price) + '/mo</span>' : '') +
+      (p.tag || p.kind === "cash" ? '<span class="tg">' + esc(p.kind === "cash" ? "Paid on the bill" : p.tag) + '</span>' : '') +
+      (badge ? '<span class="pkbw"><span class="pkb">' + badge + '</span></span>' : '') +
+      (on && !incl ? '<span class="ck" aria-hidden="true">' + PK_CHECK + '</span>' : '') + '</button>';
+  }
+  function box(t, n, items, note){
+    return '<section class="pkbox" style="--n:' + n + '"><h3>' + t + '</h3>' + (note ? '<p class="pknote">' + note + '</p>' : '') +
+      '<div class="pkgrid">' + items.map(card).join("") + '</div></section>';
+  }
+  var lines = c.n + " phone line" + (c.n === 1 ? "" : "s");
+  var h = '<div class="pkwrap"><div class="pkhead"><div class="pkintro"><h2 class="pptitle">Picks + Cash</h2>';
+  if (tmix) {
+    h += '<p class="pphead">' + esc(planName("tmix", c.pid)) + ' · ' + lines + ' · <b>' + budget + ' Pick' + (budget === 1 ? '' : 's') + '</b> on the account</p>' +
+      '<div class="seg" role="group" aria-label="T-Mix plan">' + TMIX_ORDER.map(function(id){
+        var k = picksFor(id, Math.max(c.n, 1));
+        return '<button data-act="plan" data-v="' + id + '" aria-pressed="' + (c.pid === id) + '">' + TMIX[id].name + ' · ' + k + ' Pick' + (k === 1 ? '' : 's') + '</button>';
+      }).join("") + '</div>';
+  } else h += '<p class="pphead">' + esc(planName(c.fam, c.pid)) + ' doesn\'t use Picks; its included streaming stays with the plan. Paid subscriptions below still work for an existing account.</p>';
+  h += '<div class="seg" role="group" aria-label="Customer"><button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile</button>' +
+    '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing account</button></div></div>';
+  /* Picks used (menu choices plus phone offers holding Picks) and what the choices add to the monthly bill. */
+  var cells = "", total = Math.max(budget, used);
+  for (var k = 0; k < total; k++) cells += '<span class="cell ' + (k < Math.min(used, budget) ? "on" : (k >= budget ? "over" : "")) + '"></span>';
+  h += '<div class="pkstat">';
+  if (tmix) {
+    h += '<div><span class="big">' + used + '</span> of ' + budget + ' Picks used</div>' + (cells ? '<div class="meter">' + cells + '</div>' : '') +
+      (q.promoPicks ? '<div class="muted">Phone offers hold ' + q.promoPicks + ' · menu ' + (used - q.promoPicks) + '</div>' : '') +
+      (used > budget ? '<div class="pkover">Over by ' + (used - budget) + '. Drop a choice or move up a plan.</div>' : (budget ? '<div class="muted">' + (budget - used) + ' left</div>' : ''));
+  }
+  h += '<div class="pkcash">' + (cashMo ? '<b>+' + fmt(cashMo) + '/mo</b> on the bill' : 'No monthly charges') + '</div></div></div>';
+  if (tmix && !c.n) h += '<p class="info">' + I.info + 'Picks come with phone lines. Add a smartphone on the Wireless tab.</p>';
+  else if (tmix && !budget) h += '<p class="info">' + I.info + esc(planName("tmix", c.pid)) + ' has no Picks. Move up a plan to use the menu.</p>';
+  h += '<div class="pkrow">' + PK_BOXES.map(function(b){ return box(b.t, b.n, PERKS.filter(b.f)); }).join("") + '</div>';
+  h += '<div class="pkrow">' + box("Picks + Cash", 5, PERKS.filter(function(p){ return p.kind === "pc"; }),
+      "Picks toward a higher tier, plus the difference each month. It's added after the Picks are chosen; it isn't in the first selection flow.") +
+    box("T-Mobile Services", 2, PERKS.filter(function(p){ return p.tm; })) + '</div>';
+  h += '<div class="pkrow">' + box("Cash only · no Pick needed", 8, PERKS.filter(function(p){ return p.kind === "cash"; }),
+      c.ex ? "Partner paid: the full price goes on the T-Mobile bill, for the account or one line (BAN or subscriber level)."
+           : "For existing T-Mobile customers. A new account takes these as Picks; once it's active, it can pay for one on the bill instead. Choose Existing account above to quote one.") + '</div>';
+  h += '<ul class="pkfoot">' +
+    '<li>Picks belong to the whole account. Phone offers hold their Picks for the promo period, so they count here too.</li>' +
+    '<li>One choice per service: choosing another tier of the same service, with Picks, Picks + Cash or paid, swaps it. A customer can move between a Pick and a paid subscription of the same service.</li>' +
+    '<li>Hulu and Paramount+ Picks + Cash amounts are from the training sheet. Netflix shows "$X" there, so its amounts are worked out from the menu prices: confirm them in the store system.</li>' +
+    '<li>Paid prices use the Picks menu values. Magenta Pulse has the full, current partner list.</li></ul></div>';
+  return h;
+}
 function picksBlock(q, inBox){
   var s = state, budget = q.budget, used = q.used, total = Math.max(budget, used), cells = "";
   for (var k = 0; k < total; k++) cells += '<span class="cell ' + (k < Math.min(used, budget) ? "on" : (k >= budget ? "over" : "")) + '"></span>';
   var dis = budget === 0;
   function chip(p){
     if (p.loadedFree && q.c.pid === "loaded") return '<span class="pchip locked">' + p.name + ' <span class="pc">incl.</span></span>';
-    return '<button class="pchip" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (s.perks.indexOf(p.id) > -1) + '"' + (dis ? " disabled" : "") + '>' + p.name + ' <span class="pc">' + p.cost + '</span></button>';
+    return '<button class="pchip" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (s.perks.indexOf(p.id) > -1) + '"' + (dis && p.kind !== "cash" ? " disabled" : "") + '>' + p.name + ' <span class="pc">' + (p.kind === "pc" ? p.cost + " + $" + p.cash + "/mo" : p.kind === "cash" ? fmt(p.cash) + "/mo" : p.cost) + '</span></button>';
   }
   return '<div><div class="picksrow">' + (inBox ? '<span class="muted">Shared by every phone line on the account</span>' : '<h4 style="margin:0">Account Picks</h4>') + '<span><b>' + used + '</b> of ' + budget + ' used</span></div>' +
     (cells ? '<div class="meter" style="margin:8px 0 10px">' + cells + '</div>' : '<p class="info">This plan has no Picks.</p>') +
-    '<div class="chips">' + PERKS.map(chip).join("") + '</div>' +
-    '<p class="info" style="margin-top:8px">Picks belong to the whole account. Phone offers hold their Picks for the promo period. Partner Picks can be swapped in the quarterly Remix windows.</p></div>';
+    '<div class="chips">' + PERKS.filter(function(p){ return !p.kind || s.perks.indexOf(p.id) > -1; }).map(chip).join("") + '</div>' +
+    '<p class="info" style="margin-top:8px">Picks belong to the whole account. Phone offers hold their Picks for the promo period. Partner Picks can be swapped in the quarterly Remix windows. Picks + Cash and paid subscriptions are on the Picks + Cash tab.</p></div>';
 }
 
 /* ================= Saved quotes ================= */
@@ -3930,7 +4065,13 @@ document.addEventListener("click", function(e){
     case "offtog": { var otk = g ? g.id : b.getAttribute("data-g"); if (otk) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[otk] = !ui.offersHidden[otk]; } } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
     case "pass": if (g) { var pv = v.split(":"), ps = passesOf(g); ps[pv[0]] = Math.max(0, Math.min(PASS_MAX, (+ps[pv[0]] || 0) + (+pv[1] || 0))); } break;
-    case "perk": { var ix = state.perks.indexOf(v); if (ix > -1) state.perks.splice(ix, 1); else state.perks.push(v); break; }
+    case "perk": {
+      /* One choice per service: a new tier of the same service (Pick, Picks + Cash or paid) replaces the old one. */
+      var ix = state.perks.indexOf(v), pv = perkById(v);
+      if (ix > -1) state.perks.splice(ix, 1);
+      else { if (pv && pv.fam) state.perks = state.perks.filter(function(id){ var x = perkById(id); return !x || x.fam !== pv.fam; }); state.perks.push(v); }
+      break;
+    }
     case "hinton": state.hint.on = !state.hint.on; break;
     case "hplan": state.hint.plan = v; state.hint.on = true; break;
     case "cmptab": ui.cmpTab = v; break;
