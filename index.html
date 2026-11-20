@@ -859,9 +859,8 @@ function picksFor(id, n){
 
 /* Picks menu, from T-Mobile's retail training sheet (Nik, Nov 20, 2026). One choice per service ("fam"): picking another
    tier of the same service, with Picks, Picks + Cash or paid, swaps it. price = the menu's monthly value.
-   kind "pc" (Picks + Cash): Picks toward a higher tier plus a monthly charge. Hulu $9 and Paramount+ $5 are on the sheet;
-   the Netflix amounts show as "$X" there, so they're worked out the same way (tier price minus the price of the tier the
-   Picks cover) and flagged est. kind "cash" (Cash only, partner paid): no Pick, the full price on the bill, existing
+   kind "pc" (Picks + Cash): fewer Picks than the full requirement plus a monthly charge; all five combinations are from
+   the training sheet's current catalog (Nik, Nov 20, 2026). Each partner decides whether it's offered and what it costs. kind "cash" (Cash only, partner paid): no Pick, the full price on the bill, existing
    customers only. Everything else is a plain Pick. */
 var PERKS = [
   {id:"appletv",name:"Apple TV",cost:1,fam:"appletv",price:14.99,tag:"No Ads"},{id:"netflixAds",name:"Netflix Standard with Ads",cost:1,fam:"netflix",price:8.99,tag:"Ad Supported"},
@@ -875,9 +874,9 @@ var PERKS = [
   {id:"netflixStd",name:"Netflix Standard",cost:3,fam:"netflix",price:19.99,tag:"No Ads"},{id:"xboxUlt",name:"Xbox Game Pass Ultimate",cost:3,fam:"xbox",price:22.99},
   {id:"netflixPrem",name:"Netflix Premium",cost:4,fam:"netflix",price:26.99,tag:"No Ads"},{id:"espn",name:"ESPN Unlimited",cost:4,fam:"espn",price:31.99},
   {id:"tsat",name:"T-Satellite",cost:1,tm:true,fam:"tsat",price:10},{id:"ovc",name:"Optimized Video Calling",cost:1,tm:true,loadedFree:true,fam:"ovc",price:10},
-  {id:"pcNetflixStd",kind:"pc",name:"Netflix Standard",cost:1,cash:11,est:true,fam:"netflix",price:19.99,tag:"No Ads"},
-  {id:"pcNetflixPrem1",kind:"pc",name:"Netflix Premium",cost:1,cash:18,est:true,fam:"netflix",price:26.99,tag:"No Ads"},
-  {id:"pcNetflixPrem3",kind:"pc",name:"Netflix Premium",cost:3,cash:7,est:true,fam:"netflix",price:26.99,tag:"No Ads"},
+  {id:"pcNetflixStd",kind:"pc",name:"Netflix Standard",cost:1,cash:11,fam:"netflix",price:19.99,tag:"No Ads"},
+  {id:"pcNetflixPrem1",kind:"pc",name:"Netflix Premium",cost:1,cash:18,fam:"netflix",price:26.99,tag:"No Ads"},
+  {id:"pcNetflixPrem3",kind:"pc",name:"Netflix Premium",cost:3,cash:7,fam:"netflix",price:26.99,tag:"No Ads"},
   {id:"pcHuluPrem",kind:"pc",name:"Hulu Premium",cost:1,cash:9,fam:"hulu",price:21.49,tag:"No Ads"},
   {id:"pcParamountPrem",kind:"pc",name:"Paramount+ Premium",cost:1,cash:5,fam:"paramount",price:13.99,tag:"No Ads"},
   {id:"payGaiPlus",kind:"cash",name:"Google AI Plus 2TB",cost:0,cash:9.99,fam:"google"},{id:"payGaiPro",kind:"cash",name:"Google AI Pro",cost:0,cash:19.99,fam:"google"},
@@ -2027,7 +2026,6 @@ function compute(s){
     W.push(p.kind === "pc" ? {l:p.name + " · Picks + Cash", a:p.cash, sub:p.cost + " Pick" + (p.cost > 1 ? "s" : "") + " + " + fmt(p.cash) + "/mo"}
                            : {l:p.name + " · paid subscription", a:p.cash, sub:"no Pick · on the T-Mobile bill"});
   });
-  if (cashPerks.some(function(p){ return p.est; })) notes.push({t:"info", m:"Netflix Picks + Cash amounts are worked out from the Picks menu prices (the training sheet shows $X). Confirm them in the store system."});
   var cashOff = chosen.filter(function(p){ return p.kind === "cash" && !c.ex; });
   if (cashOff.length) notes.push({t:"warn", m:"Paid subscriptions with no Pick are for existing customers, so " + cashOff.map(function(p){ return p.name; }).join(", ") + (cashOff.length > 1 ? " aren't" : " isn't") + " in this new-account total. A new account takes them as Picks."});
   var used = sum(perkRows.map(function(p){ return p.eff; })) + promoPicks;
@@ -3207,6 +3205,12 @@ var PK_BOXES = [
   {t:"4 Picks", n:1, f:function(p){ return !p.kind && !p.tm && p.cost === 4; }}
 ];
 var PK_CHECK = '<svg class="ico" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+/* Picks + Cash: how many Picks it saves against the same tier with Picks only (Netflix Premium 4 Picks vs 3 + $7). */
+function pkSaves(p){
+  if (p.kind !== "pc") return "";
+  var full = PERKS.filter(function(x){ return !x.kind && x.fam === p.fam && x.name === p.name; })[0];
+  return full && full.cost > p.cost ? " · saves " + (full.cost - p.cost) + " Pick" + (full.cost - p.cost > 1 ? "s" : "") : "";
+}
 function renderPicks(q){
   var s = state, c = q.c, tmix = c.fam === "tmix", budget = q.budget, used = q.used;
   var pickOk = tmix && budget > 0;
@@ -3220,7 +3224,7 @@ function renderPicks(q){
     return '<button class="pkcard" data-act="perk" data-v="' + p.id + '" aria-pressed="' + (on && !incl) + '"' + (dis ? " disabled" : "") + '>' +
       '<span class="nm">' + esc(p.name) + '</span>' +
       (p.price != null && p.kind !== "cash" ? '<span class="pr">' + fmt0(p.price) + '/mo</span>' : '') +
-      (p.tag || p.kind === "cash" ? '<span class="tg">' + esc(p.kind === "cash" ? "Paid on the bill" : p.tag) + '</span>' : '') +
+      (p.tag || p.kind === "cash" ? '<span class="tg">' + esc(p.kind === "cash" ? "Paid on the bill" : p.tag + pkSaves(p)) + '</span>' : '') +
       (badge ? '<span class="pkbw"><span class="pkb">' + badge + '</span></span>' : '') +
       (on && !incl ? '<span class="ck" aria-hidden="true">' + PK_CHECK + '</span>' : '') + '</button>';
   }
@@ -3253,7 +3257,7 @@ function renderPicks(q){
   else if (tmix && !budget) h += '<p class="info">' + I.info + esc(planName("tmix", c.pid)) + ' has no Picks. Move up a plan to use the menu.</p>';
   h += '<div class="pkrow">' + PK_BOXES.map(function(b){ return box(b.t, b.n, PERKS.filter(b.f)); }).join("") + '</div>';
   h += '<div class="pkrow">' + box("Picks + Cash", 5, PERKS.filter(function(p){ return p.kind === "pc"; }),
-      "Picks toward a higher tier, plus the difference each month. It's added after the Picks are chosen; it isn't in the first selection flow.") +
+      "Fewer Picks than the full requirement, plus a reduced monthly charge on the T-Mobile bill. Added after the Picks are chosen, and only when the customer's Benefits Dashboard shows it for that benefit.") +
     box("T-Mobile Services", 2, PERKS.filter(function(p){ return p.tm; })) + '</div>';
   h += '<div class="pkrow">' + box("Cash only · no Pick needed", 8, PERKS.filter(function(p){ return p.kind === "cash"; }),
       c.ex ? "Partner paid: the full price goes on the T-Mobile bill, for the account or one line (BAN or subscriber level)."
@@ -3261,7 +3265,9 @@ function renderPicks(q){
   h += '<ul class="pkfoot">' +
     '<li>Picks belong to the whole account. Phone offers hold their Picks for the promo period, so they count here too.</li>' +
     '<li>One choice per service: choosing another tier of the same service, with Picks, Picks + Cash or paid, swaps it. A customer can move between a Pick and a paid subscription of the same service.</li>' +
-    '<li>Hulu and Paramount+ Picks + Cash amounts are from the training sheet. Netflix shows "$X" there, so its amounts are worked out from the menu prices: confirm them in the store system.</li>' +
+    '<li>Each partner decides whether Picks + Cash is offered and what it costs. The customer sees the exact Picks and monthly charge before confirming.</li>' +
+    '<li>Extra Picks can\'t be bought: add eligible lines or move up a plan.</li>' +
+    '<li>An existing subscription with the partner may need to be canceled or paused to avoid double billing. It varies by partner.</li>' +
     '<li>Paid prices use the Picks menu values. Magenta Pulse has the full, current partner list.</li></ul></div>';
   return h;
 }
