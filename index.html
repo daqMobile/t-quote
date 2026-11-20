@@ -1544,9 +1544,27 @@ function watchPairShare(g, o){
   return g.qty ? mine / g.qty : 0;
 }
 /* Best available offer per group, chosen in order so the phones together never use more Picks than the
-   account has left after perks and hand-picked offers. Ties on credit go to the offer using fewer Picks. */
+   account has left after perks and hand-picked offers. Rules (Nik's):
+   - On T-Mix a line's best offer uses at most the Picks one added line gets on the plan (Loaded 3, More 2,
+     Standard 1, Saver 0), even when the account has more Picks pooled.
+   - It follows the Line type: Upgrade never takes an offer that needs a port or a new line (trade-in or plain
+     upgrade offers only); a New line never takes a port offer.
+   - Most credit wins. Ties go to fewer Picks, then to the offer made for this line type (port offer on a Port line,
+     new-line offer on a new line), then to the one that doesn't take a trade-in. */
+function bestCap(c){ return c.fam === "tmix" ? picksFor(c.pid, 1) : Infinity; }
+function lineTypeOk(o, g){
+  var n = o.need || "none";
+  if (g.lineType === "upgrade") return n.indexOf("port") < 0 && n.indexOf("newline") < 0 && o.pay !== "plan";
+  if (g.lineType === "new") return n.indexOf("port") < 0;
+  return true;
+}
+function needRank(o, g){
+  var n = o.need || "none", t = g.lineType;
+  var made = (t === "port" && n.indexOf("port") === 0) || (t === "new" && n.indexOf("newline") > -1) ? 0 : 1;
+  return made * 2 + (n.indexOf("trade") > -1 ? 1 : 0);
+}
 function bestPlan(c){
-  var s = state, out = {}, left = Infinity;
+  var s = state, out = {}, left = Infinity, cap = bestCap(c);
   if (c.fam === "tmix") {
     left = picksFor(c.pid, c.n) - sum((s.perks || []).map(function(id){ var p = PERKS.filter(function(x){ return x.id === id; })[0]; return p ? ((p.loadedFree && c.pid === "loaded") ? 0 : p.cost) : 0; }));
     s.groups.forEach(function(g){
@@ -1558,8 +1576,8 @@ function bestPlan(c){
   }
   s.groups.forEach(function(g){
     if (g.dev.kind !== "new" || g.dev.offer !== "best") return;
-    var ok = offersFor(g, c).filter(function(x){ return x.ok && !x.expired && (!x.o.picks || x.o.picks * g.qty <= left); });
-    ok.sort(function(a,b){ return (b.credit - a.credit) || (a.o.picks - b.o.picks); });
+    var ok = offersFor(g, c).filter(function(x){ return x.ok && !x.expired && lineTypeOk(x.o, g) && (!x.o.picks || (x.o.picks <= cap && x.o.picks * g.qty <= left)); });
+    ok.sort(function(a,b){ return (b.credit - a.credit) || ((a.o.picks || 0) - (b.o.picks || 0)) || (needRank(a.o, g) - needRank(b.o, g)); });
     out[g.id] = ok[0] || null;
     if (ok[0] && ok[0].o.picks) left -= ok[0].o.picks * g.qty;
   });
