@@ -2008,7 +2008,7 @@ function segOpt(v, label){
     else if (!s.autopay) { ok = false; why = " (needs AutoPay)"; }
     else why = " · " + S.fixedPct + "% off up to " + S.maxLines + " lines";
   }
-  else if (S.pct) why = " · " + empPct() + "% off lines";
+  else if (S.pct) why = s.tab === "internet" ? " · " + fmt0(empHintOff()) + "/mo off Home Internet" : " · " + empPct() + "% off lines";
   else if (!St.ap[c.pid]) { ok = false; why = " (not on " + planName(c.fam, c.pid) + ")"; }
   else if (St.max[c.pid] && c.n > St.max[c.pid]) { ok = false; why = " (max " + St.max[c.pid] + " phone lines)"; }
   return '<option value="' + v + '"' + (s.planDiscount === v ? " selected" : (ok ? "" : " disabled")) + '>' + label + why + '</option>';
@@ -2026,7 +2026,9 @@ function renderStage(q){
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
       '<option value="1"' + (s.autopay ? " selected" : "") + '>' + (s.biz ? "$5 AutoPay discount per line (lines 1–5) · debit card or bank" : (c.fam === "tmix" ? "$10" : "$5") + ' AutoPay discount · debit card, bank or T-Mobile Visa') + '</option>' +
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
-    (s.biz && s.bizFree && !c.ex ? '<span class="bchip on">3rd line free applied</span>' : '<span class="bchip">No additional discounts applied</span>') +
+    (s.biz && s.bizFree && !c.ex ? '<span class="bchip on">3rd line free applied</span>'
+      : segOf(s) ? '<span class="bchip on">' + esc(SEG[segOf(s)].label) + (segOf(s) === "employee" ? (s.tab === "internet" ? " · " + fmt0(empHintOff()) + "/mo off Home Internet" : " · " + empPct() + "% off lines") : "") + ' applied</span>'
+      : '<span class="bchip">No additional discounts applied</span>') +
     (s.biz ? '' : '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" style="margin-left:auto" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
     '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button>') + '</div>';
@@ -2056,7 +2058,7 @@ function renderStage(q){
         (!isLegacy(c) ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("workperks", "Work Perks") + segOpt("employee", "Employee pricing") : '') +
       '</select></div>' +
       '<p class="fhint">' + (isLegacy(c) ? "Go5G and Essentials quotes are upgrades only and add no plan charge, so a plan discount doesn't change the quote."
-          : segOf(s) ? esc(SEG[s.planDiscount].hint) + (c.ex ? " On an existing account, pick the discount it already has so added lines are priced on it." : "")
+          : segOf(s) ? esc(s.tab === "internet" && s.planDiscount === "employee" ? "Employee pricing on Home Internet: " + fmt0(empHintOff()) + "/mo off the plan (AWAY too), on top of AutoPay, the voice line discount and other promotions. The connection charge is waived. Wireless lines get " + empPct() + "% off. Change these in Settings." : SEG[s.planDiscount].hint) + (c.ex ? " On an existing account, pick the discount it already has so added lines are priced on it." : "")
           : !c.ex ? "Account-wide discounts only. Number-transfer and other promotional credits are chosen per line under Apply a promotion in Edit Options."
           : "If the account already has Military, First Responder, 55+ or Employee pricing, pick it so added lines are priced on it. Use Line Credits in Edit Options for any other account credit.") + '</p></div>' +
     '</div>';
@@ -2163,14 +2165,14 @@ function renderInternet(q){
   return '<div class="panel">' +
     '<button class="switch" role="switch" aria-checked="' + hi.on + '" data-act="hinton"><span class="knob"></span>Add 5G Home Internet to this quote</button>' +
     '<div class="hint-plans">' + HINT_ORDER.map(function(id){
-      var p = HINT[id], price = p.ap + (s.autopay ? 0 : HINT_AP) - (hi.voice && voiceOk ? HINT_VOICE : 0);
+      var p = HINT[id], price = p.ap + (s.autopay ? 0 : HINT_AP) - (hi.voice && voiceOk ? HINT_VOICE : 0) - (segOf(s) === "employee" ? empHintOff() : 0);
       return '<button class="hplan" data-act="hplan" data-v="' + id + '" aria-pressed="' + (hi.on && hi.plan === id) + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + p.d + '</span><span class="d">' + fmt0(p.ap) + ' with AutoPay' + (hi.voice && voiceOk ? ', ' + fmt0(HINT_VOICE) + ' off with a voice line' : '') + '</span></button>';
     }).join("") + '</div>' +
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
       '<label class="check" for="hVoice"><input id="hVoice" type="checkbox" data-k="hint.voice" data-t="bool"' + (hi.voice ? " checked" : "") + '><span>Voice line discount ($' + HINT_VOICE + '/mo)<br><small class="muted">Needs a T-Mobile phone line on the account' + (voiceOk ? "" : ". Add one on the Wireless tab") + '.</small></span></label>' +
       '<label class="check' + (segOf(s) === "employee" ? " dis" : "") + '" for="hConn"><input id="hConn" type="checkbox" data-k="hint.connect" data-t="bool"' + (hi.connect && segOf(s) !== "employee" ? " checked" : "") + (segOf(s) === "employee" ? " disabled" : "") + '><span>Connection charge applies (' + fmt0(num(s.set.connect)) + ')' + (segOf(s) === "employee" ? '<br><small class="muted">Waived with employee pricing.</small>' : '') + '</span></label>' +
     '</div><div class="tbtns" style="margin-top:14px"><button class="obtn" data-act="sheet" data-v="hcompare">Compare plans</button></div>' +
-    '<p class="fhint">Plan prices include AutoPay. Taxes and fees are extra.</p></div>' + renderAway(q);
+    '<p class="fhint">Plan prices include AutoPay' + (segOf(s) === "employee" ? ' and the ' + fmt0(empHintOff()) + ' employee discount' : '') + '. Taxes and fees are extra.</p></div>' + renderAway(q);
 }
 /* AWAY Internet: its own product in the Home Internet tab, with plan, options and a promotion list. */
 function renderAway(q){
@@ -2179,7 +2181,7 @@ function renderAway(q){
     '<button class="switch" role="switch" aria-checked="' + a.on + '" data-act="awayon"><span class="knob"></span>Add AWAY Internet to this quote</button>' +
     '<p class="fhint">Internet on the go for RVs, travel and seasonal stays, anywhere on T-Mobile\'s network. Not for use mainly at one address.</p>' +
     '<div class="hint-plans">' + AWAY_ORDER.map(function(id){
-      var p = AWAY[id], price = p.ap + (s.autopay ? 0 : AWAY_AP);
+      var p = AWAY[id], price = p.ap + (s.autopay ? 0 : AWAY_AP) - (emp ? empHintOff() : 0);
       return '<button class="hplan" data-act="aplan" data-v="' + id + '" aria-pressed="' + (a.on && a.plan === id) + '"><span class="n">' + p.name + '</span><span class="p">' + fmt0(price) + '<small> /mo</small></span><span class="d">' + p.d + '</span><span class="d">' + fmt0(p.ap) + ' with AutoPay, ' + fmt0(p.ap + AWAY_AP) + ' without</span></button>';
     }).join("") + '</div>' +
     '<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">' +
