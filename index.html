@@ -891,8 +891,9 @@ var ADDONS = [
 /* International passes: one-time charges per line, billed when the pass is added (not monthly, not due at the sale).
    T-Mobile's International Pass page, as reported Nov 2026 (prices since June 2026): 1 Day $10 / 2GB, 10 Day $50 / 15GB,
    30 Day $75 / 30GB, each with unlimited calling in 215+ countries and destinations and hotspot use. Any qualifying
-   postpaid plan. Without a pass, calls abroad are $0.50/min. Adding a new pass ends what's left of the current one. */
-var PASSES_ASOF = "2026-11-20", PASS_MAX = 10, INTL_CALL_RATE = 0.5;
+   postpaid plan. Without a pass, calls abroad are $0.50/min. Adding a new pass ends what's left of the current one.
+   A line can hold no more than 2 of the same pass at once (T-Mobile's rep support page), so each counter stops at 2. */
+var PASSES_ASOF = "2026-11-20", PASS_MAX = 2, INTL_CALL_RATE = 0.5;
 var PASSES = [
   {id:"intl1",  name:"1 Day International Pass",  price:10, d:"2GB high-speed data and unlimited calling, for up to 24 hours."},
   {id:"intl10", name:"10 Day International Pass", price:50, d:"15GB high-speed data and unlimited calling, for up to 10 days."},
@@ -3025,7 +3026,7 @@ function passBlock(g, c){
   var h = '<div><h4>International passes <span class="muted" style="font-weight:400">· one-time, per line</span></h4>' +
     '<p class="info">' + I.info + esc(hint) + '</p></div><div class="aons">' + rows + '</div>';
   if (tot) h += '<div class="preview"><span>Passes · one-time, on the bill</span><span>' + fmt(tot) + '<i>per line' + (g.qty > 1 ? ' · ×' + g.qty + ' lines = ' + fmt(tot * g.qty) : '') + '</i></span></div>';
-  h += '<p class="fhint" style="margin-top:-6px">Passes don\'t stack: adding a new pass ends what\'s left of the current one. Count one pass per trip, or one 1 Day pass per day.</p>';
+  h += '<p class="fhint" style="margin-top:-6px">Up to 2 of the same pass on a line at once. Give the second one a later start date. A new pass ends what\'s left of the current one.</p>';
   return h;
 }
 function creditPreview(g){
