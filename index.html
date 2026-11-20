@@ -492,18 +492,17 @@ html.locked,html.locked body{overflow:hidden}
 @media (min-width:900px){.pkmain .pkgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .pkmain .pkcard{min-height:110px;padding:12px 30px 12px 13px}
 .pkmain .pkcard .nm{font-size:16px}
-.pksubs{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
-.pksub{flex:1 1 190px;min-width:0;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
-.pksub.open{flex-basis:100%;order:1;background:var(--surface);border-color:var(--accent)}
-.pksubh{width:100%;display:flex;align-items:center;gap:8px;padding:11px 12px;background:none;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
-.pksubh .tt{display:flex;flex-direction:column;gap:1px;min-width:0}
-.pksubh .t{font-family:var(--display);font-weight:700;font-size:17px;color:var(--accent);white-space:nowrap}
-.pksubh .c{font-size:12.5px;color:var(--muted)}
-.pksubh .ico{margin-left:auto;color:var(--accent);transition:transform .2s}
+.pksubs{display:grid;gap:8px}
+.pksub{border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.pksub.open{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pksubh{width:100%;min-height:50px;display:flex;align-items:center;gap:12px;padding:8px 14px;background:none;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.pksubh .t{font-family:var(--display);font-weight:700;font-size:17px;color:var(--accent);white-space:nowrap;min-width:92px}
+.pksubh .c{font-size:13px;color:var(--muted);white-space:nowrap;min-width:72px}
+.pksubh .ico{flex:none;color:var(--accent);transition:transform .2s}
 .pksub.open .pksubh .ico{transform:rotate(180deg)}
-.pksel{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 11px}
-.pksel span{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
-.pksub .pkgrid{padding:0 10px 10px;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr))}
+.pksel{flex:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;min-width:0}
+.pksel span{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.pksub .pkgrid{padding:2px 12px 12px;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr))}
 .pkfoot{margin:4px 0 0;padding-left:18px;display:grid;gap:5px;font-size:13.5px;color:var(--muted);line-height:1.45;max-width:110ch}
 .ppsum .r.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700;font-size:16px}
 .ppbig{display:flex;flex-wrap:wrap;gap:16px 40px;margin-bottom:12px}
@@ -3272,19 +3271,19 @@ function renderPicks(q){
   if (tmix && !c.n) h += '<p class="info">' + I.info + 'Picks come with phone lines. Add a smartphone on the Wireless tab.</p>';
   else if (tmix && !budget) h += '<p class="info">' + I.info + esc(planName("tmix", c.pid)) + ' has no Picks. Move up a plan to use the menu.</p>';
   /* Picks + Cash first (the focus), then Picks only: each Pick count is a sub-box that opens on tap (closed by default),
-     showing what's chosen in it. Closed ones share a row; an open one drops below them at full width. */
+     showing what's chosen in it. Full-width rows that open in place. */
   h += '<div class="pkrow">' + box("Picks + Cash", 5, PERKS.filter(function(p){ return p.kind === "pc"; }),
       "Fewer Picks than the full requirement, plus a reduced monthly charge on the T-Mobile bill. Added after the Picks are chosen, and only when the customer's Benefits Dashboard shows it for that benefit.").replace('class="pkbox"', 'class="pkbox pkmain"') + '</div>';
   function sub(key, t, n, items){
     var open = !!(ui.pkOpen && ui.pkOpen[key]);
     var picked = items.filter(function(p){ return s.perks.indexOf(p.id) > -1 && !(p.loadedFree && c.pid === "loaded" && tmix); });
-    return '<section class="pksub' + (open ? ' open' : '') + '" style="--n:' + n + '">' +
-      '<button class="pksubh" data-act="pkopen" data-v="' + key + '" aria-expanded="' + open + '"><span class="tt"><span class="t">' + t + '</span>' +
-        '<span class="c">' + items.length + ' option' + (items.length === 1 ? '' : 's') + (open ? '' : ' · tap to open') + '</span></span>' + I.down + '</button>' +
-      (picked.length && !open ? '<div class="pksel">' + picked.map(function(p){ return '<span>' + esc(p.name) + '</span>'; }).join("") + '</div>' : '') +
+    return '<section class="pksub' + (open ? ' open' : '') + '">' +
+      '<button class="pksubh" data-act="pkopen" data-v="' + key + '" aria-expanded="' + open + '"><span class="t">' + t + '</span>' +
+        '<span class="c">' + items.length + ' option' + (items.length === 1 ? '' : 's') + '</span>' +
+        '<span class="pksel">' + picked.map(function(p){ return '<span>' + esc(p.name) + '</span>'; }).join("") + '</span>' + I.down + '</button>' +
       (open ? '<div class="pkgrid">' + items.map(card).join("") + '</div>' : '') + '</section>';
   }
-  h += '<div class="pkrow"><section class="pkbox" style="--n:10"><h3>Picks only</h3><p class="pknote">Spend the full Picks and pay no monthly charge. Tap a group to see its options.</p>' +
+  h += '<div class="pkrow"><section class="pkbox" style="--n:10"><h3>Picks only</h3><p class="pknote">Spend the full Picks and pay no monthly charge. Tap a row to see its options.</p>' +
     '<div class="pksubs">' + PK_BOXES.map(function(b){ return sub(b.t, b.t, b.n, PERKS.filter(b.f)); }).join("") +
     sub("tm", "T-Mobile Services", 2, PERKS.filter(function(p){ return p.tm; })) + '</div></section></div>';
   h += '<div class="pkrow">' + box("Cash only · no Pick needed", 8, PERKS.filter(function(p){ return p.kind === "cash"; }),
