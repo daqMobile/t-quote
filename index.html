@@ -2033,8 +2033,6 @@ function renderStage(q){
 
   /* Promotion status sits at the very bottom, out of the way. */
   var foot = '<div class="livefoot">' + liveLine() + '</div>';
-  if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
-
   if (s.discountsOpen && s.biz) {
     h += '<div class="dpanel">' +
       '<div><span class="flabel">Customer</span><div class="seg" role="group" aria-label="Customer">' +
@@ -2063,6 +2061,8 @@ function renderStage(q){
           : "If the account already has Military, First Responder, 55+ or Employee pricing, pick it so added lines are priced on it. Use Line Credits in Edit Options for any other account credit.") + '</p></div>' +
     '</div>';
   }
+  /* Home Internet gets the same band and Plan discounts panel, then its own content. */
+  if (s.tab === "internet") { h += renderInternet(q) + foot; $("#stage").innerHTML = h; return; }
 
   var bizOld = c.fam === "biz" && isLegacy(c);
   var order = bizOld ? BIZ_STORE_ORDER.concat(BIZ_RETIRED_ORDER) : c.fam === "biz" ? BIZ_ORDER : (c.fam === "tmix" ? TMIX_ORDER : (isLegacy(c) ? LEGACY_ORDER : EXP_ORDER));
