@@ -728,7 +728,7 @@ var SEG = {
   workperks: {label:"Work Perks", pct:true, fixedPct:15, maxLines:5,
               hint:"Work Perks: 15% off the Experience More or Beyond plan charge, after AutoPay, on up to the first 5 phone lines. The customer's employer must be on T-Mobile's Work Perks list, and they verify within 30 days. Doesn't combine with Military or 55+, and isn't offered on T-Mix."},
   employee:  {label:"Employee", pct:true,
-              hint:"Employee pricing: a percentage off every wireless line (75%) and off Home Internet (20%). Change the percentages in Settings."}
+              hint:"Employee pricing: a percentage off every wireless line (75%), and $10/mo off Home Internet and AWAY that stacks with other promotions. Change these in Settings."}
 };
 /* Experience with savings (exp tables, AutoPay prices): the plans' published rate tables (usmilitary.org, upphone.com,
    Oct 2026), not T-Mobile's add-a-line page, so quotes on them carry a "confirm in the account" note. */
@@ -740,10 +740,11 @@ function segOf(s){
   return s.planDiscount;
 }
 function segTable(S, fam){ return fam === "tmix" ? {ap:S.ap, addl:S.addl, max:S.max} : {ap:S.exp || {}, addl:S.expAddl || {}, max:S.expMax || {}}; }
-/* Employee pricing: 75% off every wireless line and 20% off Home Internet unless changed in Settings. */
+/* Employee pricing: 75% off every wireless line unless changed in Settings. Home Internet (and AWAY) get a flat
+   $10/mo off instead, on top of AutoPay, the voice line discount and other promotions (Nik, Nov 20, 2026). */
 var EMP_DATA_LINES = 5;   // employee pricing: up to 5 data-only lines (tablets, wearables, IoT), T-Mobile benefits guide
 function empPct(){ return Math.min(100, num(state.set.employeePct) || 75); }
-function empHintPct(){ return Math.min(100, num(state.set.employeeHintPct) || 20); }
+function empHintOff(){ var v = state.set.employeeHintOff; return typeof v === "number" && v >= 0 ? v : 10; }
 /* What a T-Mix plan shows when it can't be priced: not offered with the chosen discount, or over its line limit. */
 function planNA(id, seg, short, fam){
   fam = fam || "tmix";
@@ -1255,7 +1256,7 @@ function exampleState(){
     autopay:true, visa:false, planDiscount:"none", discountsOpen:false, groups:[a,b,c], perks:["netflixAds"],
     hint:{on:false, plan:"amplified", voice:true, connect:true},
     away:{on:false, plan:"awayunl", connect:true, offer:"", customMo:0, customMonths:12},
-    set:{connect:35, employeePct:75, employeeHintPct:20}};
+    set:{connect:35, employeePct:75, employeeHintOff:10}};
 }
 function blankState(){
   var s = exampleState();
@@ -1912,7 +1913,7 @@ function compute(s){
     H.push({l:"5G Home Internet " + hp.name, a:hp.ap, sub: s.autopay ? "AutoPay price" : ""});
     if (!s.autopay) H.push({l:"No AutoPay", a:HINT_AP});
     if (s.hint.voice && voiceOk) H.push({l:"Voice line discount", a:-HINT_VOICE, c:"credit"});
-    if (seg === "employee") H.push({l:"Employee pricing", a:-round2(hp.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
+    if (seg === "employee" && empHintOff()) H.push({l:"Employee discount", a:-empHintOff(), sub: fmt0(empHintOff()) + "/mo off · stacks with other promotions", c:"credit"});
     if (s.hint.voice && !voiceOk) notes.push({t:"warn", m:"The Home Internet voice line discount needs a phone line on the account."});
     if (seg === "employee") T.push({l:"Home Internet connection charge", a:0, sub:"waived with employee pricing"});
     else if (s.hint.connect) T.push({l:"Home Internet connection charge", a:num(s.set.connect)});
@@ -1922,7 +1923,7 @@ function compute(s){
     var ap = AWAY[s.away.plan] || AWAY.awayunl;
     H.push({l:ap.name, a:ap.ap, sub: s.autopay ? "AutoPay price · 5G Gateway included" : "5G Gateway included"});
     if (!s.autopay) H.push({l:"AWAY · No AutoPay", a:AWAY_AP});
-    if (seg === "employee") H.push({l:"AWAY · Employee pricing", a:-round2(ap.ap * empHintPct() / 100), sub: empHintPct() + "% off the plan", c:"credit"});
+    if (seg === "employee" && empHintOff()) H.push({l:"AWAY · Employee discount", a:-empHintOff(), sub: fmt0(empHintOff()) + "/mo off · stacks with other promotions", c:"credit"});
     var aw = awayPick(c);
     if (s.away.offer === "custom") {
       var cmo = num(s.away.customMo), cmn = Math.max(1, Math.round(num(s.away.customMonths)) || 1);
@@ -2767,7 +2768,7 @@ function feesBody(){
   return '<div class="fields">' +
     mf("sConn", "Connection charge per line", "set.connect", st.connect) +
     '<div class="f"><label for="sEmp">Employee discount, wireless lines (%)</label><input class="tin" id="sEmp" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeePct" data-t="num" value="' + empPct() + '"></div>' +
-    '<div class="f"><label for="sEmpH">Employee discount, Home Internet &amp; AWAY (%)</label><input class="tin" id="sEmpH" type="number" inputmode="decimal" min="0" max="100" step="1" data-k="set.employeeHintPct" data-t="num" value="' + empHintPct() + '"></div></div>' +
+    mf("sEmpH", "Employee discount, Home Internet &amp; AWAY ($/mo)", "set.employeeHintOff", empHintOff()) + '</div>' +
     '<p class="fhint">Quotes leave out taxes and fees because they change: sales tax, the regulatory &amp; telco recovery fee and government surcharges. Quotes and emails say they\'re extra. The connection charge applies to new lines, upgrades and Home Internet.</p>' + versionLine();
 }
 
