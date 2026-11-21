@@ -119,6 +119,9 @@ button:disabled{cursor:not-allowed}
 .tabs{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
 .tab{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
 .tab[aria-selected="true"]{background:var(--band);border-color:var(--band);color:var(--band-ink)}
+.tab{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+.tab.dragging{position:relative;z-index:5;scale:1.06;box-shadow:0 10px 24px rgba(0,0,0,.22);cursor:grabbing;transition:scale .12s}
+.tabs.reordering .tab:not(.dragging){opacity:.85}
 .band{background:var(--band);color:var(--band-ink);display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border-radius:0 6px 0 0}
 .bandbtn{display:flex;align-items:center;gap:6px;border:1.5px solid var(--band-ink);border-radius:4px;background:transparent;color:var(--band-ink);font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px}
 .bandbtn .ico{width:14px;height:14px;transition:transform .15s}
@@ -2124,11 +2127,14 @@ function renderStage(q){
   var s = state, c = q.c, h = banner(q);
   if (s.biz && (s.tab === "prepaid" || s.tab === "picks")) s.tab = "wireless";
   var pkCount = s.biz ? 0 : q.perkRows.length + sum(s.perks.map(perkById).filter(function(p){ return p && p.kind === "cash" && perkActive(p, c); }).map(function(){ return 1; }));
-  h += '<div class="tabs" role="tablist">' +
-    '<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>' +
-    '<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">' + (s.biz ? "Business Internet (" + (s.hint.on ? 1 : 0) : "Home Internet (" + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0))) + ')</button>' +
-    (s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button>' +
-      '<button class="tab" role="tab" data-act="tab" data-v="picks" aria-selected="' + (s.tab === "picks") + '">Picks + Cash (' + pkCount + ')</button>') + '</div>';
+  /* Tabs in the saved order (hold a tab and slide it to move it; see tabOrder()). */
+  var TABS = {
+    wireless:'<button class="tab" role="tab" data-act="tab" data-v="wireless" aria-selected="' + (s.tab === "wireless") + '">Wireless (' + q.devices + ')</button>',
+    internet:'<button class="tab" role="tab" data-act="tab" data-v="internet" aria-selected="' + (s.tab === "internet") + '">' + (s.biz ? "Business Internet (" + (s.hint.on ? 1 : 0) : "Home Internet (" + ((s.hint.on ? 1 : 0) + (s.away.on ? 1 : 0))) + ')</button>',
+    picks:s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="picks" aria-selected="' + (s.tab === "picks") + '">Picks + Cash (' + pkCount + ')</button>',
+    prepaid:s.biz ? '' : '<button class="tab" role="tab" data-act="tab" data-v="prepaid" aria-selected="' + (s.tab === "prepaid") + '">Prepaid</button>'
+  };
+  h += '<div class="tabs" role="tablist">' + tabOrder().map(function(k){ return TABS[k] || ""; }).join("") + '</div>';
   if (s.tab === "prepaid") { $("#stage").innerHTML = h + renderPrepaid(); return; }
   if (s.tab === "picks") { $("#stage").innerHTML = h + renderPicks(q); return; }
   h += '<div class="band">' +
@@ -3887,6 +3893,79 @@ function sizeTraySpace(){
   sp.style.height = ((ui.trayOpen ? t.offsetHeight : 0) + 48) + "px";
 }
 window.addEventListener("resize", sizeTraySpace);
+/* ---------- Tab order ----------
+   First open: Wireless, Home Internet, Picks + Cash, Prepaid. Hold a tab (about half a second) and slide it left or right
+   to move it; the order is kept on this device (TAB_KEY) for both screens. A quick tap still switches tabs. */
+var TAB_KEY = KEY + ".tabs", TAB_DEFAULT = ["wireless", "internet", "picks", "prepaid"];
+function tabOrder(){
+  try {
+    var o = JSON.parse(localStorage.getItem(TAB_KEY) || "null");
+    if (Array.isArray(o) && o.length === TAB_DEFAULT.length && TAB_DEFAULT.every(function(k){ return o.indexOf(k) > -1; })) return o;
+  } catch (e) {}
+  return TAB_DEFAULT.slice();
+}
+/* Saves the order of the tabs on screen; tabs this screen doesn't show (Business has no Picks or Prepaid) keep their places. */
+function saveTabOrder(shown){
+  var full = tabOrder(), i = 0;
+  var next = full.map(function(k){ return shown.indexOf(k) > -1 ? shown[i++] : k; });
+  try { localStorage.setItem(TAB_KEY, JSON.stringify(next)); } catch (e) {}
+}
+var tabDrag = null, tabDragDone = false;
+function tabEls(){ return Array.prototype.slice.call(document.querySelectorAll("#stage .tabs .tab")); }
+document.addEventListener("pointerdown", function(e){
+  var t = e.target.closest ? e.target.closest("#stage .tabs .tab") : null;
+  tabDragDone = false;
+  if (!t || (e.pointerType === "mouse" && e.button !== 0)) return;
+  var st = {el:t, x0:e.clientX, y0:e.clientY, x:e.clientX, id:e.pointerId, on:false, moved:false};
+  st.timer = setTimeout(function(){
+    if (tabDrag !== st) return;
+    st.on = true; st.grab = st.x - st.el.getBoundingClientRect().left;
+    st.el.classList.add("dragging"); st.el.parentElement.classList.add("reordering");
+  }, 450);
+  tabDrag = st;
+});
+document.addEventListener("pointermove", function(e){
+  var st = tabDrag; if (!st || e.pointerId !== st.id) return;
+  st.x = e.clientX;
+  if (!st.on) { if (Math.abs(e.clientX - st.x0) > 10 || Math.abs(e.clientY - st.y0) > 10) { clearTimeout(st.timer); tabDrag = null; } return; }
+  e.preventDefault();
+  if (Math.abs(e.clientX - st.x0) > 6) st.moved = true;
+  var el = st.el, row = el.parentElement, left = e.clientX - st.grab, mid = left + el.offsetWidth / 2;
+  var sibs = tabEls().filter(function(x){ return x !== el; }), before = null;
+  for (var i = 0; i < sibs.length; i++) { var r = sibs[i].getBoundingClientRect(); if (mid < r.left + r.width / 2) { before = sibs[i]; break; } }
+  if (before !== el.nextElementSibling && !(before === null && !el.nextElementSibling)) {
+    /* Neighbours slide into their new places (FLIP). */
+    var was = sibs.map(function(x){ return x.getBoundingClientRect().left; });
+    row.insertBefore(el, before);
+    sibs.forEach(function(x, j){
+      var d = was[j] - x.getBoundingClientRect().left; if (!d) return;
+      x.style.transition = "none"; x.style.transform = "translateX(" + d + "px)";
+      requestAnimationFrame(function(){ x.style.transition = "transform .16s ease"; x.style.transform = ""; });
+    });
+  }
+  el.style.transform = "";
+  el.style.transform = "translateX(" + (left - el.getBoundingClientRect().left) + "px)";
+});
+function endTabDrag(e){
+  var st = tabDrag; if (!st || (e && e.pointerId !== st.id)) return;
+  clearTimeout(st.timer); tabDrag = null;
+  if (!st.on) return;
+  st.el.classList.remove("dragging"); st.el.style.transform = "";
+  if (st.el.parentElement) st.el.parentElement.classList.remove("reordering");
+  if (!st.moved) return;
+  saveTabOrder(tabEls().map(function(x){ return x.getAttribute("data-v"); }));
+  tabDragDone = true; setTimeout(function(){ tabDragDone = false; }, 600);
+  renderAll();
+}
+document.addEventListener("pointerup", endTabDrag);
+document.addEventListener("pointercancel", endTabDrag);
+/* A slide isn't a tap: the click that follows it doesn't switch tabs. */
+document.addEventListener("click", function(e){
+  if (tabDragDone && e.target.closest && e.target.closest(".tabs .tab")) { tabDragDone = false; e.stopPropagation(); e.preventDefault(); }
+}, true);
+document.addEventListener("touchmove", function(e){ if (tabDrag && tabDrag.on) e.preventDefault(); }, {passive:false});
+document.addEventListener("contextmenu", function(e){ if (e.target.closest && e.target.closest(".tabs .tab")) e.preventDefault(); });
+
 function renderAll(){
   var q = compute(state);
   $("#pillAmt").textContent = fmt(q.monthly);
