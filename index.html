@@ -506,7 +506,21 @@ html.locked,html.locked body{overflow:hidden}
 .pksel{flex:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;min-width:0}
 .pksel span{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
 .pksub .pkgrid{padding:2px 12px 12px;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr))}
-.pkremix{display:inline-flex;align-items:center;gap:6px;margin:0;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600}
+.remixw{display:grid;justify-items:start;gap:0;margin-top:2px}
+.pkremix{display:inline-flex;align-items:center;gap:6px;margin:0;padding:5px 11px;border:0;border-radius:999px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.pkremix[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);text-decoration:none}
+.remixpop{position:relative;margin-top:10px;max-width:560px;background:var(--surface);color:var(--ink);border:1.5px solid var(--accent);border-radius:10px;padding:14px 40px 14px 16px;box-shadow:0 10px 28px rgba(0,0,0,.16);font-size:13.5px;line-height:1.45;text-align:left;animation:remixin .16s ease-out}
+.remixpop::before{content:"";position:absolute;top:-8px;left:22px;width:12px;height:12px;background:var(--surface);border-left:1.5px solid var(--accent);border-top:1.5px solid var(--accent);transform:rotate(45deg)}
+@keyframes remixin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.remixpop h4{margin:0 0 4px;font-family:var(--display);font-size:17px;color:var(--accent)}
+.remixpop h5{margin:12px 0 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.remixpop p{margin:0 0 10px}
+.remixpop ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.remixgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:10px}
+.remixgrid div{background:var(--sunk);border-radius:8px;padding:8px 10px;display:grid;gap:2px;align-content:start}
+.remixgrid b{color:var(--accent)}
+.remixx{position:absolute;top:8px;right:8px;width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--sunk);color:var(--ink);cursor:pointer}
+.remixx .ico{width:16px;height:16px}
 .pkremix .ico{width:15px;height:15px}
 .pkfoot{margin:4px 0 0;padding-left:18px;display:grid;gap:5px;font-size:13.5px;color:var(--muted);line-height:1.45;max-width:110ch}
 .ppsum .r.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700;font-size:16px}
@@ -3228,6 +3242,26 @@ function byodList(g, q){
   h += '</div><p class="info">' + I.info + 'Rebate cards come after the switch as a virtual prepaid Mastercard and don\'t change the monthly total. Plan credits come off the monthly bill.</p></div>';
   return h;
 }
+/* Remix note (Picks + Cash tab header and Account Picks in Edit options): tap it for a small box on how Remix works,
+   closed with its X. From Nik's T-Mobile training slides, Nov 20, 2026. */
+function remixNote(where){
+  var open = !!(ui.remixOpen && ui.remixOpen[where]);
+  var h = '<div class="remixw"><button class="pkremix" data-act="remix" data-v="' + where + '" aria-expanded="' + open + '">' + I.info + 'Every 90 days, customers can Remix their perks.</button>';
+  if (open) h += '<div class="remixpop" role="dialog" aria-label="How Remix works">' +
+    '<button class="remixx" data-act="remix" data-v="' + where + '" aria-label="Close">' + I.x + '</button>' +
+    '<h4>How Remix works</h4>' +
+    '<p>Every 90 days, customers can change their 3rd-party benefits (Picks).</p>' +
+    '<div class="remixgrid"><div><b>Quarterly Remix</b><span>4 times a year, a 10-day window opens to swap individual Picks as needed.</span></div>' +
+    '<div><b>Annual Remix</b><span>Once a year, in that same 10-day window, customers review and confirm all their Picks at once, so they keep getting the most value instead of coasting on old choices.</span></div></div>' +
+    '<ul><li><b>Keep what\'s working.</b> Nothing changes unless the customer wants it to.</li>' +
+    '<li><b>Change what\'s not.</b> Swap a Pick that isn\'t working for one that fits better now.</li>' +
+    '<li><b>Use a Pick now or later.</b> A Pick can be left unused until a change window, for example until another Pick frees up.</li></ul>' +
+    '<h5>Good to know</h5><ul>' +
+    '<li>Picks belong to the whole account, not to one line. More Picks come only from adding eligible lines or moving up a plan; they can\'t be bought.</li>' +
+    '<li>Picks + Cash and paid subscriptions are chosen after the Picks, when the customer\'s Benefits Dashboard shows them.</li>' +
+    '<li>An existing subscription with the partner may need to be canceled or paused to avoid double billing. It varies by partner.</li></ul></div>';
+  return h + '</div>';
+}
 /* ================= Picks + Cash tab =================
    The Picks menu from T-Mobile's training sheet: Picks by Pick count, Picks + Cash (Picks toward a higher tier plus a
    monthly charge), T-Mobile services and Cash only (partner paid, no Pick, existing customers). Choices live in the same
@@ -3297,7 +3331,7 @@ function renderPicks(q){
   } else h += '<p class="pphead">' + esc(planName(c.fam, c.pid)) + ' doesn\'t use Picks; its included streaming stays with the plan. Paid subscriptions below still work for an existing account.</p>';
   h += '<div class="seg" role="group" aria-label="Customer"><button data-act="cust" data-v="new" aria-pressed="' + (s.cust === "new") + '">New to T-Mobile</button>' +
     '<button data-act="cust" data-v="existing" aria-pressed="' + (s.cust === "existing") + '">Existing account</button></div>' +
-    '<p class="pkremix">' + I.info + 'Every 90 days, customers can Remix their perks.</p></div>';
+    remixNote("tab") + '</div>';
   /* Picks used (menu choices plus phone offers holding Picks) and what the choices add to the monthly bill. */
   var cells = "", total = Math.max(budget, used);
   for (var k = 0; k < total; k++) cells += '<span class="cell ' + (k < Math.min(used, budget) ? "on" : (k >= budget ? "over" : "")) + '"></span>';
@@ -3350,7 +3384,7 @@ function picksBlock(q, inBox){
     (cells ? '<div class="meter" style="margin:8px 0 10px">' + cells + '</div>' : '<p class="info">This plan has no Picks.</p>') +
     '<div class="chips">' + PERKS.filter(function(p){ return !p.kind || s.perks.indexOf(p.id) > -1; }).map(chip).join("") + '</div>' +
     '<p class="info" style="margin-top:8px">Picks belong to the whole account. Phone offers hold their Picks for the promo period. Picks + Cash and paid subscriptions are on the Picks + Cash tab.</p>' +
-    '<p class="pkremix">' + I.info + 'Every 90 days, customers can Remix their perks.</p></div>';
+    remixNote("edit") + '</div>';
 }
 
 /* ================= Saved quotes ================= */
@@ -4209,6 +4243,7 @@ document.addEventListener("click", function(e){
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
     case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !ui.modelOpen[g.id]; } break;
     case "pay": if (g) g.pay.method = v; break;
+    case "remix": ui.remixOpen = ui.remixOpen || {}; ui.remixOpen[v] = !ui.remixOpen[v]; break;
     case "pkopen": ui.pkOpen = ui.pkOpen || {}; ui.pkOpen[v] = !ui.pkOpen[v]; break;
     case "offtog": { var otk = g ? g.id : b.getAttribute("data-g"); if (otk) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[otk] = !ui.offersHidden[otk]; } } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
