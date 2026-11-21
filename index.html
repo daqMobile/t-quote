@@ -506,10 +506,11 @@ html.locked,html.locked body{overflow:hidden}
 .pksel{flex:1;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;min-width:0}
 .pksel span{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
 .pksub .pkgrid{padding:2px 12px 12px;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr))}
-.remixw{display:grid;justify-items:start;gap:0;margin-top:2px}
+.remixw{position:relative;display:grid;justify-items:start;gap:0;margin-top:2px}
+.box:has(.remixw){overflow:visible}
 .pkremix{display:inline-flex;align-items:center;gap:6px;margin:0;padding:5px 11px;border:0;border-radius:999px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 .pkremix[aria-expanded="true"]{background:var(--accent);color:var(--accent-ink);text-decoration:none}
-.remixpop{position:relative;margin-top:10px;max-width:560px;background:var(--surface);color:var(--ink);border:1.5px solid var(--accent);border-radius:10px;padding:14px 40px 14px 16px;box-shadow:0 10px 28px rgba(0,0,0,.16);font-size:13.5px;line-height:1.45;text-align:left;animation:remixin .16s ease-out}
+.remixpop{position:absolute;top:calc(100% + 10px);left:0;z-index:30;width:min(560px,100%);background:var(--surface);color:var(--ink);border:1.5px solid var(--accent);border-radius:10px;padding:14px 40px 14px 16px;box-shadow:0 14px 36px rgba(0,0,0,.28);font-size:13.5px;line-height:1.45;text-align:left;animation:remixin .16s ease-out}
 .remixpop::before{content:"";position:absolute;top:-8px;left:22px;width:12px;height:12px;background:var(--surface);border-left:1.5px solid var(--accent);border-top:1.5px solid var(--accent);transform:rotate(45deg)}
 @keyframes remixin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .remixpop h4{margin:0 0 4px;font-family:var(--display);font-size:17px;color:var(--accent)}
@@ -4243,7 +4244,10 @@ document.addEventListener("click", function(e){
       ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !v; } break;
     case "mopen": if (g) { ui.modelOpen = ui.modelOpen || {}; ui.modelOpen[g.id] = !ui.modelOpen[g.id]; } break;
     case "pay": if (g) g.pay.method = v; break;
-    case "remix": ui.remixOpen = ui.remixOpen || {}; ui.remixOpen[v] = !ui.remixOpen[v]; break;
+    case "remix": ui.remixOpen = ui.remixOpen || {}; ui.remixOpen[v] = !ui.remixOpen[v];
+      /* The box floats over the page; bring all of it into view (Edit options scrolls). */
+      if (ui.remixOpen[v]) setTimeout(function(){ var pop = document.querySelector('.remixpop'); if (pop) pop.scrollIntoView({block:"nearest", behavior:"smooth"}); }, 40);
+      break;
     case "pkopen": ui.pkOpen = ui.pkOpen || {}; ui.pkOpen[v] = !ui.pkOpen[v]; break;
     case "offtog": { var otk = g ? g.id : b.getAttribute("data-g"); if (otk) { ui.offersHidden = ui.offersHidden || {}; ui.offersHidden[otk] = !ui.offersHidden[otk]; } } break;
     case "earlyprog": if (g) earlyOf(g).prog = v === "yearly" ? "yearly" : "jump"; break;
