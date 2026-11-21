@@ -119,7 +119,7 @@ button:disabled{cursor:not-allowed}
 .tabs{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
 .tab{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--line);border-bottom:0;border-radius:6px 6px 0 0;background:var(--surface);color:var(--accent);font-weight:700;font-size:13px;letter-spacing:.05em;text-transform:uppercase}
 .tab[aria-selected="true"]{background:var(--band);border-color:var(--band);color:var(--band-ink)}
-.tab{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+.tab{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
 .tab.dragging{position:relative;z-index:5;scale:1.06;box-shadow:0 10px 24px rgba(0,0,0,.22);cursor:grabbing;transition:scale .12s}
 .tabs.reordering .tab:not(.dragging){opacity:.85}
 .band{background:var(--band);color:var(--band-ink);display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px;border-radius:0 6px 0 0}
@@ -3929,8 +3929,8 @@ function sizeTraySpace(){
 }
 window.addEventListener("resize", sizeTraySpace);
 /* ---------- Tab order ----------
-   First open: Wireless, Home Internet, Picks + Cash, Prepaid. Hold a tab (about half a second) and slide it left or right
-   to move it; the order is kept on this device (TAB_KEY) for both screens. A quick tap still switches tabs. */
+   First open: Wireless, Home Internet, Picks + Cash, Prepaid. Hold a tab and slide it (or just slide it sideways) to
+   move it; the order is kept on this device (TAB_KEY) for both screens. A quick tap still switches tabs. */
 var TAB_KEY = KEY + ".tabs", TAB_DEFAULT = ["wireless", "internet", "picks", "prepaid"];
 function tabOrder(){
   try {
@@ -3947,48 +3947,63 @@ function saveTabOrder(shown){
 }
 var tabDrag = null, tabDragDone = false;
 function tabEls(){ return Array.prototype.slice.call(document.querySelectorAll("#stage .tabs .tab")); }
+/* The slide moves tabs with transforms only (no DOM moves while a finger is down, which Safari on iPad can drop);
+   the new order is saved and drawn when the finger lifts. It starts after a short hold, or right away on a sideways slide. */
+function tabDragStart(st){
+  st.on = true; clearTimeout(st.timer);
+  st.els = tabEls(); st.i0 = st.els.indexOf(st.el);
+  st.rects = st.els.map(function(x){ var r = x.getBoundingClientRect(); return {l:r.left, w:r.width}; });
+  st.gap = st.rects.length > 1 ? Math.max(0, st.rects[1].l - (st.rects[0].l + st.rects[0].w)) : 6;
+  st.to = st.i0;
+  st.els.forEach(function(x){ if (x !== st.el) x.style.transition = "transform .16s ease"; });
+  st.el.classList.add("dragging"); st.el.parentElement.classList.add("reordering");
+}
+function tabDragMove(st, x){
+  var dx = x - st.x0, r0 = st.rects[st.i0], mid = r0.l + r0.w / 2 + dx;
+  var others = st.els.filter(function(el){ return el !== st.el; });
+  var oRects = st.rects.filter(function(r, i){ return i !== st.i0; });
+  var to = 0; oRects.forEach(function(r){ if (mid > r.l + r.w / 2) to++; });
+  st.to = to;
+  /* Lay the others out around the gap where the dragged tab would land. */
+  var left = st.rects[0].l, order = others.slice(0, to).concat([st.el], others.slice(to));
+  order.forEach(function(el){
+    var i = st.els.indexOf(el), r = st.rects[i];
+    if (el !== st.el) el.style.transform = "translateX(" + (left - r.l) + "px)";
+    left += r.w + st.gap;
+  });
+  st.el.style.transform = "translateX(" + dx + "px)";
+}
 document.addEventListener("pointerdown", function(e){
   var t = e.target.closest ? e.target.closest("#stage .tabs .tab") : null;
   tabDragDone = false;
   if (!t || (e.pointerType === "mouse" && e.button !== 0)) return;
-  var st = {el:t, x0:e.clientX, y0:e.clientY, x:e.clientX, id:e.pointerId, on:false, moved:false};
-  st.timer = setTimeout(function(){
-    if (tabDrag !== st) return;
-    st.on = true; st.grab = st.x - st.el.getBoundingClientRect().left;
-    st.el.classList.add("dragging"); st.el.parentElement.classList.add("reordering");
-  }, 450);
+  var st = {el:t, x0:e.clientX, y0:e.clientY, id:e.pointerId, on:false, moved:false};
+  st.timer = setTimeout(function(){ if (tabDrag === st && !st.on) tabDragStart(st); }, 300);
   tabDrag = st;
 });
 document.addEventListener("pointermove", function(e){
   var st = tabDrag; if (!st || e.pointerId !== st.id) return;
-  st.x = e.clientX;
-  if (!st.on) { if (Math.abs(e.clientX - st.x0) > 10 || Math.abs(e.clientY - st.y0) > 10) { clearTimeout(st.timer); tabDrag = null; } return; }
-  e.preventDefault();
-  if (Math.abs(e.clientX - st.x0) > 6) st.moved = true;
-  var el = st.el, row = el.parentElement, left = e.clientX - st.grab, mid = left + el.offsetWidth / 2;
-  var sibs = tabEls().filter(function(x){ return x !== el; }), before = null;
-  for (var i = 0; i < sibs.length; i++) { var r = sibs[i].getBoundingClientRect(); if (mid < r.left + r.width / 2) { before = sibs[i]; break; } }
-  if (before !== el.nextElementSibling && !(before === null && !el.nextElementSibling)) {
-    /* Neighbours slide into their new places (FLIP). */
-    var was = sibs.map(function(x){ return x.getBoundingClientRect().left; });
-    row.insertBefore(el, before);
-    sibs.forEach(function(x, j){
-      var d = was[j] - x.getBoundingClientRect().left; if (!d) return;
-      x.style.transition = "none"; x.style.transform = "translateX(" + d + "px)";
-      requestAnimationFrame(function(){ x.style.transition = "transform .16s ease"; x.style.transform = ""; });
-    });
+  var dx = e.clientX - st.x0, dy = e.clientY - st.y0;
+  if (!st.on) {
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) tabDragStart(st);        // sideways slide: start now
+    else if (Math.abs(dy) > 10 || Math.abs(dx) > 12) { clearTimeout(st.timer); tabDrag = null; return; }   // scrolling
+    else return;
   }
-  el.style.transform = "";
-  el.style.transform = "translateX(" + (left - el.getBoundingClientRect().left) + "px)";
+  e.preventDefault();
+  if (Math.abs(dx) > 6) st.moved = true;
+  tabDragMove(st, e.clientX);
 });
 function endTabDrag(e){
   var st = tabDrag; if (!st || (e && e.pointerId !== st.id)) return;
   clearTimeout(st.timer); tabDrag = null;
   if (!st.on) return;
-  st.el.classList.remove("dragging"); st.el.style.transform = "";
+  st.els.forEach(function(x){ x.style.transition = ""; x.style.transform = ""; });
+  st.el.classList.remove("dragging");
   if (st.el.parentElement) st.el.parentElement.classList.remove("reordering");
   if (!st.moved) return;
-  saveTabOrder(tabEls().map(function(x){ return x.getAttribute("data-v"); }));
+  var ids = st.els.map(function(x){ return x.getAttribute("data-v"); }), me = ids.splice(st.i0, 1)[0];
+  ids.splice(st.to, 0, me);
+  saveTabOrder(ids);
   tabDragDone = true; setTimeout(function(){ tabDragDone = false; }, 600);
   renderAll();
 }
@@ -3998,6 +4013,7 @@ document.addEventListener("pointercancel", endTabDrag);
 document.addEventListener("click", function(e){
   if (tabDragDone && e.target.closest && e.target.closest(".tabs .tab")) { tabDragDone = false; e.stopPropagation(); e.preventDefault(); }
 }, true);
+/* Safari on iPad: keep the page from scrolling while a tab is being slid. */
 document.addEventListener("touchmove", function(e){ if (tabDrag && tabDrag.on) e.preventDefault(); }, {passive:false});
 document.addEventListener("contextmenu", function(e){ if (e.target.closest && e.target.closest(".tabs .tab")) e.preventDefault(); });
 
