@@ -1298,7 +1298,8 @@ var TYPES = {
   syncTracker:{label:"SyncUP TRACKER",short:"TRACKER",voice:false,sync:true},
   syncDrive:{label:"SyncUP DRIVE",short:"DRIVE",voice:false,sync:true}
 };
-var TRAY_TABS = {devices:["phone","tablet","watch","basic"], sync:["syncTracker","syncDrive","syncKids"]};
+/* Basic Phone is off the Devices tray (Nik, Nov 23, 2026: T-Mobile doesn't offer landlines); TYPES.basic stays so older saved quotes still open. */
+var TRAY_TABS = {devices:["phone","tablet","watch"], sync:["syncTracker","syncDrive","syncKids"]};
 var ICONS = {
   phone:'<rect x="12" y="4" width="16" height="32" rx="3"/><path d="M18 31h4"/>',
   basic:'<rect x="13" y="4" width="14" height="32" rx="3"/><rect x="16" y="8" width="8" height="7" rx="1"/><path d="M16.5 20h1M22.5 20h1M16.5 24h1M22.5 24h1M16.5 28h1M22.5 28h1"/>',
