@@ -1605,8 +1605,8 @@ function offersFor(g, c){
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
       else if (isLegacy(c) && g.lineType !== "upgrade" && TYPES[g.type] && TYPES[g.type].voice) why = "Upgrades only on " + planName(c.fam, c.pid);
       else if (o.pay === "plan" && o.maxPerAcct && planOfferCount(o.id, g) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " line" + (o.maxPerAcct > 1 ? "s" : "") + " per account";
-      else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in";
-      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
+      else if (o.need === "trade" && !hasTrade(g)) why = "Needs a trade-in";
+      else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !hasTrade(g))) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
       else if (o.need === "port4" && (g.lineType !== "port" || c.portVoice < 4)) why = "Needs 4 lines set to Port";
       else if (o.need === "watch15" && (g.lineType === "upgrade" || cplanOf(g).ap < 15)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $15+ watch plan";
       else if (o.need === "watch2" && (g.lineType === "upgrade" || cplanOf(g).ap < 10)) why = g.lineType === "upgrade" ? "Needs a new watch line" : "Needs a $10+ watch plan";
@@ -1650,6 +1650,9 @@ function watchPairShare(g, o){
    - Most credit wins. Ties go to fewer Picks, then to the offer made for this line type (port offer on a Port line,
      new-line offer on a new line), then to the one that doesn't take a trade-in. */
 function bestCap(c){ return c.fam === "tmix" ? picksFor(c.pid, 1) : Infinity; }
+/* Trade-in promotions are for phone lines only (Nik, Nov 23, 2026): tablets and wearables never count as having a trade-in,
+   and their Edit options don't show the trade-in box. */
+function hasTrade(g){ return !!g.dev.trade && !!(TYPES[g.type] && TYPES[g.type].voice); }
 function lineTypeOk(o, g){
   var n = o.need || "none";
   if (g.lineType === "upgrade") return n.indexOf("port") < 0 && n.indexOf("newline") < 0 && o.pay !== "plan";
@@ -3081,7 +3084,7 @@ function editBody(g, q){
         return '<button role="option" class="' + (has ? "offer" : "") + '" data-act="model" data-g="' + g.id + '" data-v="' + m.id + '" aria-selected="' + (g.dev.model === m.id) + '"><span>' + esc(m.name) + '</span><span>' + (has ? "Offer available" : priceTag(m)) + '</span></button>';
       }).join("") : '<div style="padding:12px" class="muted">No models match this filter.</div>') + '</div>' : '') + '</div>';
     if (cur && (cur.dated || cur.verified)) b2 += '<p class="mtag" style="margin:6px 0 0;white-space:normal">' + (cur.dated ? '<span class="why" style="color:var(--warn);font-weight:600">Price not confirmed in the latest check</span>' + (cur.verified ? " · last confirmed " + shortDate(cur.verified) : "") : "Price confirmed " + shortDate(cur.verified)) + '</p>';
-    if (c.ex) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
+    if (c.ex && TYPES[g.type] && TYPES[g.type].voice) b2 += '<label class="check" for="tr-' + g.id + '"><input id="tr-' + g.id + '" type="checkbox" data-k="g.' + g.id + '.dev.trade" data-t="bool"' + (g.dev.trade ? " checked" : "") + '><span>' + (isEarly(g) ? 'Customer has another eligible phone to trade in<br><small class="muted">The phone turned in for the early upgrade doesn\'t count toward a trade-in offer.</small>' : 'Customer has an eligible phone to trade in<br><small class="muted">We assume they do for a quick quote.</small>') + '</span></label>';
   }
   if (g.dev.kind !== "existing") b2 += '<div id="devcalc">' + devCalc(g, q) + '</div>';
   b += box(2, "Device", b2);
