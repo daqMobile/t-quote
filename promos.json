@@ -1,41 +1,54 @@
 {
  "meta": {
   "changes": [
-   "Added razr fold trade-in · 2 Picks · $1,800 (tmrazf1800t): up to $1,800, trade-in, $75+/mo T-Mix (2 Picks). Offer ID261111, started Nov 19; on the offer terms page and the Motorola deals page.",
-   "Added razr trade-in · Experience More (exraz1100t): up to $1,100, trade-in, Experience More or higher ($85+/mo). Offer ID261058, started Nov 19; read twice on the offer terms page.",
-   "Confirmed ex350n (iPhone new line $350 on Essentials or higher, $60+/mo, max 12): now listed on the offer terms page as ID261225 (started Nov 19).",
-   "Kept tmrazf1700n at $1,700: the Motorola deals page, Black Friday page and t-mobile.com/offers all show the razr fold new-line deal at $1,700 (2 Picks, $75+), while the terms page (ID261084) says up to $1,800. The 512GB phone is $1,699.99, so it's On Us either way.",
-   "Not added because the device isn't in devices: Moto Watch / moto watch ultra up to $299.99 with a new $10+ watch line (ID260890), REVVL Tab 2, Galaxy Tab A11+ 5G and Linkport deals.",
-   "Not added: Metro switcher iPhone new line up to $700 (ID260821, port from Metro by T-Mobile, max 2).",
-   "Motorola deals page lists the razr fold at $1,799.99 (no storage size) in the trade-in fine print and $1,699.99 for 512GB; device price left at $1,699.99 for the Monday check.",
-   "Business: not added because the device isn't in devices: iPhone 15 ($730), Pixel 10 Pro XL and Pixel 10 Pro Fold (up to $1,000 upgrade), Galaxy S25 ($800), Galaxy A17 5G ($250 CoreMobile), Galaxy Tab A11+/S10 FE/A9+ tablet deals.",
-   "Business: not added (large-account deals): ProMobile $500/line for 25+ switched lines (36 monthly credits) and CoreMobile 10 lines for $150/mo BYOD.",
+   "Expired aws250 (Apple Watch up to $250 off 2nd watch): the offer terms page, read twice, lists only the Buy 2 promo ID250737 (R348) at up to $300 off the second, lower-priced Apple Watch on a $10+/mo Watch Plan 3.0 with 2+ wearable lines.",
+   "Added aws300 (Apple Watch · $300 off 2nd watch, ID250737): up to $300 via 24 or 36 monthly bill credits.",
+   "Pixel 10 128GB on sale $699.99 (regular $799.99): price $699.99 → $799.99, salePrice $699.99 (cell phones listing and Pixel 10 page agree).",
+   "razr ultra (2025) 512GB on sale $999.99 (regular $1,299.99): price $999.99 → $1,299.99, salePrice $999.99 (cell phones listing and razr ultra page agree).",
+   "iPhone 17 512GB not confirmed: the iPhone 17 page shows only $XX.XX placeholders and no other page lists the 512GB price; kept $1,129.99 (dated).",
+   "Galaxy S26 FE 128GB kept at $699.99 (Samsung deals fine print, 128GB); the cell phones listing shows $799.99 with no storage size and the S26 FE page shows only placeholders.",
+   "Kept tmrazf1700n at $1,700: the Motorola deals, Black Friday and offers pages still show the razr fold new-line deal at $1,700, while the terms page (ID261084) says up to $1,800. The 512GB phone is $1,699.99, so it's On Us either way.",
+   "Not added because the device isn't in devices: Moto Watch / moto watch ultra (ID260890), Galaxy Tab A11+ 5G, REVVL Tab 2, Linkport; Metro-only switcher offers left out. The cell phones listing also shows phones not in devices (e.g. Pixel 10a, Galaxy A57/A37/A17, iPhone 15/16 Plus/16 Pro, Galaxy S25 line); not added.",
+   "Prepaid: Unlimited Promo prices for 3-5 lines added from the plans page: $110 / $145 / $180 (1-2 lines $55 / $75 unchanged).",
+   "Business: not added because the device isn't in devices: iPhone 15 ($730), Galaxy A17 5G ($250 CoreMobile), Pixel 10 Pro Fold and Pixel 10 Pro XL (up to $1,000 upgrade), Galaxy Tab A11+ / Tab S10 FE / Tab A9+. Large-account deals (ProMobile $500/line for 25+ lines, CoreMobile 10 lines for $150/mo) left out.",
    "Business plans: the plans page fine print still lists the $600-per-line switch credit at \"$85/mo. w/AutoPay\", while the Apple, Samsung and Google business pages say $95+/mo; kept at SuperMobile ($95+)."
   ],
-  "checkedAt": "2026-11-22T06:48:00-06:00",
-  "reads": 25,
+  "checkedAt": "2026-11-23T06:48:00-06:00",
+  "reads": 40,
   "sources": [
    "https://www.t-mobile.com/offers/promotional-offer-details",
-   "https://www.t-mobile.com/offers/motorola-phone-deals",
-   "https://www.t-mobile.com/offers/black-friday-deals",
-   "https://www.t-mobile.com/news/offers/t-mobile-brings-more-to-the-holiday-mix",
    "https://www.t-mobile.com/offers/apple-iphone-deals",
    "https://www.t-mobile.com/offers/samsung-phone-deals",
    "https://www.t-mobile.com/offers/google-phone-deals",
+   "https://www.t-mobile.com/offers/motorola-phone-deals",
+   "https://www.t-mobile.com/offers/black-friday-deals",
    "https://www.t-mobile.com/offers",
    "https://www.t-mobile.com/resources/bring-your-own-phone",
    "https://www.t-mobile.com/devices/family-devices",
    "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
-   "https://www.t-mobile.com/home-internet/plans/rv-camper-internet-plans",
-   "https://www.t-mobile.com/home-internet/internet/away-plan",
    "https://www.t-mobile.com/home-internet/deals",
+   "https://www.t-mobile.com/home-internet/internet/away-plan",
+   "https://www.t-mobile.com/home-internet/plans/rv-camper-internet-plans",
+   "https://www.t-mobile.com/cell-phones",
+   "https://www.t-mobile.com/cell-phone/apple-iphone-duo",
+   "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro",
+   "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro-max",
+   "https://www.t-mobile.com/cell-phone/apple-iphone-air",
+   "https://www.t-mobile.com/cell-phone/apple-iphone-17e",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-plus-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
+   "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
+   "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
+   "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro",
+   "https://www.t-mobile.com/cell-phone/google-pixel-10",
+   "https://prepaid.t-mobile.com/",
+   "https://prepaid.t-mobile.com/prepaid-plans",
    "https://www.t-mobile.com/business/apple-business-iphone-deals",
    "https://www.t-mobile.com/business/offers/samsung-galaxy-5g",
    "https://www.t-mobile.com/business/wireless-business-plans",
-   "https://www.t-mobile.com/business/offers/google-pixel-deals",
-   "https://prepaid.t-mobile.com/"
+   "https://www.t-mobile.com/business/offers/google-pixel-deals"
   ],
-  "summary": "75 offers active, none ended, all confirmed today. New: razr fold trade-in up to $1,800 with 2 Picks on T-Mix, and a razr trade-in up to $1,100 on Experience More. Business: 15 offers active, no changes. Prepaid: 1 deal active, no changes. Device prices: last checked 2026-11-16."
+  "summary": "75 offers active, 1 ended: the Apple Watch $250-off-2nd-watch offer, replaced by $300 off (ID250737); all active offers confirmed today. 50 of 51 active device prices confirmed (iPhone 17 512GB unconfirmed); 2 new limited-time sales (Pixel 10, razr ultra 2025). Business: 15 offers active, no changes. Prepaid: 1 deal active; Unlimited Promo now lists 3-5 line prices."
  },
  "offers": [
   {
@@ -56,12 +69,12 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400.99,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
    "detail": "Add 2 or more new watch lines on a $10+/mo watch plan with AutoPay. Up to $250 off the second, lower-priced Apple Watch (one credit per pair of new watch lines), over 36 monthly bill credits.",
-   "ends": null,
+   "ends": "2026-11-23",
    "fam": "any",
    "id": "aws250",
    "label": "Apple Watch · $250 off 2nd watch",
@@ -74,10 +87,32 @@
    "plans": "any",
    "source": "https://www.t-mobile.com/offers/promotional-offer-details",
    "starts": "2026-11-05",
-   "status": "active",
+   "status": "expired",
    "tag": "newline",
    "upTo": 250,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
+  },
+  {
+   "dated": false,
+   "detail": "Add 2 or more new watch lines on a $10+/mo Watch Plan with AutoPay. Up to $300 off the second, lower-priced Apple Watch (one credit per pair of new watch lines), via 24 or 36 monthly bill credits matching the finance term.",
+   "ends": null,
+   "fam": "any",
+   "id": "aws300",
+   "label": "Apple Watch · $300 off 2nd watch",
+   "models": [
+    "awse3",
+    "aws12"
+   ],
+   "months": "term",
+   "need": "watch2",
+   "picks": 0,
+   "plans": "any",
+   "source": "https://www.t-mobile.com/offers/promotional-offer-details",
+   "starts": "2025-12-04",
+   "status": "active",
+   "tag": "newline",
+   "upTo": 300,
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -97,7 +132,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "byod": true,
@@ -119,7 +154,7 @@
    "status": "active",
    "tag": "byod",
    "upTo": 200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -144,7 +179,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -169,7 +204,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -201,7 +236,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 350,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -233,7 +268,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 830,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -260,7 +295,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 930,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -287,7 +322,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 930,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -311,7 +346,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300.99,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -335,7 +370,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -359,7 +394,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -383,7 +418,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -410,7 +445,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -437,7 +472,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -466,7 +501,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 300,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -495,7 +530,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 600,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -519,7 +554,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -545,7 +580,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -568,7 +603,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -593,7 +628,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -619,7 +654,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -642,7 +677,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1800,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -666,7 +701,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1800,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -690,7 +725,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -756,7 +791,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 430,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -797,7 +832,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400.99,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "byod": true,
@@ -819,7 +854,7 @@
    "status": "active",
    "tag": "byod",
    "upTo": 800,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -867,7 +902,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -931,7 +966,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 500,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -976,7 +1011,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -1069,7 +1104,7 @@
    "status": "active",
    "tag": "plan",
    "upTo": 540,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1090,7 +1125,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 96,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1112,7 +1147,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 174,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1134,7 +1169,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 54,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1157,7 +1192,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1190,7 +1225,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1223,7 +1258,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1256,7 +1291,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1289,7 +1324,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1317,7 +1352,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1346,7 +1381,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1373,7 +1408,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1403,7 +1438,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1430,7 +1465,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1484,7 +1519,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1515,7 +1550,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1540,7 +1575,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1571,7 +1606,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1596,7 +1631,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1621,7 +1656,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1650,7 +1685,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1679,7 +1714,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1710,7 +1745,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1740,7 +1775,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1793,7 +1828,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1846,7 +1881,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1899,7 +1934,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -1952,7 +1987,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2005,7 +2040,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2058,7 +2093,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2084,7 +2119,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2111,7 +2146,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2138,7 +2173,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2164,7 +2199,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2189,7 +2224,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2214,7 +2249,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2240,7 +2275,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2266,7 +2301,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2289,7 +2324,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2314,7 +2349,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1700,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2339,7 +2374,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1800,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2364,7 +2399,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2389,7 +2424,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-22"
+   "verified": "2026-11-23"
   }
  ],
  "devices": [
@@ -2403,7 +2438,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2415,7 +2450,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-17",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": true,
@@ -2439,7 +2474,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2451,7 +2486,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-17e",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2463,7 +2498,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2475,7 +2510,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2487,7 +2522,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2499,7 +2534,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2511,7 +2546,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2523,7 +2558,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2535,7 +2570,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro-max",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2547,7 +2582,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2559,7 +2594,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro-max",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2571,7 +2606,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro-max",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2583,7 +2618,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-air",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2595,7 +2630,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2608,7 +2643,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-air",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2620,7 +2655,7 @@
    "source": "https://www.t-mobile.com/offers",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2632,7 +2667,7 @@
    "source": "https://www.t-mobile.com/offers",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2644,7 +2679,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-duo",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2656,7 +2691,7 @@
    "source": "https://www.t-mobile.com/offers/apple-iphone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2668,7 +2703,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-duo",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2680,7 +2715,7 @@
    "source": "https://www.t-mobile.com/cell-phone/apple-iphone-duo",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2692,7 +2727,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2704,7 +2739,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2716,7 +2751,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2728,7 +2763,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2740,7 +2775,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2752,7 +2787,7 @@
    "source": "https://www.t-mobile.com/offers",
    "status": "active",
    "type": "tablet",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2764,7 +2799,7 @@
    "source": "https://www.t-mobile.com/offers/black-friday-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2776,7 +2811,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2784,11 +2819,12 @@
    "id": "px10",
    "mfr": "Google",
    "name": "Pixel 10 128GB",
-   "price": 699.99,
-   "source": "https://www.t-mobile.com/offers/google-phone-deals",
+   "price": 799.99,
+   "salePrice": 699.99,
+   "source": "https://www.t-mobile.com/cell-phone/google-pixel-10",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2800,7 +2836,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2812,7 +2848,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2824,7 +2860,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2836,7 +2872,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2848,7 +2884,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2860,7 +2896,7 @@
    "source": "https://www.t-mobile.com/offers/google-phone-deals",
    "status": "active",
    "type": "watch",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2872,7 +2908,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2884,7 +2920,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2896,7 +2932,7 @@
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-plus-2026",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2904,11 +2940,12 @@
    "id": "razrultra25",
    "mfr": "Motorola",
    "name": "razr ultra (2025) 512GB",
-   "price": 999.99,
+   "price": 1299.99,
+   "salePrice": 999.99,
    "source": "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2920,7 +2957,7 @@
    "source": "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2932,7 +2969,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2944,7 +2981,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2956,7 +2993,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2968,7 +3005,7 @@
    "source": "https://www.t-mobile.com/offers/samsung-phone-deals",
    "status": "active",
    "type": "phone",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2980,7 +3017,7 @@
    "source": "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
    "status": "active",
    "type": "syncDrive",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -2992,7 +3029,7 @@
    "source": "https://www.t-mobile.com/devices/family-devices",
    "status": "active",
    "type": "syncKids",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   },
   {
    "dated": false,
@@ -3004,13 +3041,13 @@
    "source": "https://www.t-mobile.com/devices/family-devices",
    "status": "active",
    "type": "syncTracker",
-   "verified": "2026-11-18"
+   "verified": "2026-11-23"
   }
  ],
  "prepaid": {
   "activate": "$0 online · $10/line in store",
   "apOff": 5,
-  "asof": "2026-11-18",
+  "asof": "2026-11-23",
   "deals": [
    "Galaxy A17 5G On Us with Unlimited Plus Monthly when you put another $85 into the account at a T-Mobile store. Plus $10 device connection charge.",
    "Unlimited Promo: 2 lines for $75/mo (1 line $55). Add a new line and get 50% off the 2nd line. Limited time."
@@ -3130,9 +3167,9 @@
     "price": [
      55,
      75,
-     null,
-     null,
-     null
+     110,
+     145,
+     180
     ],
     "video": null
    },
@@ -3160,7 +3197,7 @@
   ]
  },
  "business": {
-  "asof": "2026-11-22",
+  "asof": "2026-11-23",
   "offers": [
    {
     "dated": false,
@@ -3181,7 +3218,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 730,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3203,7 +3240,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 830,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3224,7 +3261,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 830,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3245,7 +3282,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1300,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3266,7 +3303,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1200,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3287,7 +3324,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3308,7 +3345,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1200,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3330,7 +3367,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3349,7 +3386,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 300.99,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3370,7 +3407,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 800,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3391,7 +3428,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1000,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3412,7 +3449,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3434,7 +3471,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3456,7 +3493,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 800,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    },
    {
     "dated": false,
@@ -3477,7 +3514,7 @@
     "status": "active",
     "tag": "plan",
     "upTo": 600,
-    "verified": "2026-11-22"
+    "verified": "2026-11-23"
    }
   ]
  }
