@@ -1330,7 +1330,7 @@ var gid = 1;
 function newGroup(type, st){
   var t = type;
   if (st === undefined || typeof st !== "object") st = typeof state === "undefined" ? null : state;
-  var upOnly = !!(st && st.cust === "existing" && st.exFam !== "tmix" && EXP[st.planExp] && EXP[st.planExp].legacy);
+  var upOnly = !!(st && st.cust === "existing" && st.exFam !== "tmix" && EXP[st.planExp] && EXP[st.planExp].legacy) && !!(TYPES[t] && TYPES[t].voice);
   return {
     id:"g" + (gid++), type:t, qty:1, name:"",
     lineType: upOnly ? "upgrade" : (TYPES[t].voice ? "port" : "new"),
@@ -1603,7 +1603,7 @@ function offersFor(g, c){
       else if (o.newAcct && c.ex) why = "New accounts only";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
-      else if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      else if (isLegacy(c) && g.lineType !== "upgrade" && TYPES[g.type] && TYPES[g.type].voice) why = "Upgrades only on " + planName(c.fam, c.pid);
       else if (o.pay === "plan" && o.maxPerAcct && planOfferCount(o.id, g) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " line" + (o.maxPerAcct > 1 ? "s" : "") + " per account";
       else if (o.need === "trade" && !g.dev.trade) why = "Needs a trade-in";
       else if (o.need === "trade+newline" && (g.lineType === "upgrade" || !g.dev.trade)) why = g.lineType === "upgrade" ? "Requires AAL" : "Needs a trade-in";
@@ -1701,7 +1701,7 @@ function byodOffersFor(g, c){
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
     else planOk = true;
     if (planOk) {
-      if (isLegacy(c) && g.lineType !== "upgrade") why = "Upgrades only on " + planName(c.fam, c.pid);
+      if (isLegacy(c) && g.lineType !== "upgrade" && TYPES[g.type] && TYPES[g.type].voice) why = "Upgrades only on " + planName(c.fam, c.pid);
       else if (o.pay === "plan" && !c.autopay) why = "Needs AutoPay";
       else if (o.newAcct && c.ex) why = "New accounts only";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
@@ -3034,7 +3034,7 @@ function editBody(g, q){
       return radio("cp-" + g.id, "cpr-" + g.id + "-" + p.id, p.id, g.cplan, '<b>$' + cplanPrice(p, g.type, c, state.autopay) + '/mo</b> - ' + p.name + (tabletAlone(g.type, c) && !p.byod ? ' <span class="why">· no phone line on the account</span>' : ''), p.byod ? "Customer's own device on " + p.plans.map(function(x){ return TMIX[x] ? TMIX[x].full : EXP[x].full; }).join(" or ") : "", dis, "g." + g.id + ".cplan");
     }).join("") + '</div></div>';
     b1 += '<div><h4>Line type</h4><div class="radios">' +
-      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "Adds a " + T0.label.toLowerCase() + " line and its plan", isLegacy(c), "g." + g.id + ".lineType") +
+      radio("lt-" + g.id, "lt-" + g.id + "-new", "new", g.lineType, "New line", "Adds a " + T0.label.toLowerCase() + " line and its plan", false, "g." + g.id + ".lineType") +
       radio("lt-" + g.id, "lt-" + g.id + "-up", "upgrade", g.lineType, "Upgrade", "New device on a " + T0.label.toLowerCase() + " line they already have · no added plan charge", false, "g." + g.id + ".lineType") + '</div>' +
       (c.ex ? '' : '<p class="fhint">Choosing Upgrade makes this an existing-account quote.</p>') + '</div>';
   }
@@ -4078,9 +4078,10 @@ function setPlan(val){
 }
 function afterPlanChange(){
   var c = ctxOf(state);
-  /* Go5G and Essentials quote upgrades only, so every line becomes an Upgrade. Each line remembers what it was,
+  /* Go5G and Essentials quote upgrades only, so every phone line becomes an Upgrade (tablets and wearables can still be
+     new lines: they go on their own tablet or watch plan). Each line remembers what it was,
      and gets it back when the plan changes to one that can add lines. */
-  if (isLegacy(c)) state.groups.forEach(function(g){ if (g.ltBefore == null) g.ltBefore = g.lineType; g.lineType = "upgrade"; });
+  if (isLegacy(c)) state.groups.forEach(function(g){ if (!TYPES[g.type] || !TYPES[g.type].voice) return; if (g.ltBefore == null) g.ltBefore = g.lineType; g.lineType = "upgrade"; });
   else state.groups.forEach(function(g){ if (g.ltBefore != null) { if (g.lineType === "upgrade") g.lineType = g.ltBefore; delete g.ltBefore; } });
   if (c.fam === "tmix" && state.planNew === "saver") state.groups.forEach(function(g){ if (g.dev.offer === "custom") g.dev.customPicks = 0; });
 }
