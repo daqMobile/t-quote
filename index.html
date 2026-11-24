@@ -299,6 +299,8 @@ button:disabled{cursor:not-allowed}
 .check{display:flex;align-items:flex-start;gap:10px;font-size:14.5px}
 .check.dis{opacity:.5;cursor:not-allowed}
 .check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.taxchk{margin:10px 0 2px;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;cursor:pointer}
+.taxchk small{display:block;font-size:12.5px;margin-top:2px}
 .switch{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;font-weight:600}
 .switch .knob{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s}
 .switch .knob::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform .15s}
@@ -2418,16 +2420,32 @@ function renderSheet(q){
   var nb = $("#dbody"); if (nb && prev) nb.scrollTop = st;
 }
 
+/* Estimated taxes & fees (the checkbox in Review, Nik, Nov 24, 2026). Off by default, never saved, and off again for any
+   other quote (new, loaded, or the other screen): it belongs to this quote object only. About $5.50 per wireless line,
+   from a Saint Louis Essentials bill ($17.31 of fees and taxes on 3 lines). Phone lines on plans that already include
+   taxes and fees (Experience More and Beyond, Go5G, Go5G Plus, Go5G Next) add nothing. Home Internet isn't counted. */
+var TAX_PER_LINE = 5.5, TAX_INC = {more:1, beyond:1, go5g:1, go5gplus:1, go5gnext:1};
+function taxOn(){ return !!ui.taxOn && ui.taxFor === state; }
+function taxEst(q){
+  var s = state, c = q.c, added = c.ex && !q.upShare;
+  var voice = (c.fam === "exp" && TAX_INC[c.pid]) ? 0 : (added ? c.newVoice : c.n);
+  var other = sum(s.groups.filter(function(g){ return TYPES[g.type] && !TYPES[g.type].voice && (!added || g.lineType !== "upgrade"); }).map(function(g){ return g.qty; }));
+  return {lines:voice + other, amt:round2((voice + other) * TAX_PER_LINE), inc:!!(c.fam === "exp" && TAX_INC[c.pid])};
+}
+/* What the top of the screen shows: the monthly total, plus the estimate when the Review box is checked. */
+function shownMonthly(q){ return q.monthly + (taxOn() ? taxEst(q).amt : 0); }
 function reviewBody(q){
-  var s = state, c = q.c;
+  var s = state, c = q.c, tx = taxEst(q); tx.on = taxOn();
   var head = acctLine(c, q.P, " · ") || "No phone lines";
   var h = '<div class="receipt"><div class="rhead"><div class="rtitle">Quick Quote' + (s.biz ? " for Business" : "") + '</div>' + (s.loaded ? '<div class="rid">Quote ID ' + esc(s.loaded.id) + '</div>' : '') + '<div class="rp">' + esc(head) + '</div>' +
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? (q.upShare ? " · the lines on this quote" : " · added to current bill") : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">' + (s.biz ? "Business Internet" : "Home Internet") + ' · monthly</div>' + q.H.map(rrow).join("") : '') +
-    '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>' +
-    '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly) + '</span></div>' +
-    '<div class="rsub">plus taxes &amp; fees</div>' +
+    (tx.on ? rrow({l:"Taxes & fees (estimate)", a:tx.amt, sub:(tx.lines ? tx.lines + " line" + (tx.lines === 1 ? "" : "s") + " × " + fmt(TAX_PER_LINE) + " · " : "") + (tx.inc ? "phone lines on " + planName(c.fam, c.pid) + " include them · " : "") + "varies by area"})
+           : '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>') +
+    '<label class="check taxchk" for="taxchk"><input id="taxchk" type="checkbox" data-act="taxon"' + (tx.on ? " checked" : "") + '><span>Include estimated taxes &amp; fees<small class="muted">About ' + fmt(TAX_PER_LINE) + ' per line. Off for every new quote.</small></span></label>' +
+    '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly + (tx.on ? tx.amt : 0)) + '</span></div>' +
+    '<div class="rsub">' + (tx.on ? "with estimated taxes &amp; fees · actual amounts vary" : "plus taxes &amp; fees") + '</div>' +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
     (q.TR.length ? '<div class="rule"></div><div class="rsec">International passes · one-time, on the bill</div>' + q.TR.map(rrow).join("") +
@@ -4023,8 +4041,8 @@ document.addEventListener("contextmenu", function(e){ if (e.target.closest && e.
 
 function renderAll(){
   var q = compute(state);
-  $("#pillAmt").textContent = fmt(q.monthly);
-  $("#navAmt").textContent = fmt(q.monthly);
+  $("#pillAmt").textContent = fmt(shownMonthly(q));
+  $("#navAmt").textContent = fmt(shownMonthly(q));
   $("#exChip").hidden = !state.example;
   var sn = $("#startNew"); sn.textContent = ui.confirm ? "Tap to clear" : "Start new"; sn.className = "startnew" + (ui.confirm ? " confirm" : "");
   renderStage(q);
@@ -4035,8 +4053,8 @@ function renderAll(){
 }
 function renderLive(){
   var q = compute(state);
-  $("#pillAmt").textContent = fmt(q.monthly);
-  $("#navAmt").textContent = fmt(q.monthly);
+  $("#pillAmt").textContent = fmt(shownMonthly(q));
+  $("#navAmt").textContent = fmt(shownMonthly(q));
   $("#exChip").hidden = !state.example;
   renderStage(q);
   sizeTraySpace();
@@ -4192,6 +4210,7 @@ document.addEventListener("click", function(e){
     case "reprice":
       state.groups.forEach(function(x){ if (x.dev.offer !== "custom") x.dev.offer = "best"; if (x.dev.byodOffer && x.dev.byodOffer !== "none") x.dev.byodOffer = "best"; }); if (state.away.offer && state.away.offer !== "none" && state.away.offer !== "custom") state.away.offer = "best";
       state.loaded = null; toast("Repriced with today's offers."); break;
+    case "taxon": ui.taxOn = !taxOn(); ui.taxFor = state; break;
     case "unload": state = freshState(); ui.sheet = null; resetMail(); toast("Closed the saved quote."); break;
     case "close": ui.sheet = null; ui.edit = null; break;
     case "startnew":
