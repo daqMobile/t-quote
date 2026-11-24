@@ -1,20 +1,14 @@
 {
  "meta": {
   "changes": [
-   "Expired aws250 (Apple Watch up to $250 off 2nd watch): the offer terms page, read twice, lists only the Buy 2 promo ID250737 (R348) at up to $300 off the second, lower-priced Apple Watch on a $10+/mo Watch Plan 3.0 with 2+ wearable lines.",
-   "Added aws300 (Apple Watch · $300 off 2nd watch, ID250737): up to $300 via 24 or 36 monthly bill credits.",
-   "Pixel 10 128GB on sale $699.99 (regular $799.99): price $699.99 → $799.99, salePrice $699.99 (cell phones listing and Pixel 10 page agree).",
-   "razr ultra (2025) 512GB on sale $999.99 (regular $1,299.99): price $999.99 → $1,299.99, salePrice $999.99 (cell phones listing and razr ultra page agree).",
-   "iPhone 17 512GB not confirmed: the iPhone 17 page shows only $XX.XX placeholders and no other page lists the 512GB price; kept $1,129.99 (dated).",
-   "Galaxy S26 FE 128GB kept at $699.99 (Samsung deals fine print, 128GB); the cell phones listing shows $799.99 with no storage size and the S26 FE page shows only placeholders.",
+   "Expired byod200 (Your Phone, Your Number: $200 On Us prepaid card): not on the Bring your own phone page in two reads (the second asked for it specifically), nor on the Keep & Switch or offers pages; those pages now list only the up-to-$800 phone payoff and the T-Mix Saver $540 credit.",
    "Kept tmrazf1700n at $1,700: the Motorola deals, Black Friday and offers pages still show the razr fold new-line deal at $1,700, while the terms page (ID261084) says up to $1,800. The 512GB phone is $1,699.99, so it's On Us either way.",
-   "Not added because the device isn't in devices: Moto Watch / moto watch ultra (ID260890), Galaxy Tab A11+ 5G, REVVL Tab 2, Linkport; Metro-only switcher offers left out. The cell phones listing also shows phones not in devices (e.g. Pixel 10a, Galaxy A57/A37/A17, iPhone 15/16 Plus/16 Pro, Galaxy S25 line); not added.",
-   "Prepaid: Unlimited Promo prices for 3-5 lines added from the plans page: $110 / $145 / $180 (1-2 lines $55 / $75 unchanged).",
-   "Business: not added because the device isn't in devices: iPhone 15 ($730), Galaxy A17 5G ($250 CoreMobile), Pixel 10 Pro Fold and Pixel 10 Pro XL (up to $1,000 upgrade), Galaxy Tab A11+ / Tab S10 FE / Tab A9+. Large-account deals (ProMobile $500/line for 25+ lines, CoreMobile 10 lines for $150/mo) left out.",
+   "Not added because the device isn't in devices: Moto Watch / moto watch ultra (ID260890), Galaxy Tab A11+ 5G, REVVL Tab 2, Linkport; Metro-only switcher offers left out.",
+   "Business: not added because the device isn't in devices: iPhone 15 ($730), Galaxy A17 5G ($250 CoreMobile), Pixel 10 Pro Fold and Pixel 10 Pro XL (up to $1,000 upgrade), Galaxy Tab A11+ / Tab S10 FE / Tab A9+. Large-account deals (ProMobile $500/line for 25+ lines, CoreMobile 10 lines for $150/mo) left out. The Samsung business page's Fold8 card says \"Save $1,300 per line\" but its fine print says up to $1,100; kept b-fold8 at $1,100.",
    "Business plans: the plans page fine print still lists the $600-per-line switch credit at \"$85/mo. w/AutoPay\", while the Apple, Samsung and Google business pages say $95+/mo; kept at SuperMobile ($95+)."
   ],
-  "checkedAt": "2026-11-23T06:48:00-06:00",
-  "reads": 40,
+  "checkedAt": "2026-11-24T06:45:30-06:00",
+  "reads": 26,
   "sources": [
    "https://www.t-mobile.com/offers/promotional-offer-details",
    "https://www.t-mobile.com/offers/apple-iphone-deals",
@@ -24,31 +18,19 @@
    "https://www.t-mobile.com/offers/black-friday-deals",
    "https://www.t-mobile.com/offers",
    "https://www.t-mobile.com/resources/bring-your-own-phone",
+   "https://www.t-mobile.com/switch/keep-phone-switch-from-verizon-or-att",
    "https://www.t-mobile.com/devices/family-devices",
    "https://www.t-mobile.com/iot-devices/syncup-drive-connected-car",
    "https://www.t-mobile.com/home-internet/deals",
    "https://www.t-mobile.com/home-internet/internet/away-plan",
    "https://www.t-mobile.com/home-internet/plans/rv-camper-internet-plans",
-   "https://www.t-mobile.com/cell-phones",
-   "https://www.t-mobile.com/cell-phone/apple-iphone-duo",
-   "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro",
-   "https://www.t-mobile.com/cell-phone/apple-iphone-18-pro-max",
-   "https://www.t-mobile.com/cell-phone/apple-iphone-air",
-   "https://www.t-mobile.com/cell-phone/apple-iphone-17e",
-   "https://www.t-mobile.com/cell-phone/motorola-razr-plus-2026",
-   "https://www.t-mobile.com/cell-phone/motorola-razr-fold-2026",
-   "https://www.t-mobile.com/cell-phone/motorola-razr-ultra-2025",
-   "https://www.t-mobile.com/cell-phone/motorola-moto-g-stylus-2026",
-   "https://www.t-mobile.com/cell-phone/t-mobile-revvl-8-pro",
-   "https://www.t-mobile.com/cell-phone/google-pixel-10",
    "https://prepaid.t-mobile.com/",
-   "https://prepaid.t-mobile.com/prepaid-plans",
    "https://www.t-mobile.com/business/apple-business-iphone-deals",
    "https://www.t-mobile.com/business/offers/samsung-galaxy-5g",
    "https://www.t-mobile.com/business/wireless-business-plans",
    "https://www.t-mobile.com/business/offers/google-pixel-deals"
   ],
-  "summary": "75 offers active, 1 ended: the Apple Watch $250-off-2nd-watch offer, replaced by $300 off (ID250737); all active offers confirmed today. 50 of 51 active device prices confirmed (iPhone 17 512GB unconfirmed); 2 new limited-time sales (Pixel 10, razr ultra 2025). Business: 15 offers active, no changes. Prepaid: 1 deal active; Unlimited Promo now lists 3-5 line prices."
+  "summary": "74 offers active, 1 ended: the Your Phone, Your Number $200 BYOD card. All active offers confirmed today. Device prices: last checked 2026-11-23. Business: 15 offers active, no changes. Prepaid: 1 deal active."
  },
  "offers": [
   {
@@ -69,10 +51,10 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400.99,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "Add 2 or more new watch lines on a $10+/mo watch plan with AutoPay. Up to $250 off the second, lower-priced Apple Watch (one credit per pair of new watch lines), over 36 monthly bill credits.",
    "ends": "2026-11-23",
    "fam": "any",
@@ -112,7 +94,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 300,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -132,13 +114,13 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "byod": true,
    "dated": false,
    "detail": "Bring their own phone and number: new voice line with a Port from AT&T, Verizon or another eligible carrier, on a $60+/mo plan with AutoPay. Register within 30 days of activation; the card can take up to 14 weeks. Max 4 per account.",
-   "ends": null,
+   "ends": "2026-11-24",
    "fam": "any",
    "id": "byod200",
    "label": "Your Phone, Your Number: $200 On Us",
@@ -151,10 +133,10 @@
    "plans": "any",
    "source": "https://www.t-mobile.com/resources/bring-your-own-phone",
    "starts": null,
-   "status": "active",
+   "status": "expired",
    "tag": "byod",
    "upTo": 200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -179,7 +161,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -204,7 +186,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -236,7 +218,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 350,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -268,7 +250,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 830,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -295,7 +277,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 930,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -322,7 +304,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 930,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -346,7 +328,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 300.99,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -370,7 +352,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -394,7 +376,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -418,7 +400,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -445,7 +427,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -472,7 +454,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -501,7 +483,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 300,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -530,7 +512,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 600,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -554,7 +536,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -580,7 +562,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -603,7 +585,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -628,7 +610,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -654,7 +636,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -677,7 +659,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1800,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -701,7 +683,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 1800,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -725,7 +707,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": true,
@@ -791,10 +773,10 @@
    "status": "active",
    "tag": "onus",
    "upTo": 430,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
-   "dated": false,
+   "dated": true,
    "detail": "New tablet line on a $25+/mo tablet plan with AutoPay.",
    "ends": "2026-11-18",
    "fam": "any",
@@ -832,7 +814,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 400.99,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "byod": true,
@@ -854,7 +836,7 @@
    "status": "active",
    "tag": "byod",
    "upTo": 800,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": true,
@@ -902,7 +884,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": true,
@@ -966,7 +948,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 500,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": true,
@@ -1011,7 +993,7 @@
    "status": "active",
    "tag": "newline",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": true,
@@ -1104,7 +1086,7 @@
    "status": "active",
    "tag": "plan",
    "upTo": 540,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1125,7 +1107,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 96,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1147,7 +1129,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 174,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1169,7 +1151,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 54,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1192,7 +1174,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1225,7 +1207,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 350,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1258,7 +1240,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1291,7 +1273,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1324,7 +1306,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 830,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1352,7 +1334,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1381,7 +1363,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 930,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1408,7 +1390,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1438,7 +1420,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1465,7 +1447,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300.99,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1519,7 +1501,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1550,7 +1532,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 600,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1575,7 +1557,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1606,7 +1588,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 300,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1631,7 +1613,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1656,7 +1638,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1685,7 +1667,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1714,7 +1696,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1200,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1745,7 +1727,7 @@
    "status": "active",
    "tag": "trade",
    "upTo": 270,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1775,7 +1757,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 500,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1828,7 +1810,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 310,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1881,7 +1863,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 700,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1934,7 +1916,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -1987,7 +1969,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1400,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2040,7 +2022,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1900,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2093,7 +2075,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 2100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2119,7 +2101,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2146,7 +2128,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 900,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2173,7 +2155,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2199,7 +2181,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2224,7 +2206,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 900,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2249,7 +2231,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 770,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2275,7 +2257,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1000,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2301,7 +2283,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2324,7 +2306,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 0,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2349,7 +2331,7 @@
    "status": "active",
    "tag": "onus",
    "upTo": 1700,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2374,7 +2356,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1800,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2399,7 +2381,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   },
   {
    "dated": false,
@@ -2424,7 +2406,7 @@
    "status": "active",
    "tag": "picks",
    "upTo": 1100,
-   "verified": "2026-11-23"
+   "verified": "2026-11-24"
   }
  ],
  "devices": [
@@ -3197,7 +3179,7 @@
   ]
  },
  "business": {
-  "asof": "2026-11-23",
+  "asof": "2026-11-24",
   "offers": [
    {
     "dated": false,
@@ -3218,7 +3200,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 730,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3240,7 +3222,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 830,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3261,7 +3243,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 830,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3282,7 +3264,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1300,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3303,7 +3285,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1200,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3324,7 +3306,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3345,7 +3327,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1200,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3367,7 +3349,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3386,7 +3368,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 300.99,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3407,7 +3389,7 @@
     "status": "active",
     "tag": "newline",
     "upTo": 800,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3428,7 +3410,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1000,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3449,7 +3431,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3471,7 +3453,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 1100,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3493,7 +3475,7 @@
     "status": "active",
     "tag": "trade",
     "upTo": 800,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    },
    {
     "dated": false,
@@ -3514,7 +3496,7 @@
     "status": "active",
     "tag": "plan",
     "upTo": 600,
-    "verified": "2026-11-23"
+    "verified": "2026-11-24"
    }
   ]
  }
