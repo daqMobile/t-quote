@@ -2445,7 +2445,7 @@ function reviewBody(q){
     (q.H.length ? '<div class="rule"></div><div class="rsec">' + (s.biz ? "Business Internet" : "Home Internet") + ' · monthly</div>' + q.H.map(rrow).join("") : '') +
     (tx.on ? rrow({l:"Taxes & fees (estimate)", a:tx.amt, sub:(tx.lines ? tx.lines + " line" + (tx.lines === 1 ? "" : "s") + " × " + fmt(TAX_PER_LINE) + " · " : "") + (tx.inc ? "phone lines on " + planName(c.fam, c.pid) + " include them · " : "") + "estimated, not exact"})
            : '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>') +
-    '<label class="check taxchk" for="taxchk"><input id="taxchk" type="checkbox" data-act="taxon"' + (tx.on ? " checked" : "") + '><span>Include estimated taxes &amp; fees<small class="muted">About ' + fmt(TAX_PER_LINE) + ' per line. Off for every new quote.</small></span></label>' +
+    '<label class="check taxchk" for="taxchk"><input id="taxchk" type="checkbox" data-act="taxon"' + (tx.on ? " checked" : "") + '><span>Include estimated taxes &amp; fees<small class="muted">About ' + fmt(TAX_PER_LINE) + ' per line</small></span></label>' +
     '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly + (tx.on ? tx.amt : 0)) + '</span></div>' +
     '<div class="rsub">' + (tx.on ? "with estimated taxes &amp; fees" : "plus taxes &amp; fees") + '</div>' +
     (tx.on ? '<p class="taxnote">' + I.info + '<span>Taxes and fees are estimated, not exact. The actual amount depends on the customer\'s address and can change.</span></p>' : '') +
