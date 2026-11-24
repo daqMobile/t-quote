@@ -301,6 +301,8 @@ button:disabled{cursor:not-allowed}
 .check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
 .taxchk{margin:10px 0 2px;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;cursor:pointer}
 .taxchk small{display:block;font-size:12.5px;margin-top:2px}
+.taxnote{display:flex;gap:8px;align-items:flex-start;margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--accent-soft);color:var(--ink);font-size:13px;line-height:1.4}
+.taxnote .ico{flex:none;width:16px;height:16px;margin-top:1px;color:var(--accent)}
 .switch{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;font-weight:600}
 .switch .knob{width:38px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .15s}
 .switch .knob::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform .15s}
@@ -628,7 +630,7 @@ textarea.tin{resize:vertical;font:inherit;line-height:1.4}
     <div class="pill">
       <button class="cq" data-act="sheet" data-v="review"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>Current Quote <span class="exchip" id="exChip">Example</span></button>
       <span class="sep" aria-hidden="true"></span>
-      <button class="amt" data-act="sheet" data-v="review" aria-label="Open the quote"><b id="pillAmt">$0.00</b><small>mo</small><svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="amt" data-act="sheet" data-v="review" aria-label="Open the quote"><b id="pillAmt">$0.00</b><small id="pillSub">mo</small><svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
       <button class="go" id="findBtn" data-act="qfind" aria-label="Open a quote by ID" aria-expanded="false" aria-controls="qFind"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg></button>
       <div class="qfind" id="qFind" hidden>
         <form id="findForm" autocomplete="off">
@@ -2441,11 +2443,12 @@ function reviewBody(q){
     '<div class="muted">' + dateStr() + ' · ' + (s.autopay ? "AutoPay" : "No AutoPay") + (c.ex ? (q.upShare ? " · the lines on this quote" : " · added to current bill") : "") + '</div></div>' +
     '<div class="rule"></div><div class="rsec">Wireless · monthly</div>' + (q.W.length ? q.W.map(rrow).join("") : '<div class="rr off"><span class="l">No wireless charges yet</span><span class="a">' + fmt(0) + '</span></div>') +
     (q.H.length ? '<div class="rule"></div><div class="rsec">' + (s.biz ? "Business Internet" : "Home Internet") + ' · monthly</div>' + q.H.map(rrow).join("") : '') +
-    (tx.on ? rrow({l:"Taxes & fees (estimate)", a:tx.amt, sub:(tx.lines ? tx.lines + " line" + (tx.lines === 1 ? "" : "s") + " × " + fmt(TAX_PER_LINE) + " · " : "") + (tx.inc ? "phone lines on " + planName(c.fam, c.pid) + " include them · " : "") + "varies by area"})
+    (tx.on ? rrow({l:"Taxes & fees (estimate)", a:tx.amt, sub:(tx.lines ? tx.lines + " line" + (tx.lines === 1 ? "" : "s") + " × " + fmt(TAX_PER_LINE) + " · " : "") + (tx.inc ? "phone lines on " + planName(c.fam, c.pid) + " include them · " : "") + "estimated, not exact"})
            : '<div class="rr off"><span class="l">Taxes &amp; fees</span><span class="a">not incl.</span></div>') +
     '<label class="check taxchk" for="taxchk"><input id="taxchk" type="checkbox" data-act="taxon"' + (tx.on ? " checked" : "") + '><span>Include estimated taxes &amp; fees<small class="muted">About ' + fmt(TAX_PER_LINE) + ' per line. Off for every new quote.</small></span></label>' +
     '<div class="rtotal"><span class="lbl">' + (c.ex && !q.upShare ? "Added monthly" : "Total monthly") + '</span><span class="big">' + fmt(q.monthly + (tx.on ? tx.amt : 0)) + '</span></div>' +
-    '<div class="rsub">' + (tx.on ? "with estimated taxes &amp; fees · actual amounts vary" : "plus taxes &amp; fees") + '</div>' +
+    '<div class="rsub">' + (tx.on ? "with estimated taxes &amp; fees" : "plus taxes &amp; fees") + '</div>' +
+    (tx.on ? '<p class="taxnote">' + I.info + '<span>Taxes and fees are estimated, not exact. The actual amount depends on the customer\'s address and can change.</span></p>' : '') +
     '<div class="rule"></div><div class="rsec">Due today</div>' + (q.T.length ? q.T.map(rrow).join("") : '<div class="rr off"><span class="l">Nothing due at sale</span><span class="a">' + fmt(0) + '</span></div>') +
     '<div class="rtotal"><span class="lbl">Due today</span><span class="mid">' + fmt(q.today) + '</span></div><div class="rsub">plus tax</div>' +
     (q.TR.length ? '<div class="rule"></div><div class="rsec">International passes · one-time, on the bill</div>' + q.TR.map(rrow).join("") +
@@ -4042,6 +4045,7 @@ document.addEventListener("contextmenu", function(e){ if (e.target.closest && e.
 function renderAll(){
   var q = compute(state);
   $("#pillAmt").textContent = fmt(shownMonthly(q));
+  $("#pillSub").textContent = taxOn() ? "mo · est. tax" : "mo";
   $("#navAmt").textContent = fmt(shownMonthly(q));
   $("#exChip").hidden = !state.example;
   var sn = $("#startNew"); sn.textContent = ui.confirm ? "Tap to clear" : "Start new"; sn.className = "startnew" + (ui.confirm ? " confirm" : "");
@@ -4054,6 +4058,7 @@ function renderAll(){
 function renderLive(){
   var q = compute(state);
   $("#pillAmt").textContent = fmt(shownMonthly(q));
+  $("#pillSub").textContent = taxOn() ? "mo · est. tax" : "mo";
   $("#navAmt").textContent = fmt(shownMonthly(q));
   $("#exChip").hidden = !state.example;
   renderStage(q);
