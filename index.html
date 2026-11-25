@@ -301,6 +301,10 @@ button:disabled{cursor:not-allowed}
 .check{display:flex;align-items:flex-start;gap:10px;font-size:14.5px}
 .check.dis{opacity:.5;cursor:not-allowed}
 .check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.acctp{margin-top:6px}
+.acctp small{display:block;font-size:12.5px;margin-top:2px}
+.acctp .apok{color:var(--good);font-weight:600}
+.acctp .apno{color:var(--muted)}
 .taxchk{margin:10px 0 2px;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;cursor:pointer}
 .taxchk small{display:block;font-size:12.5px;margin-top:2px}
 .taxnote{display:flex;gap:8px;align-items:flex-start;margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--accent-soft);color:var(--ink);font-size:13px;line-height:1.4}
@@ -1129,8 +1133,10 @@ var OFFERS = [
    detail:"New watch line on a $15+/mo watch plan with AutoPay."},
   {id:"ipad400",fam:"any",label:"iPad (A16) for $199",upTo:400,picks:0,plans:"any",need:"tab25",models:["ipada16"],tag:"newline",
    detail:"New tablet line on a $25+/mo tablet plan with AutoPay."},
-  /* Plan promotion: a monthly credit on the plan, chosen per line under New Device or BYOD. */
-  {id:"saver540",fam:"tmix",pay:"plan",label:"Keep your number · T-Mix Saver",upTo:540,planMo:15,picks:0,plans:["saver"],need:"port",newAcct:true,maxPerAcct:1,models:[],tag:"plan",
+  {id:"ipada16onus",fam:"any",label:"iPad (A16) 128GB On Us",upTo:600,picks:0,plans:"any",need:"tab25",models:["ipada16"],tag:"newline",months:"term",manual:true,askNik:true,
+   detail:"Buy on EIP and activate a new tablet line on Tablet Unlimited Plus. Up to $600 in monthly device credits over the finance term. Postpaid and employees; no redemption limit. From Nik's store promo sheet (Nov 25, 2026; end date TBA)."},
+  /* Account promotion (acct): a monthly plan credit for the whole account, turned on under Plan discounts, not per line. */
+  {id:"saver540",fam:"tmix",pay:"plan",acct:true,askNik:true,label:"Keep your number · T-Mix Saver",upTo:540,planMo:15,picks:0,plans:["saver"],need:"port",newAcct:true,maxPerAcct:1,models:[],tag:"plan",
    detail:"New account switching to T-Mix Saver with a Port: $15/mo off the plan for 36 months ($540). 1 discounted line per account; on a 2-line account, the first line only. Credits stop if they cancel or change plans."},
   /* BYOD rebates (Existing Device with BYOD checked): paid as a virtual prepaid Mastercard, not bill credits. */
   {id:"byod200",fam:"any",byod:true,pay:"card",label:"Your Phone, Your Number: $200 On Us",upTo:200,picks:0,plans:"any",need:"port",minMonthly:60,maxPerAcct:4,models:[],tag:"byod",
@@ -1432,6 +1438,11 @@ function normalizeState(){
   if (state.exFam !== "exp" && state.exFam !== "tmix") state.exFam = "exp";
   if (state.cust !== "new" && state.cust !== "existing") state.cust = "new";
   if (state.planDiscount !== "none" && !SEG[state.planDiscount]) state.planDiscount = "none";   // "port" (number-transfer price) is a per-line offer now
+  if (!state.acctPromos || typeof state.acctPromos !== "object") state.acctPromos = {};
+  state.groups.forEach(function(g){
+    var ao = offerPool().filter(function(o){ return o.acct && (o.id === g.dev.offer || o.id === g.dev.byodOffer); })[0];
+    if (ao) { state.acctPromos[ao.id] = true; if (g.dev.offer === ao.id) g.dev.offer = "best"; if (g.dev.byodOffer === ao.id) g.dev.byodOffer = ""; }
+  });
   state.groups.forEach(function(g){
     if (["port", "new", "upgrade"].indexOf(g.lineType) < 0) g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
     if (state.cust === "new" && g.lineType === "upgrade") g.lineType = TYPES[g.type] && TYPES[g.type].voice ? "port" : "new";
@@ -1564,6 +1575,29 @@ function acctMonthly(c){
      $25/line on T-Mix Standard), applied only while the phone offer itself applies. */
 function planMoOf(o){ return o ? (+o.planMo || (o.pay === "plan" && o.upTo ? round2(o.upTo / (+o.planMonths || 36)) : 0)) : 0; }
 function planMonthsOf(o){ return +o.planMonths || 36; }
+/* Account promotions (offers with acct): plan credits for the whole account, shown under Plan discounts (Nik, Nov 25, 2026),
+   e.g. Keep your number · T-Mix Saver: new account, a Port line, T-Mix Saver, $15/mo for 36 months, 1 per account. */
+function acctPromoHtml(c){
+  var list = acctPromoList(c); if (!list.length) return "";
+  return '<span class="flabel" style="margin-top:12px">Account promotions</span>' + list.map(function(x){
+    var on = !!(state.acctPromos || {})[x.o.id], o = x.o;
+    return '<label class="check acctp" for="ap-' + o.id + '"><input id="ap-' + o.id + '" type="checkbox" data-act="acctpromo" data-v="' + o.id + '"' + (on ? " checked" : "") + '><span>' + esc(o.label) +
+      '<small class="muted">' + fmt(planMoOf(o)) + '/mo off the plan for ' + planMonthsOf(o) + ' months (' + fmt0(o.upTo) + ')' + (o.maxPerAcct ? ' · ' + o.maxPerAcct + ' per account' : '') + '</small>' +
+      '<small class="' + (x.ok ? 'apok' : 'apno') + '">' + (x.ok ? 'This quote qualifies' : esc(x.why)) + '</small></span></label>';
+  }).join("");
+}
+function acctPromoList(c){
+  if (state.biz) return [];
+  return offerPool().filter(function(o){ return o.acct && !o.expired && (o.fam === "any" || o.fam === c.fam); }).map(function(o){
+    var lines = o.need === "port" ? c.portVoice : (o.need === "newline" ? c.newVoice : c.n), why = "";
+    if (o.fam !== "any" && o.fam !== c.fam) why = "Needs a " + (o.fam === "tmix" ? "T-Mix" : "different") + " plan";
+    else if (o.plans !== "any" && (o.plans || []).indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
+    else if (o.newAcct && c.ex) why = "New accounts only";
+    else if (o.need === "port" && !c.portVoice) why = "Needs a phone line set to Port";
+    else if (!lines) why = "Needs a phone line";
+    return {o:o, ok:!why, why:why, lines:lines};
+  });
+}
 /* Lines on the account that have this plan promotion chosen, counting line g even if it isn't chosen there yet. */
 function planOfferCount(id, g){
   var n = 0, self = false;
@@ -1596,7 +1630,7 @@ function offersFor(g, c){
   var m = model(g.dev.model); if (!m) return [];
   /* Plan promotions (pay "plan": a monthly credit on the line's plan, no phone needed) are listed for every phone. */
   var voice = !!(TYPES[g.type] && TYPES[g.type].voice);
-  return offerPool().filter(function(o){ return !o.product && (o.fam === "any" || o.fam === c.fam) && (o.pay === "plan" ? voice : (o.models || []).indexOf(m.fam) > -1) && (!o.expired || g.dev.offer === o.id); }).map(function(o){
+  return offerPool().filter(function(o){ return !o.product && !o.acct && (o.fam === "any" || o.fam === c.fam) && (o.pay === "plan" ? voice : (o.models || []).indexOf(m.fam) > -1) && (!o.expired || g.dev.offer === o.id); }).map(function(o){
     /* planOk: the offer works on the plan chosen (its plan list, the account's monthly plan total, and enough Picks on
        the plan). Offers that fail it are left out of the promotion list unless already chosen. */
     var why = "", planOk = false;
@@ -1704,7 +1738,7 @@ function isByod(g){ return !!g && g.dev.kind === "existing" && !!g.dev.byod; }
 function byodOffersFor(g, c){
   if (!isByod(g) || !TYPES[g.type] || !TYPES[g.type].voice) return [];
   var count = sum(state.groups.filter(function(x){ return isByod(x) && x.lineType !== "upgrade" && TYPES[x.type] && TYPES[x.type].voice; }).map(function(x){ return x.qty; }));
-  return offerPool().filter(function(o){ return !o.product && (o.byod || o.pay === "plan") && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
+  return offerPool().filter(function(o){ return !o.product && !o.acct && (o.byod || o.pay === "plan") && (o.fam === "any" || o.fam === c.fam) && (!o.expired || g.dev.byodOffer === o.id); }).map(function(o){
     var why = "", planOk = false;
     if (o.plans !== "any" && o.plans.indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.minMonthly && c.fam === "tmix" && acctMonthly(c) < o.minMonthly) why = "Needs a $" + o.minMonthly + "+/mo plan total (now " + fmt(acctMonthly(c)) + ")";
@@ -2020,6 +2054,14 @@ function compute(s){
   /* Employee pricing waives the activation and upgrade (device connection) charges. */
   var empWaive = segOf(s) === "employee";
   var conn = empWaive ? 0 : sum(s.groups.filter(function(g){ return g.pay.connect; }).map(function(g){ return g.qty; }));
+  /* Account promotions (Plan discounts): a monthly plan credit for the account when the quote qualifies. */
+  acctPromoList(c).forEach(function(x){
+    if (!(s.acctPromos || {})[x.o.id]) return;
+    if (!x.ok) { notes.push({t:"warn", m:x.o.label + " isn't applied: " + x.why + "."}); return; }
+    var pmo = planMoOf(x.o), pmn = planMonthsOf(x.o), n = Math.min(x.o.maxPerAcct || Infinity, x.lines);
+    W.push({l:x.o.label, a:-round2(pmo * n), c:"credit", sub:(n > 1 ? n + " × " : "") + fmt(pmo) + "/mo for " + pmn + " months · plan discount"});
+    if (x.o.dated) notes.push({t:"info", m:x.o.label + " wasn't confirmed in the latest promo check" + (x.o.verified ? " (last confirmed " + shortDate(x.o.verified) + ")" : "") + ". Check that it's still running."});
+  });
   /* Taxes and fees (sales tax, the regulatory & telco recovery fee, government surcharges) change, so quotes leave them out.
      Connection charges stay in Due today. */
 
@@ -2162,6 +2204,7 @@ function renderStage(q){
   h += '<div class="tabs" role="tablist">' + tabOrder().map(function(k){ return TABS[k] || ""; }).join("") + '</div>';
   if (s.tab === "prepaid") { $("#stage").innerHTML = h + renderPrepaid(); return; }
   if (s.tab === "picks") { $("#stage").innerHTML = h + renderPicks(q); return; }
+  var apOn = acctPromoList(c).filter(function(x){ return x.ok && (s.acctPromos || {})[x.o.id]; });
   h += '<div class="band">' +
     '<button class="bandbtn" data-act="discounts" aria-expanded="' + !!s.discountsOpen + '">Plan discounts ' + I.up + '</button>' +
     '<label class="sr" for="apSel">AutoPay</label><select id="apSel" data-k="autopay" data-t="bool01">' +
@@ -2169,7 +2212,8 @@ function renderStage(q){
       '<option value="0"' + (s.autopay ? "" : " selected") + '>No AutoPay discount</option></select>' +
     (s.biz && s.bizFree && !c.ex ? '<span class="bchip on">3rd line free applied</span>'
       : segOf(s) ? '<span class="bchip on">' + esc(SEG[segOf(s)].label) + (segOf(s) === "employee" ? (s.tab === "internet" ? " · " + fmt0(empHintOff()) + "/mo off Home Internet" : " · " + empPct() + "% off lines") : "") + ' applied</span>'
-      : '<span class="bchip">No additional discounts applied</span>') +
+      : (apOn.length ? '' : '<span class="bchip">No additional discounts applied</span>')) +
+    apOn.map(function(x){ return '<span class="bchip on">' + esc(x.o.label) + ' applied</span>'; }).join("") +
     (s.biz ? '' : '<label class="bchip bcheck' + (s.visa ? " on" : "") + '" style="margin-left:auto" for="visaChk" title="Check if the customer was quoted or signed up for the T-Mobile Visa. Adds its 5% back to the quote.">' +
       '<input id="visaChk" type="checkbox" data-k="visa" data-t="bool"' + (s.visa ? " checked" : "") + '><span>T-Mobile Visa</span></label>' +
     '<button class="bchip binfo" data-act="sheet" data-v="visa" aria-label="T-Mobile Visa card details">' + I.info + 'Card details</button>') + '</div>';
@@ -2197,7 +2241,7 @@ function renderStage(q){
       '<div><label class="flabel" for="pdSel">Apply a plan discount</label><div class="selwrap"><select id="pdSel" data-k="planDiscount" data-t="str">' +
         '<option value="none"' + (s.planDiscount === "none" ? " selected" : "") + '>No plan discount</option>' +
         (!isLegacy(c) ? segOpt("military", "Military Savings") + segOpt("responder", "First Responder Savings") + segOpt("senior", "55+ Savings") + segOpt("workperks", "Work Perks") + segOpt("employee", "Employee pricing") : '') +
-      '</select></div>' +
+      '</select></div>' + acctPromoHtml(c) +
       '<p class="fhint">' + (isLegacy(c) ? "Go5G and Essentials quotes are upgrades only and add no plan charge, so a plan discount doesn't change the quote."
           : segOf(s) ? esc(s.tab === "internet" && s.planDiscount === "employee" ? "Employee pricing on Home Internet: " + fmt0(empHintOff()) + "/mo off the plan (AWAY too), on top of AutoPay, the voice line discount and other promotions. The connection charge is waived. Wireless lines get " + empPct() + "% off. Change these in Settings." : SEG[s.planDiscount].hint) + (c.ex ? " On an existing account, pick the discount it already has so added lines are priced on it." : "")
           : !c.ex ? "Account-wide discounts only. Number-transfer and other promotional credits are chosen per line under Apply a promotion in Edit Options."
@@ -3532,7 +3576,7 @@ function quoteDoc(id, note){
     if (!o) return;
     var x = {id:o.id, label:o.label, detail:o.detail || "", fam:o.fam, upTo:o.upTo, picks:o.picks || 0, plans:o.plans, need:o.need, models:o.models || [], tag:o.tag || "",
              status:o.status || "active", starts:o.starts || null, ends:o.ends || null, verified:o.verified || null, source:o.source || "", dated:!!o.dated};
-    ["byod","pay","planMo","planMonths","newAcct","minMonthly","maxPerAcct","months","needVoice","product","autopay"].forEach(function(k){ if (o[k] != null && o[k] !== false && o[k] !== 0) x[k] = o[k]; });
+    ["byod","pay","planMo","planMonths","newAcct","minMonthly","maxPerAcct","months","needVoice","product","autopay","acct"].forEach(function(k){ if (o[k] != null && o[k] !== false && o[k] !== 0) x[k] = o[k]; });
     offers[o.id] = x;
   }
   var awp = awayPick(q.c);
@@ -4232,6 +4276,7 @@ document.addEventListener("click", function(e){
     case "ppplan": ppState().plan = v; break;
     case "ppbrand": ppState().brand = v === "connect" ? "connect" : "tmo"; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
+    case "acctpromo": state.acctPromos = state.acctPromos || {}; state.acctPromos[v] = !state.acctPromos[v]; break;
     case "cust":
       if (state.cust === v) break;
       state.cust = v;

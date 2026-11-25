@@ -818,6 +818,29 @@
    "verified": "2026-11-25"
   },
   {
+   "askNik": true,
+   "dated": false,
+   "detail": "Buy on EIP and activate a new tablet line on Tablet Unlimited Plus. Up to $600 in monthly device credits (RDC) over the finance term. Postpaid and employees (T-Mobile and non-T-Mobile); no redemption limit. From Nik's store promo sheet: Nov 25, 2026 – TBA.",
+   "ends": null,
+   "fam": "any",
+   "id": "ipada16onus",
+   "label": "iPad (A16) 128GB On Us",
+   "manual": true,
+   "models": [
+    "ipada16"
+   ],
+   "months": "term",
+   "need": "tab25",
+   "picks": 0,
+   "plans": "any",
+   "source": "store",
+   "starts": "2026-11-25",
+   "status": "active",
+   "tag": "newline",
+   "upTo": 600,
+   "verified": "2026-11-25"
+  },
+  {
    "byod": true,
    "dated": false,
    "detail": "New account switching with a Port and keeping their phone. Pays off the old phone's remaining balance (incl. lease buyout), up to $800 per line. Unlock the phone before porting; send proof of balance and 90+ days in good standing within 30 days of the Port. Up to 4 lines.",
@@ -1066,8 +1089,10 @@
    "verified": null
   },
   {
+   "acct": true,
+   "askNik": true,
    "dated": false,
-   "detail": "New account switching to T-Mix Saver with a Port: $15/mo off the plan for 36 months ($540). 1 discounted line per account; on a 2-line account, the first line only. Credits stop if they cancel or change plans.",
+   "detail": "New account switching to T-Mix Saver with a Port (BYOD or a phone on EIP/FRP): $15/mo off the plan for 36 months ($540). 1 per account. Credits stop if they cancel or change plans. Applied under Plan discounts. Store sheet (targeted customer version): Nov 5, 2026 – TBA.",
    "ends": null,
    "fam": "tmix",
    "id": "saver540",
@@ -1083,7 +1108,7 @@
     "saver"
    ],
    "source": "https://www.t-mobile.com/resources/bring-your-own-phone",
-   "starts": null,
+   "starts": "2026-11-05",
    "status": "active",
    "tag": "plan",
    "upTo": 540,
