@@ -1579,7 +1579,9 @@ function planMonthsOf(o){ return +o.planMonths || 36; }
 /* Account promotions (offers with acct): plan credits for the whole account, shown under Plan discounts (Nik, Nov 25, 2026),
    e.g. Keep your number · T-Mix Saver: new account, a Port line, T-Mix Saver, $15/mo for 36 months, 1 per account. */
 function acctPromoHtml(c){
-  var list = acctPromoList(c); if (!list.length) return "";
+  /* Only promotions for the plan chosen show here (Nik, Nov 25, 2026): Keep your number appears on T-Mix Saver only. */
+  var list = acctPromoList(c).filter(function(x){ return x.o.plans === "any" || (x.o.plans || []).indexOf(c.pid) > -1; });
+  if (!list.length) return "";
   return '<span class="flabel" style="margin-top:12px">Account promotions</span>' + list.map(function(x){
     var o = x.o, lock = segOf(state) === "senior", on = !lock && !!(state.acctPromos || {})[o.id];
     return '<label class="check acctp' + (lock ? " dis" : "") + '" for="ap-' + o.id + '"><input id="ap-' + o.id + '" type="checkbox" data-act="acctpromo" data-v="' + o.id + '"' + (on ? " checked" : "") + (lock ? " disabled" : "") + '><span>' + esc(o.label) +
@@ -2064,7 +2066,8 @@ function compute(s){
   /* Account promotions (Plan discounts): a monthly plan credit for the account when the quote qualifies. */
   acctPromoList(c).forEach(function(x){
     if (!(s.acctPromos || {})[x.o.id]) return;
-    if (!x.ok) { if (segOf(s) !== "senior") notes.push({t:"warn", m:x.o.label + " isn't applied: " + x.why + "."}); return; }
+    var onPlan = x.o.plans === "any" || (x.o.plans || []).indexOf(c.pid) > -1;   // off the plan, it's hidden in Plan discounts, so no note
+    if (!x.ok) { if (segOf(s) !== "senior" && onPlan) notes.push({t:"warn", m:x.o.label + " isn't applied: " + x.why + "."}); return; }
     var pmo = planMoOf(x.o), pmn = planMonthsOf(x.o), n = Math.min(x.o.maxPerAcct || Infinity, x.lines);
     W.push({l:x.o.label, a:-round2(pmo * n), c:"credit", sub:(n > 1 ? n + " × " : "") + fmt(pmo) + "/mo for " + pmn + " months · plan discount"});
     if (x.o.dated) notes.push({t:"info", m:x.o.label + " wasn't confirmed in the latest promo check" + (x.o.verified ? " (last confirmed " + shortDate(x.o.verified) + ")" : "") + ". Check that it's still running."});
