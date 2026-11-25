@@ -1560,11 +1560,12 @@ function acctLine(c, P, sep){
 
 /* Offers that apply to a group's chosen phone, with eligibility */
 /* What the account pays each month for its phone plan with AutoPay: T-Mix offer terms require
-   "Qualifying credit and service ($X+/mo. w/AutoPay)" rather than a particular plan. */
+   "Qualifying credit and service ($X+/mo. w/AutoPay)" rather than a particular plan. The plan's regular price counts,
+   before Military, First Responder, 55+, Work Perks or Employee savings (Nik, Nov 25, 2026). */
 function acctMonthly(c){
   if (c.fam !== "tmix" || !c.n) return 0;
-  var pc = planCalc("tmix", c.pid, c.n, true, false, segOf(state));
-  return pc ? pc.price + (pc.empSave || 0) : 0;
+  var pc = planCalc("tmix", c.pid, c.n, true, false, null);
+  return pc ? pc.price : 0;
 }
 /* ---------- Plan promotions ----------
    Promotional credits on the plan (not the phone) are chosen per line under Apply a promotion, like phone offers, and
