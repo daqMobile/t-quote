@@ -1593,6 +1593,7 @@ function acctPromoList(c){
     if (o.fam !== "any" && o.fam !== c.fam) why = "Needs a " + (o.fam === "tmix" ? "T-Mix" : "different") + " plan";
     else if (o.plans !== "any" && (o.plans || []).indexOf(c.pid) < 0) why = "Needs " + o.plans.map(function(p){ return planName(c.fam, p); }).join(" or ");
     else if (o.newAcct && c.ex) why = "New accounts only";
+    else if (segOf(state) === "senior") why = "Can't be combined with 55+ Savings";
     else if (o.need === "port" && !c.portVoice) why = "Needs a phone line set to Port";
     else if (!lines) why = "Needs a phone line";
     return {o:o, ok:!why, why:why, lines:lines};
@@ -1623,6 +1624,8 @@ function planPromoOf(g, c, d){
     x = list.filter(function(y){ return y.o.id === id; })[0] || null;
     if (x && x.o.pay !== "plan" && !(d && d.offer && d.offer.id === x.o.id)) x = null;
   }
+  /* 55+ Savings can't be combined with discounted or free-line offers (Nik, Nov 25, 2026): no plan credit on 55+. */
+  if (segOf(state) === "senior") return null;
   return x && x.ok && planMoOf(x.o) > 0 ? x : null;
 }
 function offersFor(g, c){
@@ -1641,6 +1644,7 @@ function offersFor(g, c){
     if (planOk) {
       if (!c.autopay) why = "Needs AutoPay";
       else if (o.newAcct && c.ex) why = "New accounts only";
+      else if (o.pay === "plan" && segOf(state) === "senior") why = "Can't be combined with 55+ Savings";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
       else if (isLegacy(c) && g.lineType !== "upgrade" && TYPES[g.type] && TYPES[g.type].voice) why = "Upgrades only on " + planName(c.fam, c.pid);
@@ -1747,6 +1751,7 @@ function byodOffersFor(g, c){
       if (isLegacy(c) && g.lineType !== "upgrade" && TYPES[g.type] && TYPES[g.type].voice) why = "Upgrades only on " + planName(c.fam, c.pid);
       else if (o.pay === "plan" && !c.autopay) why = "Needs AutoPay";
       else if (o.newAcct && c.ex) why = "New accounts only";
+      else if (o.pay === "plan" && segOf(state) === "senior") why = "Can't be combined with 55+ Savings";
       else if (o.need === "port" && g.lineType !== "port") why = "Requires PORT";
       else if (o.need === "newline" && g.lineType === "upgrade") why = "Requires AAL";
       else if (o.pay === "plan" && o.maxPerAcct && planOfferCount(o.id, g) > o.maxPerAcct) why = "Max " + o.maxPerAcct + " line" + (o.maxPerAcct > 1 ? "s" : "") + " per account";
@@ -2011,6 +2016,7 @@ function compute(s){
     }
     /* Plan promotions: a monthly credit on the plan for this line, up to the offer's per-account line limit. */
     var pp = planPromoOf(g, c, d);
+    if (!pp && segOf(s) === "senior" && d && d.offer && planMoOf(d.offer) > 0) notes.push({t:"info", m:label + ": " + d.offer.label + "'s line discount doesn't apply with 55+ Savings."});
     if (pp) {
       var po = pp.o, pmo = planMoOf(po), pmn = planMonthsOf(po), pmax = po.maxPerAcct || Infinity, pu = planUsed[po.id] || 0, pn = Math.max(0, Math.min(q, pmax - pu));
       planUsed[po.id] = pu + q;
