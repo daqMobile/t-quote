@@ -1580,8 +1580,8 @@ function planMonthsOf(o){ return +o.planMonths || 36; }
 function acctPromoHtml(c){
   var list = acctPromoList(c); if (!list.length) return "";
   return '<span class="flabel" style="margin-top:12px">Account promotions</span>' + list.map(function(x){
-    var on = !!(state.acctPromos || {})[x.o.id], o = x.o;
-    return '<label class="check acctp" for="ap-' + o.id + '"><input id="ap-' + o.id + '" type="checkbox" data-act="acctpromo" data-v="' + o.id + '"' + (on ? " checked" : "") + '><span>' + esc(o.label) +
+    var o = x.o, lock = segOf(state) === "senior", on = !lock && !!(state.acctPromos || {})[o.id];
+    return '<label class="check acctp' + (lock ? " dis" : "") + '" for="ap-' + o.id + '"><input id="ap-' + o.id + '" type="checkbox" data-act="acctpromo" data-v="' + o.id + '"' + (on ? " checked" : "") + (lock ? " disabled" : "") + '><span>' + esc(o.label) +
       '<small class="muted">' + fmt(planMoOf(o)) + '/mo off the plan for ' + planMonthsOf(o) + ' months (' + fmt0(o.upTo) + ')' + (o.maxPerAcct ? ' · ' + o.maxPerAcct + ' per account' : '') + '</small>' +
       '<small class="' + (x.ok ? 'apok' : 'apno') + '">' + (x.ok ? 'This quote qualifies' : esc(x.why)) + '</small></span></label>';
   }).join("");
@@ -2063,7 +2063,7 @@ function compute(s){
   /* Account promotions (Plan discounts): a monthly plan credit for the account when the quote qualifies. */
   acctPromoList(c).forEach(function(x){
     if (!(s.acctPromos || {})[x.o.id]) return;
-    if (!x.ok) { notes.push({t:"warn", m:x.o.label + " isn't applied: " + x.why + "."}); return; }
+    if (!x.ok) { if (segOf(s) !== "senior") notes.push({t:"warn", m:x.o.label + " isn't applied: " + x.why + "."}); return; }
     var pmo = planMoOf(x.o), pmn = planMonthsOf(x.o), n = Math.min(x.o.maxPerAcct || Infinity, x.lines);
     W.push({l:x.o.label, a:-round2(pmo * n), c:"credit", sub:(n > 1 ? n + " × " : "") + fmt(pmo) + "/mo for " + pmn + " months · plan discount"});
     if (x.o.dated) notes.push({t:"info", m:x.o.label + " wasn't confirmed in the latest promo check" + (x.o.verified ? " (last confirmed " + shortDate(x.o.verified) + ")" : "") + ". Check that it's still running."});
@@ -2194,6 +2194,9 @@ function segOpt(v, label){
   else if (S.pct) why = s.tab === "internet" ? " · " + fmt0(empHintOff()) + "/mo off Home Internet" : " · " + empPct() + "% off lines";
   else if (!St.ap[c.pid]) { ok = false; why = " (not on " + planName(c.fam, c.pid) + ")"; }
   else if (St.max[c.pid] && c.n > St.max[c.pid]) { ok = false; why = " (max " + St.max[c.pid] + " phone lines)"; }
+  /* 55+ can't be combined with discounted-line offers: off while an account promotion is checked (and vice versa). */
+  var apq = v === "senior" && ok ? acctPromoList(c).filter(function(x){ return x.ok && (s.acctPromos || {})[x.o.id]; }) : [];
+  if (apq.length) { ok = false; why = " (not with " + apq[0].o.label + ")"; }
   return '<option value="' + v + '"' + (s.planDiscount === v ? " selected" : (ok ? "" : " disabled")) + '>' + label + why + '</option>';
 }
 function renderStage(q){
@@ -4282,7 +4285,7 @@ document.addEventListener("click", function(e){
     case "ppplan": ppState().plan = v; break;
     case "ppbrand": ppState().brand = v === "connect" ? "connect" : "tmo"; break;
     case "discounts": state.discountsOpen = !state.discountsOpen; break;
-    case "acctpromo": state.acctPromos = state.acctPromos || {}; state.acctPromos[v] = !state.acctPromos[v]; break;
+    case "acctpromo": if (segOf(state) === "senior") break; state.acctPromos = state.acctPromos || {}; state.acctPromos[v] = !state.acctPromos[v]; break;
     case "cust":
       if (state.cust === v) break;
       state.cust = v;
