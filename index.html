@@ -301,6 +301,7 @@ button:disabled{cursor:not-allowed}
 .check{display:flex;align-items:flex-start;gap:10px;font-size:14.5px}
 .check.dis{opacity:.5;cursor:not-allowed}
 .check input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+.fhint:empty{display:none}
 .acctp{margin-top:6px}
 .acctp small{display:block;font-size:12.5px;margin-top:2px}
 .acctp .apok{color:var(--good);font-weight:600}
@@ -808,7 +809,7 @@ var SEG = {
               hint:"For state and local law enforcement, firefighters, EMS, their pensioned retirees, and families of first responders killed in the line of duty. Federal employees aren't eligible. Verify at activation."},
   senior:    {label:"55+", ap:{saver:[30,60], standard:[50,75], more:[65,120], loaded:[85,150]}, addl:{}, max:{saver:2, standard:2, more:2, loaded:2},
               exp:{beyond:[85,130], more:[70,100]}, expAddl:{}, expMax:{beyond:2, more:2},
-              hint:"The account holder must be 55 or older. Up to 2 phone lines."},
+              hint:""},   // no note under 55+ (Nik, Nov 25, 2026)
   workperks: {label:"Work Perks", pct:true, fixedPct:15, maxLines:5,
               hint:"Work Perks: 15% off the Experience More or Beyond plan charge, after AutoPay, on up to the first 5 phone lines. The customer's employer must be on T-Mobile's Work Perks list, and they verify within 30 days. Doesn't combine with Military or 55+, and isn't offered on T-Mix."},
   employee:  {label:"Employee", pct:true,
